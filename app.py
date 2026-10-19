@@ -1,5 +1,8 @@
-import streamlit as st
+import math
 import requests
+import streamlit as st
+import pandas as pd
+
 from datetime import date, timedelta
 
 st.set_page_config(
@@ -18,209 +21,409 @@ COMPETITIONS = {
     "Bundesliga 🇩🇪": "BL1",
 }
 
-st.title("⚽ Foot AI Pro")
-st.subheader("🤖 Analyse et pronostics de football")
-
-st.caption(
-    "Matchs et classements issus de Football-Data.org. "
-    "Les estimations ne garantissent aucun résultat."
-)
+st.title("⚽ FOOT AI PRO")
+st.subheader("🤖 Intelligence artificielle et pronostics")
+st.caption("Analyse statistique expérimentale du football")
 
 try:
-    token = st.secrets["FOOTBALL_DATA_TOKEN"]
+    TOKEN = st.secrets["FOOTBALL_DATA_TOKEN"]
 except Exception:
-    st.error(
-        "Clé API introuvable. Configure FOOTBALL_DATA_TOKEN "
-        "dans les Secrets de Streamlit."
-    )
+    st.error("Clé API manquante dans les Secrets de Streamlit.")
     st.stop()
 
 
 def api_get(endpoint, params=None):
-    headers = {"X-Auth-Token": token}
-
-    response = requests.get(
-        f"{API_URL}/{endpoint}",
-        headers=headers,
-        params=params,
-        timeout=20
-    )
-
-    if response.status_code == 429:
-        st.error("Limite de requêtes atteinte. Réessaie plus tard.")
-        return None
-
-    if response.status_code != 200:
-        st.error(
-            f"Erreur API : {response.status_code}. "
-            "Vérifie ton accès et la compétition choisie."
+    try:
+        response = requests.get(
+            f"{API_URL}/{endpoint}",
+            headers={"X-Auth-Token": TOKEN},
+            params=params,
+            timeout=20
         )
-        return None
 
-    return response.json()
+        if response.status_code == 429:
+            st.error("Limite API atteinte. Réessaie plus tard.")
+            return None
+
+        if response.status_code != 200:
+            st.error(
+                f"Erreur API {response.status_code}. "
+                "Vérifie les compétitions accessibles avec ton compte."
+            )
+            return None
+
+        return response.json()
+
+    except requests.RequestException:
+        st.error("Impossible de contacter le service des matchs.")
+        return None
 
 
 @st.cache_data(ttl=900)
-def get_matches(code, date_from, date_to):
+def charger_matchs(competition, debut, fin):
     return api_get(
-        f"competitions/{code}/matches",
+        f"competitions/{competition}/matches",
         {
-            "dateFrom": date_from,
-            "dateTo": date_to,
+            "dateFrom": debut,
+            "dateTo": fin,
             "status": "SCHEDULED"
         }
     )
 
 
 @st.cache_data(ttl=900)
-def get_standings(code):
-    return api_get(f"competitions/{code}/standings")
+def charger_classement(competition):
+    return api_get(f"competitions/{competition}/standings")
 
 
-competition = st.selectbox(
-    "🏆 Choisis un championnat",
-    list(COMPETITIONS.keys())
+def poisson(lam, buts):
+    return math.exp(-lam) * (lam ** buts) / math.factorial(buts)
+
+
+def analyser_match(domicile, exterieur, classement):
+    equipe_d = classement.get(domicile)
+    equipe_e = classement.get(exterieur)
+
+    if not equipe_d or not equipe_e:
+        return None
+
+    matchs_d = max(equipe_d["playedGames"], 1)
+    matchs_e = max(equipe_e["playedGames"], 1)
+
+    attaque_d = equipe_d["goalsFor"] / matchs_d
+    defense_d = equipe_d["goalsAgainst"] / matchs_d
+
+    attaque_e = equipe_e["goalsFor"] / matchs_e
+    defense_e = equipe_e["goalsAgainst"] / matchs_e
+
+    moyenne_d = (attaque_d + defense_e) / 2
+    moyenne_e = (attaque_e + defense_d) / 2
+
+    # Avantage théorique du terrain
+    lambda_d = max(0.15, moyenne_d * 1.12)
+    lambda_e = max(0.15, moyenne_e * 0.90)
+
+    scores = []
+
+    for buts_d in range(8):
+        for buts_e in range(8):
+            proba = (
+                poisson(lambda_d, buts_d)
+                * poisson(lambda_e, buts_e)
+            )
+
+            scores.append({
+                "domicile": buts_d,
+                "exterieur": buts_e,
+                "probabilite": proba
+            })
+
+    total = sum(s["probabilite"] for s in scores)
+
+    if total == 0:
+        return None
+
+    for score in scores:
+        score["probabilite"] /= total
+
+    p_domicile = sum(
+        s["probabilite"] for s in scores
+        if s["domicile"] > s["exterieur"]
+    )
+
+    p_nul = sum(
+        s["probabilite"] for s in scores
+        if s["domicile"] == s["exterieur"]
+    )
+
+    p_exterieur = sum(
+        s["probabilite"] for s in scores
+        if s["domicile"] < s["exterieur"]
+    )
+
+    scores.sort(
+        key=lambda s: s["probabilite"],
+        reverse=True
+    )
+
+    return {
+        "domicile": p_domicile,
+        "nul": p_nul,
+        "exterieur": p_exterieur,
+        "scores": scores[:5],
+        "lambda_d": lambda_d,
+        "lambda_e": lambda_e,
+        "rang": max(p_domicile, p_nul, p_exterieur)
+    }
+
+
+# Navigation
+page = st.sidebar.radio(
+    "Navigation",
+    [
+        "🏠 Accueil",
+        "⚽ Matchs et pronostics",
+        "📊 Analyse détaillée",
+        "📚 Historique"
+    ]
 )
 
-jours = st.selectbox(
-    "📅 Période des matchs",
-    [7, 14, 30],
-    format_func=lambda x: f"Prochains {x} jours"
-)
+if "historique" not in st.session_state:
+    st.session_state.historique = []
 
-if st.button("🔎 Charger les matchs", type="primary"):
-    code = COMPETITIONS[competition]
+if page == "🏠 Accueil":
+    st.markdown("## Bienvenue sur Foot AI Pro")
 
-    with st.spinner("Récupération des matchs..."):
-        data = get_matches(
-            code,
-            date.today().isoformat(),
-            (date.today() + timedelta(days=jours)).isoformat()
+    c1, c2, c3 = st.columns(3)
+
+    c1.metric("Champion­nats", len(COMPETITIONS))
+    c2.metric("Scores analysés", "0 à 7 buts")
+    c3.metric("Modèle", "Poisson")
+
+    st.info(
+        "Choisis un championnat dans la section Matchs et pronostics "
+        "pour commencer."
+    )
+
+    st.warning(
+        "Les probabilités sont expérimentales et reposent sur les "
+        "buts et classements disponibles. Elles ne garantissent "
+        "aucun résultat."
+    )
+
+elif page == "⚽ Matchs et pronostics":
+
+    competition_nom = st.selectbox(
+        "Choisir un championnat",
+        list(COMPETITIONS.keys())
+    )
+
+    code = COMPETITIONS[competition_nom]
+
+    nombre_jours = st.selectbox(
+        "Période",
+        [7, 14, 30],
+        format_func=lambda n: f"Prochains {n} jours"
+    )
+
+    if st.button("🔎 Charger et analyser les matchs"):
+        debut = date.today()
+        fin = debut + timedelta(days=nombre_jours)
+
+        with st.spinner("Chargement des données..."):
+            donnees_matchs = charger_matchs(
+                code,
+                debut.isoformat(),
+                fin.isoformat()
+            )
+
+            donnees_classement = charger_classement(code)
+
+        if donnees_matchs is None or donnees_classement is None:
+            st.error("Les données sont indisponibles pour le moment.")
+
+        else:
+            table = donnees_classement.get("standings", [])
+
+            classement = {}
+
+            for groupe in table:
+                for equipe in groupe.get("table", []):
+                    classement[equipe["team"]["id"]] = equipe
+
+            resultats = []
+
+            for match in donnees_matchs.get("matches", []):
+                id_d = match["homeTeam"].get("id")
+                id_e = match["awayTeam"].get("id")
+
+                if id_d not in classement or id_e not in classement:
+                    continue
+
+                analyse = analyser_match(id_d, id_e, classement)
+
+                if analyse is None:
+                    continue
+
+                resultats.append({
+                    "id": match["id"],
+                    "date": match.get("utcDate", ""),
+                    "domicile": match["homeTeam"]["name"],
+                    "exterieur": match["awayTeam"]["name"],
+                    "analyse": analyse
+                })
+
+            resultats.sort(
+                key=lambda m: m["analyse"]["rang"],
+                reverse=True
+            )
+
+            st.session_state.matchs = resultats
+            st.session_state.competition = competition_nom
+
+            if not resultats:
+                st.warning(
+                    "Aucun match analysable trouvé. "
+                    "Les classements ou les calendriers peuvent "
+                    "être indisponibles pour cette période."
+                )
+            else:
+                st.success(
+                    f"{len(resultats)} match(s) analysé(s)."
+                )
+
+    for match in st.session_state.get("matchs", []):
+        a = match["analyse"]
+
+        with st.expander(
+            f"⚽ {match['domicile']} - {match['exterieur']}"
+        ):
+            st.write(f"Date : {match['date']}")
+
+            c1, c2, c3 = st.columns(3)
+
+            c1.metric(
+                "Victoire domicile",
+                f"{a['domicile'] * 100:.1f} %"
+            )
+
+            c2.metric(
+                "Match nul",
+                f"{a['nul'] * 100:.1f} %"
+            )
+
+            c3.metric(
+                "Victoire extérieur",
+                f"{a['exterieur'] * 100:.1f} %"
+            )
+
+            st.write("**🎯 Les 5 scores les plus probables**")
+
+            for score in a["scores"]:
+                st.write(
+                    f"⚽ {match['domicile']} "
+                    f"{score['domicile']} - {score['exterieur']} "
+                    f"{match['exterieur']} — "
+                    f"{score['probabilite'] * 100:.1f} %"
+                )
+
+            if st.button(
+                "📚 Enregistrer dans l'historique",
+                key=f"hist_{match['id']}"
+            ):
+                st.session_state.historique.append({
+                    "match": (
+                        f"{match['domicile']} - {match['exterieur']}"
+                    ),
+                    "date": match["date"],
+                    "domicile": a["domicile"] * 100,
+                    "nul": a["nul"] * 100,
+                    "exterieur": a["exterieur"] * 100,
+                    "score": (
+                        f"{a['scores'][0]['domicile']}-"
+                        f"{a['scores'][0]['exterieur']}"
+                    )
+                })
+
+                st.success("Pronostic enregistré !")
+
+elif page == "📊 Analyse détaillée":
+
+    matchs = st.session_state.get("matchs", [])
+
+    if not matchs:
+        st.info(
+            "Charge d'abord les matchs dans la section "
+            "Matchs et pronostics."
         )
 
-    if data is not None:
-        matches = data.get("matches", [])
+    else:
+        noms = [
+            f"{m['domicile']} - {m['exterieur']}"
+            for m in matchs
+        ]
 
-        if not matches:
-            st.info(
-                "Aucun match programmé trouvé pour cette période "
-                "ou cette compétition."
-            )
-        else:
-            st.success(f"{len(matches)} match(s) trouvé(s).")
+        choix = st.selectbox("Choisir un match", noms)
 
-            for match in matches:
-                home = match["homeTeam"].get("name", "Domicile")
-                away = match["awayTeam"].get("name", "Extérieur")
-                match_date = match.get("utcDate", "")[:16].replace("T", " ")
+        match = matchs[noms.index(choix)]
+        a = match["analyse"]
 
-                with st.expander(f"⚽ {home} - {away} | {match_date}"):
-                    st.write(f"**Compétition :** {competition}")
+        st.header(choix)
 
-                    if st.button(
-                        "📊 Analyser cette rencontre",
-                        key=f"analyse_{match['id']}"
-                    ):
-                        table = get_standings(code)
+        st.subheader("Probabilités du résultat")
 
-                        if table is None:
-                            st.warning(
-                                "Classement indisponible. "
-                                "Impossible de calculer cette estimation."
-                            )
-                        else:
-                            standings = table.get("standings", [])
-                            rows = (
-                                standings[0].get("table", [])
-                                if standings else []
-                            )
+        st.progress(a["domicile"], text="Victoire à domicile")
+        st.progress(a["nul"], text="Match nul")
+        st.progress(a["exterieur"], text="Victoire à l'extérieur")
 
-                            home_row = next(
-                                (
-                                    r for r in rows
-                                    if r["team"]["id"]
-                                    == match["homeTeam"]["id"]
-                                ),
-                                None
-                            )
+        st.subheader("Buts attendus par le modèle")
 
-                            away_row = next(
-                                (
-                                    r for r in rows
-                                    if r["team"]["id"]
-                                    == match["awayTeam"]["id"]
-                                ),
-                                None
-                            )
+        c1, c2 = st.columns(2)
 
-                            if not home_row or not away_row:
-                                st.warning(
-                                    "Les deux équipes ne figurent pas "
-                                    "dans le classement disponible."
-                                )
-                            else:
-                                home_points = home_row["points"]
-                                away_points = away_row["points"]
+        c1.metric(
+            match["domicile"],
+            f"{a['lambda_d']:.2f}"
+        )
 
-                                home_played = max(
-                                    home_row["playedGames"], 1
-                                )
-                                away_played = max(
-                                    away_row["playedGames"], 1
-                                )
+        c2.metric(
+            match["exterieur"],
+            f"{a['lambda_e']:.2f}"
+        )
 
-                                home_strength = (
-                                    home_points / home_played + 0.25
-                                )
-                                away_strength = (
-                                    away_points / away_played
-                                )
+        st.subheader("Scores les plus probables")
 
-                                total = home_strength + away_strength
+        tableau = pd.DataFrame([
+            {
+                "Score": (
+                    f"{s['domicile']}-{s['exterieur']}"
+                ),
+                "Probabilité": (
+                    f"{s['probabilite'] * 100:.2f} %"
+                )
+            }
+            for s in a["scores"]
+        ])
 
-                                home_prob = (
-                                    home_strength / total * 100
-                                )
-                                away_prob = (
-                                    away_strength / total * 100
-                                )
+        st.dataframe(tableau, use_container_width=True)
 
-                                draw_prob = 25.0
+        st.caption(
+            "Le modèle utilise les moyennes de buts inscrits et "
+            "encaissés. Il ne tient pas encore compte des blessures, "
+            "des compositions, de la forme récente ou des cotes."
+        )
 
-                                home_prob = (
-                                    home_prob * 0.75
-                                )
-                                away_prob = (
-                                    away_prob * 0.75
-                                )
+elif page == "📚 Historique":
 
-                                st.subheader(
-                                    f"{home} contre {away}"
-                                )
+    st.header("📚 Historique des pronostics")
 
-                                c1, c2, c3 = st.columns(3)
+    historique = st.session_state.historique
 
-                                c1.metric(
-                                    "Victoire domicile",
-                                    f"{home_prob:.1f} %"
-                                )
-                                c2.metric(
-                                    "Match nul",
-                                    f"{draw_prob:.1f} %"
-                                )
-                                c3.metric(
-                                    "Victoire extérieur",
-                                    f"{away_prob:.1f} %"
-                                )
+    if not historique:
+        st.info(
+            "Aucun pronostic enregistré. "
+            "Enregistre un pronostic depuis la liste des matchs."
+        )
 
-                                st.info(
-                                    "Estimation expérimentale fondée "
-                                    "sur les points par match et "
-                                    "un avantage théorique à domicile. "
-                                    "Ce n'est pas un modèle prédictif "
-                                    "validé, et les probabilités "
-                                    "ne sont pas calibrées."
-                                )
+    else:
+        st.dataframe(
+            pd.DataFrame(historique),
+            use_container_width=True
+        )
+
+        fichier = pd.DataFrame(historique).to_csv(
+            index=False
+        ).encode("utf-8")
+
+        st.download_button(
+            "📥 Télécharger l'historique CSV",
+            fichier,
+            file_name="historique_foot_ai_pro.csv",
+            mime="text/csv"
+        )
 
 st.divider()
-st.caption("Foot AI Pro — Version expérimentale")
+
+st.caption(
+    "Foot AI Pro — Outil expérimental d'analyse statistique. "
+    "Les estimations ne garantissent aucun résultat sportif."
+)
