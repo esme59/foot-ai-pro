@@ -3,13 +3,13 @@ import streamlit as st
 st.set_page_config(
 page_title="IA Pronostics Football",
 page_icon="⚽",
-layout=“wide”
+layout="wide"
 )
 
-st.title(“⚽ IA de Pronostics Football”)
-st.write(“Bienvenue dans notre IA de pronostics football !”)
+st.title("⚽ IA de Pronostics Football")
+st.write("Bienvenue dans notre IA de pronostics football !”)
 
-st.subheader(“📊 Analyser un match”)
+st.subheader("📊 Analyser un match")
 
 equipe1 = st.text_input(“Équipe à domicile”, “Paris Saint-Germain”)
 equipe2 = st.text_input(“Équipe à l’extérieur”, “Olympique de Marseille”)
