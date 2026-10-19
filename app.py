@@ -15,7 +15,18 @@ equipe1 = st.text_input("Équipe à domicile","Paris Saint-Germain")
 equipe2 = st.text_input("Équipe à l’extérieur", "Olympique de Marseille")
 
 if st.button("Analyser le match"):
-st.subheader(f"{equipe1} vs {equipe2}")
+  import streamlit as st
+
+st.title(“⚽ Foot AI Pro”)
+st.write(“Analyse et pronostics de matchs de football”)
+
+equipe1 = st.text_input(“Équipe à domicile”, “Paris Saint-Germain”)
+equipe2 = st.text_input(“Équipe à l’extérieur”, “Olympique de Marseille”)
+
+if st.button(“Analyser le match”):
+st.subheader(f”{equipe1} vs {equipe2}”)
+st.write(“Analyse du match en cours…”)
+st.info(“Les pronostics seront affichés ici.”)
 st.info("Notre système de calcul des probabilités sera ajouté à la prochaine étape.")
 st.write("🏠 Victoire domicile : à calculer")
 st.write("🤝 Match nul : à calculer")
