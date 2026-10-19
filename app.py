@@ -7,7 +7,7 @@ layout="wide"
 )
 
 st.title("⚽ IA de Pronostics Football")
-st.write("Bienvenue dans notre IA de pronostics") football !”)
+st.write("Bienvenue dans notre IA de pronostics football !")
 
 st.subheader("📊 Analyser un match")
 
