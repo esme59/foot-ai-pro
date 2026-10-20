@@ -31,7 +31,8 @@ COMPETITIONS = {
 
 if "match_selectionne" not in st.session_state:
     st.session_state.match_selectionne = None
-
+if "matchs_charges" not in st.session_state:
+    st.session_state.matchs_charges = []
 if "resultat_analyse" not in st.session_state:
     st.session_state.resultat_analyse = None
 
