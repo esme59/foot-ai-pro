@@ -28,23 +28,21 @@ COMPETITIONS = {
 
 
 # ==========================================
-# INITIALISATION DE LA MEMOIRE
+# MEMOIRE DE L'APPLICATION
 # ==========================================
 
-if "matchs_charges" not in st.session_state:
-    st.session_state.matchs_charges = []
+def initialiser(cle, valeur):
+    if cle not in st.session_state:
+        st.session_state[cle] = valeur
 
-if "match_selectionne" not in st.session_state:
-    st.session_state.match_selectionne = None
 
-if "resultat_analyse" not in st.session_state:
-    st.session_state.resultat_analyse = None
-
-if "erreur_analyse" not in st.session_state:
-    st.session_state.erreur_analyse = None
-
-if "classement" not in st.session_state:
-    st.session_state.classement = []
+initialiser("matchs_charges", [])
+initialiser("match_selectionne", None)
+initialiser("resultat_analyse", None)
+initialiser("erreur_analyse", None)
+initialiser("buteurs_analyse", None)
+initialiser("erreur_buteurs", None)
+initialiser("classement", [])
 
 
 # ==========================================
@@ -56,7 +54,7 @@ st.markdown(
     <style>
     .stApp {
         background-color: #0b1020;
-        color: #ffffff;
+        color: white;
     }
 
     h1, h2, h3 {
@@ -85,21 +83,17 @@ st.markdown(
 # ==========================================
 
 st.title("⚽ FOOT AI PRO")
+
 st.caption(
-    "Analyse des matchs de football et estimation des probabilités."
+    "Analyse des matchs, statistiques et buteurs probables."
 )
 
 
 # ==========================================
-# API FOOTBALL-DATA
+# CONNEXION API
 # ==========================================
 
 def get_api_key():
-    """
-    Lit la clé API enregistrée dans Streamlit Secrets.
-    Accepte les deux noms utilisés précédemment.
-    """
-
     try:
         key = st.secrets.get("FOOTBALL_API_KEY", "")
         if key:
@@ -116,16 +110,13 @@ def get_api_key():
 
 
 def api_get(endpoint, params=None):
-    """
-    Interroge l'API et renvoie les données ou un message d'erreur.
-    """
 
     api_key = get_api_key()
 
     if not api_key:
         return None, (
             "Clé API introuvable. Vérifie dans Streamlit Cloud "
-            "que la clé est enregistrée dans Secrets sous "
+            "que ta clé est enregistrée dans Secrets sous "
             "FOOTBALL_API_KEY ou FOOTBALL_DATA_TOKEN."
         )
 
@@ -143,8 +134,7 @@ def api_get(endpoint, params=None):
 
         if response.status_code == 401:
             return None, (
-                "Clé API invalide. Vérifie la clé enregistrée "
-                "dans Streamlit Secrets."
+                "Clé API invalide. Vérifie tes Secrets Streamlit."
             )
 
         if response.status_code == 403:
@@ -156,14 +146,11 @@ def api_get(endpoint, params=None):
 
         if response.status_code == 429:
             return None, (
-                "Trop de requêtes vers l'API. Attends un peu "
-                "avant de réessayer."
+                "Trop de requêtes API. Attends un peu puis réessaie."
             )
 
         if response.status_code == 404:
-            return None, (
-                "Données introuvables pour cette demande."
-            )
+            return None, "Données introuvables pour cette demande."
 
         response.raise_for_status()
 
@@ -171,18 +158,14 @@ def api_get(endpoint, params=None):
 
     except requests.exceptions.Timeout:
         return None, (
-            "Le serveur met trop de temps à répondre. "
-            "Réessaie dans quelques instants."
+            "Le serveur met trop de temps à répondre. Réessaie."
         )
 
     except requests.exceptions.RequestException as erreur:
         return None, f"Erreur de connexion à l'API : {erreur}"
 
     except ValueError:
-        return None, (
-            "L'API a renvoyé une réponse que l'application "
-            "ne peut pas lire."
-        )
+        return None, "La réponse de l'API est illisible."
 
 
 # ==========================================
@@ -206,7 +189,7 @@ def charger_matchs(competition, debut, fin):
 
 
 # ==========================================
-# CINQ DERNIERS MATCHS D'UNE EQUIPE
+# DERNIERS MATCHS D'UNE EQUIPE
 # ==========================================
 
 def derniers_matchs(equipe_id):
@@ -226,7 +209,7 @@ def derniers_matchs(equipe_id):
 
 
 # ==========================================
-# CALCUL DES STATISTIQUES
+# STATISTIQUES D'UNE EQUIPE
 # ==========================================
 
 def calculer_moyennes(matchs, equipe_id):
@@ -319,25 +302,22 @@ def analyser(match):
     nom_ext = equipe_ext.get("name", "Extérieur")
 
     if not id_dom or not id_ext:
-        return None, (
-            "Impossible de récupérer les identifiants "
-            "des deux équipes."
-        )
+        return None, "Identifiants des équipes indisponibles."
 
     matchs_dom, erreur = derniers_matchs(id_dom)
 
     if erreur:
         return None, (
-            "Impossible de récupérer les derniers matchs "
-            f"de {nom_dom}. {erreur}"
+            f"Impossible de récupérer les matchs de {nom_dom}. "
+            f"{erreur}"
         )
 
     matchs_ext, erreur = derniers_matchs(id_ext)
 
     if erreur:
         return None, (
-            "Impossible de récupérer les derniers matchs "
-            f"de {nom_ext}. {erreur}"
+            f"Impossible de récupérer les matchs de {nom_ext}. "
+            f"{erreur}"
         )
 
     stats_dom = calculer_moyennes(matchs_dom, id_dom)
@@ -349,7 +329,6 @@ def analyser(match):
             "les deux équipes."
         )
 
-    # Estimation des buts attendus à partir des résultats récents.
     moyenne_dom = (
         stats_dom["buts_marques"]
         + stats_ext["buts_encaisses"]
@@ -418,7 +397,92 @@ def analyser(match):
 
 
 # ==========================================
-# AFFICHAGE DE L'ANALYSE
+# ANALYSE DES BUTEURS
+# ==========================================
+
+def analyser_buteurs(match):
+
+    equipe_dom = match.get("homeTeam", {})
+    equipe_ext = match.get("awayTeam", {})
+
+    id_dom = equipe_dom.get("id")
+    id_ext = equipe_ext.get("id")
+
+    competition = match.get("competition", {}).get("code")
+
+    if not competition or not id_dom or not id_ext:
+        return None, (
+            "Les informations nécessaires sur les équipes "
+            "ou la compétition sont indisponibles."
+        )
+
+    donnees, erreur = api_get(
+        f"/competitions/{competition}/scorers",
+        {"limit": 100}
+    )
+
+    if erreur:
+        return None, (
+            "Impossible de récupérer les statistiques des buteurs. "
+            + erreur
+        )
+
+    liste_buteurs = donnees.get("scorers", [])
+
+    resultat = {
+        "domicile": [],
+        "exterieur": []
+    }
+
+    for buteur in liste_buteurs:
+
+        joueur = buteur.get("player", {})
+        equipe = buteur.get("team", {})
+
+        id_equipe = equipe.get("id")
+
+        buts = buteur.get("goals") or 0
+        matchs_joues = buteur.get("playedMatches") or 0
+
+        if matchs_joues <= 0 or buts <= 0:
+            continue
+
+        # Moyenne de buts par apparition.
+        moyenne_buts = buts / matchs_joues
+
+        # Approximation statistique du risque de marquer
+        # au moins un but, selon une loi de Poisson.
+        probabilite = (
+            1 - math.exp(-moyenne_buts)
+        ) * 100
+
+        information = {
+            "nom": joueur.get("name", "Joueur inconnu"),
+            "equipe": equipe.get("name", ""),
+            "buts": buts,
+            "matchs": matchs_joues,
+            "moyenne": moyenne_buts,
+            "probabilite": probabilite
+        }
+
+        if id_equipe == id_dom:
+            resultat["domicile"].append(information)
+
+        elif id_equipe == id_ext:
+            resultat["exterieur"].append(information)
+
+    for cote in ["domicile", "exterieur"]:
+
+        resultat[cote].sort(
+            key=lambda joueur: joueur["probabilite"],
+            reverse=True
+        )
+
+    return resultat, None
+
+
+# ==========================================
+# AFFICHAGE DE L'ANALYSE DU MATCH
 # ==========================================
 
 def afficher_analyse(resultat):
@@ -428,8 +492,8 @@ def afficher_analyse(resultat):
     )
 
     st.caption(
-        "Estimations mathématiques basées sur les résultats récents. "
-        "Ce ne sont pas des garanties de résultat."
+        "Estimations mathématiques fondées sur les résultats récents. "
+        "Elles ne garantissent pas le résultat du match."
     )
 
     st.markdown("### 📊 Probabilités du match")
@@ -456,13 +520,13 @@ def afficher_analyse(resultat):
     col1, col2 = st.columns(2)
 
     col1.metric(
-        f"Buts estimés - {resultat['nom_dom']}",
-        f"{resultat['moyenne_dom']:.2f}"
+        resultat["nom_dom"],
+        f"{resultat['moyenne_dom']:.2f} buts"
     )
 
     col2.metric(
-        f"Buts estimés - {resultat['nom_ext']}",
-        f"{resultat['moyenne_ext']:.2f}"
+        resultat["nom_ext"],
+        f"{resultat['moyenne_ext']:.2f} buts"
     )
 
     st.markdown("### 🔥 Plus ou moins de 2,5 buts")
@@ -482,7 +546,7 @@ def afficher_analyse(resultat):
     st.markdown("### 🎯 Les deux équipes marquent")
 
     st.metric(
-        "Probabilité OUI",
+        "Probabilité estimée",
         f"{resultat['deux_marquent'] * 100:.1f} %"
     )
 
@@ -500,57 +564,114 @@ def afficher_analyse(resultat):
             f"— {probabilite * 100:.2f} %"
         )
 
-    st.markdown("### 📈 Forme récente des équipes")
+    st.markdown("### 📈 Forme récente")
 
     col1, col2 = st.columns(2)
 
-    with col1:
+    for colonne, nom, cle in [
+        (col1, resultat["nom_dom"], "stats_dom"),
+        (col2, resultat["nom_ext"], "stats_ext")
+    ]:
 
-        stats = resultat["stats_dom"]
+        stats = resultat[cle]
 
-        st.write(f"**{resultat['nom_dom']}**")
+        with colonne:
 
-        st.write(
-            f"Matchs analysés : {stats['nombre_matchs']}"
-        )
+            st.write(f"**{nom}**")
 
-        st.write(
-            f"Buts marqués par match : "
-            f"{stats['buts_marques']:.2f}"
-        )
+            st.write(
+                f"Matchs analysés : {stats['nombre_matchs']}"
+            )
 
-        st.write(
-            f"Buts encaissés par match : "
-            f"{stats['buts_encaisses']:.2f}"
-        )
+            st.write(
+                f"Buts marqués par match : "
+                f"{stats['buts_marques']:.2f}"
+            )
 
-        st.write(f"Victoires : {stats['victoires']}")
-        st.write(f"Nuls : {stats['nuls']}")
-        st.write(f"Défaites : {stats['defaites']}")
+            st.write(
+                f"Buts encaissés par match : "
+                f"{stats['buts_encaisses']:.2f}"
+            )
 
-    with col2:
+            st.write(f"Victoires : {stats['victoires']}")
+            st.write(f"Nuls : {stats['nuls']}")
+            st.write(f"Défaites : {stats['defaites']}")
 
-        stats = resultat["stats_ext"]
 
-        st.write(f"**{resultat['nom_ext']}**")
+# ==========================================
+# AFFICHAGE DES BUTEURS
+# ==========================================
 
-        st.write(
-            f"Matchs analysés : {stats['nombre_matchs']}"
-        )
+def afficher_buteurs(buteurs):
 
-        st.write(
-            f"Buts marqués par match : "
-            f"{stats['buts_marques']:.2f}"
-        )
+    col1, col2 = st.columns(2)
 
-        st.write(
-            f"Buts encaissés par match : "
-            f"{stats['buts_encaisses']:.2f}"
-        )
+    equipes = [
+        (col1, "domicile", "🏠 Équipe à domicile"),
+        (col2, "exterieur", "✈️ Équipe à l'extérieur")
+    ]
 
-        st.write(f"Victoires : {stats['victoires']}")
-        st.write(f"Nuls : {stats['nuls']}")
-        st.write(f"Défaites : {stats['defaites']}")
+    for colonne, cote, titre in equipes:
+
+        with colonne:
+
+            st.markdown(f"### {titre}")
+
+            liste = buteurs.get(cote, [])
+
+            if not liste:
+
+                st.info(
+                    "Aucun buteur disponible pour cette équipe "
+                    "dans les données reçues."
+                )
+
+                continue
+
+            for numero, joueur in enumerate(liste[:3], start=1):
+
+                st.markdown(
+                    f"**{numero}. ⚽ {joueur['nom']}**"
+                )
+
+                st.write(
+                    f"Buts cette saison : {joueur['buts']}"
+                )
+
+                st.write(
+                    f"Matchs joués : {joueur['matchs']}"
+                )
+
+                st.write(
+                    f"Moyenne : {joueur['moyenne']:.2f} "
+                    "but par match"
+                )
+
+                st.write(
+                    "Estimation statistique : "
+                    f"{joueur['probabilite']:.1f} %"
+                )
+
+                st.progress(
+                    min(
+                        max(
+                            int(joueur["probabilite"]),
+                            0
+                        ),
+                        100
+                    )
+                )
+
+                st.divider()
+
+    st.caption(
+        "Important : les probabilités des buteurs sont des "
+        "approximations fondées sur leurs buts et leurs matchs "
+        "joués dans les statistiques disponibles. Elles ne prennent "
+        "pas nécessairement en compte les blessures, les titulaires "
+        "annoncés, le temps de jeu prévu ou la forme récente. "
+        "Elles ne garantissent pas qu'un joueur marquera."
+    )
 
 
 # ==========================================
@@ -585,19 +706,21 @@ if page == "🏠 Accueil":
         """
         ### Fonctionnalités
 
-        - 🌍 Récupération de matchs réels.
-        - 📊 Analyse des cinq derniers matchs disponibles.
-        - 🎯 Estimation des scores possibles.
-        - ⚽ Probabilités de victoire, de nul et de buts.
-        - 🏆 Consultation du classement.
+        - 🌍 Matchs réels et compétitions.
+        - 📊 Analyse des derniers résultats des équipes.
+        - 🎯 Probabilités de victoire, de nul et de buts.
+        - 🥅 Analyse statistique des meilleurs buteurs disponibles.
+        - 🏆 Classements des compétitions.
 
-        **Pour commencer :**
+        ### Comment utiliser l'application ?
+
         1. Ouvre « Matchs réels ».
-        2. Choisis une compétition et une période.
+        2. Choisis une compétition et les dates.
         3. Appuie sur « AFFICHER LES MATCHS ».
         4. Sélectionne un match.
         5. Ouvre « Analyse IA ».
-        6. Appuie sur « LANCER L'ANALYSE ».
+        6. Lance l'analyse du match.
+        7. Lance ensuite l'analyse des buteurs.
         """
     )
 
@@ -622,12 +745,14 @@ elif page == "🌍 Matchs réels":
     col1, col2 = st.columns(2)
 
     with col1:
+
         debut = st.date_input(
             "Date de début",
             value=aujourd_hui
         )
 
     with col2:
+
         fin = st.date_input(
             "Date de fin",
             value=aujourd_hui + timedelta(days=7)
@@ -641,8 +766,7 @@ elif page == "🌍 Matchs réels":
         if fin < debut:
 
             st.error(
-                "La date de fin doit être après "
-                "la date de début."
+                "La date de fin doit être après la date de début."
             )
 
         else:
@@ -669,10 +793,10 @@ elif page == "🌍 Matchs réels":
                 st.session_state.match_selectionne = None
                 st.session_state.resultat_analyse = None
                 st.session_state.erreur_analyse = None
+                st.session_state.buteurs_analyse = None
+                st.session_state.erreur_buteurs = None
 
-    # IMPORTANT :
-    # Les matchs sont affichés en dehors du bouton de chargement.
-    # Ils restent donc visibles après chaque clic.
+    # Les matchs restent affichés après les clics.
 
     matchs = st.session_state.matchs_charges
 
@@ -685,9 +809,7 @@ elif page == "🌍 Matchs réels":
 
     else:
 
-        st.success(
-            f"{len(matchs)} match(s) chargé(s)."
-        )
+        st.success(f"{len(matchs)} match(s) chargé(s).")
 
         for match in matchs:
 
@@ -706,6 +828,7 @@ elif page == "🌍 Matchs réels":
                 date_match = match.get("utcDate", "")
 
                 if date_match:
+
                     st.write(
                         "Date : "
                         + date_match.replace("T", " ")[:16]
@@ -736,6 +859,8 @@ elif page == "🌍 Matchs réels":
                     st.session_state.match_selectionne = match
                     st.session_state.resultat_analyse = None
                     st.session_state.erreur_analyse = None
+                    st.session_state.buteurs_analyse = None
+                    st.session_state.erreur_buteurs = None
 
                     st.success(
                         "Match sélectionné ! "
@@ -744,7 +869,7 @@ elif page == "🌍 Matchs réels":
 
 
 # ==========================================
-# ANALYSE IA
+# ANALYSE IA ET BUTEURS
 # ==========================================
 
 elif page == "🤖 Analyse IA":
@@ -775,7 +900,7 @@ elif page == "🤖 Analyse IA":
         )
 
         if st.button(
-            "🚀 LANCER L'ANALYSE",
+            "🚀 LANCER L'ANALYSE DU MATCH",
             use_container_width=True
         ):
 
@@ -797,6 +922,41 @@ elif page == "🤖 Analyse IA":
             afficher_analyse(
                 st.session_state.resultat_analyse
             )
+
+            st.divider()
+
+            st.subheader("🥅 Les buteurs les plus probables")
+
+            st.write(
+                "Recherche les meilleurs buteurs disponibles "
+                "pour chacune des deux équipes."
+            )
+
+            if st.button(
+                "🎯 ANALYSER LES BUTEURS",
+                use_container_width=True
+            ):
+
+                with st.spinner(
+                    "Chargement des statistiques des buteurs..."
+                ):
+
+                    buteurs, erreur = analyser_buteurs(match)
+
+                st.session_state.buteurs_analyse = buteurs
+                st.session_state.erreur_buteurs = erreur
+
+            if st.session_state.erreur_buteurs:
+
+                st.warning(
+                    st.session_state.erreur_buteurs
+                )
+
+            if st.session_state.buteurs_analyse:
+
+                afficher_buteurs(
+                    st.session_state.buteurs_analyse
+                )
 
 
 # ==========================================
@@ -834,7 +994,6 @@ elif page == "🏆 Classement":
         else:
 
             tableaux = donnees.get("standings", [])
-
             classement = []
 
             for tableau in tableaux:
@@ -879,12 +1038,13 @@ elif page == "🏆 Classement":
 
 
 # ==========================================
-# AVERTISSEMENT
+# AVERTISSEMENT FINAL
 # ==========================================
 
 st.divider()
 
 st.caption(
-    "FOOT AI PRO fournit des estimations statistiques. "
-    "Les probabilités ne garantissent jamais le résultat d'un match."
+    "FOOT AI PRO fournit des estimations statistiques et non "
+    "des certitudes. Les données disponibles dépendent de l'API "
+    "et de ton accès. Aucun pronostic ne garantit un résultat."
 )
