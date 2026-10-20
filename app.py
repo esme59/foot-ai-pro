@@ -528,6 +528,7 @@ elif page == "🌍 Matchs réels":
 
         else:
             matchs = donnees.get("matches", [])
+st.session_state.matchs_charges = matchs
 
             if not matchs:
                 st.info(
