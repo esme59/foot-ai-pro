@@ -1,366 +1,335 @@
-import streamlit as st
-import requests
 import math
-from datetime import datetime, timedelta
-from zoneinfo import ZoneInfo
+import os
+from datetime import date, timedelta
 
-# =====================================================
+import pandas as pd
+import requests
+import streamlit as st
+
+
+# =========================================================
 # CONFIGURATION
-# =====================================================
+# =========================================================
 
 st.set_page_config(
-    page_title="Foot AI PRO",
+    page_title="FOOT AI PRO",
     page_icon="⚽",
     layout="wide"
 )
 
-PARIS = ZoneInfo("Europe/Paris")
-
 API_URL = "https://api.football-data.org/v4"
 
-# Championnats de première division uniquement
-COMPETITIONS = {
-    "Ligue 1": "FL1",
-    "Premier League": "PL",
-    "Liga": "PD",
-    "Bundesliga": "BL1",
-    "Serie A": "SA",
-    "Primeira Liga": "PPL",
-    "Eredivisie": "DED",
-    "Jupiler Pro League": "BJL",
-    "Süper Lig": "TSL",
+CHAMPIONNATS = {
+    "France - Ligue 1": "FL1",
+    "Angleterre - Premier League": "PL",
+    "Espagne - Liga": "PD",
+    "Allemagne - Bundesliga": "BL1",
+    "Italie - Serie A": "SA",
     "Ligue des champions": "CL",
-    "Ligue Europa": "EL",
 }
 
-# =====================================================
-# STYLE
-# =====================================================
-
-st.markdown("""
-<style>
-.stApp {
-    background-color: #101820;
-    color: white;
-}
-h1, h2, h3 {
-    color: #00E676;
-}
-div[data-testid="stMetric"] {
-    background-color: #1d2b36;
-    padding: 15px;
-    border-radius: 10px;
-}
-</style>
-""", unsafe_allow_html=True)
-
-st.title("⚽ FOOT AI PRO")
-st.caption("Analyse statistique des matchs de football du jour")
-
-# =====================================================
-# DATE DU JOUR
-# =====================================================
-
-def maintenant_paris():
-    return datetime.now(PARIS)
+st.markdown(
+    """
+    <style>
+    .block-container {
+        padding-top: 1.5rem;
+        padding-bottom: 3rem;
+    }
+    div[data-testid="stMetric"] {
+        border: 1px solid #30363d;
+        padding: 12px;
+        border-radius: 10px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 
-def date_paris():
-    return maintenant_paris().date()
-
-
-# =====================================================
-# API FOOTBALL-DATA.ORG
-# =====================================================
+# =========================================================
+# API FOOTBALL
+# =========================================================
 
 def obtenir_cle_api():
     try:
-        return st.secrets["FOOTBALL_API_KEY"]
+        cle = st.secrets.get("FOOTBALL_API_KEY", "")
+        if cle:
+            return cle
     except Exception:
-        return None
+        pass
+
+    return os.getenv("FOOTBALL_API_KEY", "")
 
 
 def appel_api(endpoint, params=None):
     cle = obtenir_cle_api()
 
     if not cle:
-        return None, "Clé API manquante"
-
-    headers = {
-        "X-Auth-Token": cle
-    }
+        st.error(
+            "Clé API manquante. Ajoute FOOTBALL_API_KEY "
+            "dans les Secrets de Streamlit."
+        )
+        return None
 
     try:
         reponse = requests.get(
-            f"{API_URL}/{endpoint}",
-            headers=headers,
-            params=params,
+            f"{API_URL}{endpoint}",
+            headers={"X-Auth-Token": cle},
+            params=params or {},
             timeout=25
         )
 
-        if reponse.status_code == 200:
-            return reponse.json(), None
-
-        if reponse.status_code == 401:
-            return None, "401 : clé API invalide ou non reconnue."
+        if reponse.status_code == 429:
+            st.warning(
+                "Limite de requêtes API atteinte. "
+                "Attends un peu avant de recommencer."
+            )
+            return None
 
         if reponse.status_code == 403:
-            return None, (
-                "403 : accès refusé à cette ressource ou "
-                "à certaines compétitions avec cette clé API."
+            st.error(
+                "Accès refusé par l'API. "
+                "Vérifie ton abonnement et les compétitions autorisées."
             )
+            return None
 
-        if reponse.status_code == 429:
-            return None, (
-                "429 : limite de requêtes atteinte. "
-                "Attends un peu avant de réessayer."
+        if reponse.status_code == 404:
+            return None
+
+        if reponse.status_code != 200:
+            st.error(
+                f"Erreur API : HTTP {reponse.status_code}. "
+                "Réessaie plus tard."
             )
+            return None
 
-        return None, (
-            f"Erreur API {reponse.status_code} : "
-            f"{reponse.text[:250]}"
-        )
+        return reponse.json()
 
-    except requests.exceptions.Timeout:
-        return None, "Délai dépassé lors de la connexion à l'API."
-
-    except requests.exceptions.RequestException as erreur:
-        return None, f"Erreur de connexion : {erreur}"
+    except requests.RequestException as erreur:
+        st.error(f"Erreur de connexion : {erreur}")
+        return None
 
 
-# =====================================================
-# RÉCUPÉRATION DES MATCHS DU JOUR
-# Une seule requête pour le calendrier
-# =====================================================
+# =========================================================
+# RECHERCHE DES MATCHS PAR DATES
+# =========================================================
 
-@st.cache_data(ttl=300)
-def charger_matchs_du_jour(date_cible):
-    debut = f"{date_cible}T00:00:00"
-    fin = f"{date_cible}T23:59:59"
-
-    donnees, erreur = appel_api(
-        "matches",
+@st.cache_data(ttl=300, show_spinner=False)
+def charger_matchs(code, date_debut, date_fin):
+    resultat = appel_api(
+        f"/competitions/{code}/matches",
         {
-            "dateFrom": date_cible,
-            "dateTo": date_cible
+            "dateFrom": date_debut,
+            "dateTo": date_fin,
         }
     )
 
-    if erreur:
-        return [], [erreur]
+    if not resultat:
+        return []
 
-    matchs = donnees.get("matches", [])
-    codes_autorises = set(COMPETITIONS.values())
-
-    resultat = []
-    maintenant = maintenant_paris()
-
-    for match in matchs:
-        competition = match.get("competition", {})
-        code = competition.get("code")
-
-        if code not in codes_autorises:
-            continue
-
-        statut = match.get("status")
-
-        # On ne garde que les matchs pas encore commencés
-        if statut not in ["SCHEDULED", "TIMED"]:
-            continue
-
-        coup_envoi = match.get("utcDate")
-
-        if not coup_envoi:
-            continue
-
-        try:
-            date_match = datetime.fromisoformat(
-                coup_envoi.replace("Z", "+00:00")
-            ).astimezone(PARIS)
-        except (ValueError, TypeError):
-            continue
-
-        # Match du jour en heure française et encore à venir
-        if date_match.date() != date_cible:
-            continue
-
-        if date_match <= maintenant:
-            continue
-
-        match["heure_paris"] = date_match.strftime("%H:%M")
-        resultat.append(match)
-
-    resultat.sort(key=lambda m: m["utcDate"])
-
-    return resultat, []
+    return resultat.get("matches", [])
 
 
-# =====================================================
-# RÉCUPÉRATION DES RÉSULTATS RÉCENTS
-# Une seule requête pour les statistiques
-# =====================================================
+def afficher_nom_equipe(match, domicile=True):
+    equipe = (
+        match.get("homeTeam", {})
+        if domicile
+        else match.get("awayTeam", {})
+    )
 
-@st.cache_data(ttl=1800)
-def charger_resultats():
-    aujourd_hui = date_paris()
-    debut = aujourd_hui - timedelta(days=90)
+    return (
+        equipe.get("shortName")
+        or equipe.get("name")
+        or "Équipe inconnue"
+    )
 
-    donnees, erreur = appel_api(
-        "matches",
+
+def formater_match(match):
+    score = match.get("score", {})
+    temps = score.get("fullTime", {})
+
+    buts_dom = temps.get("home")
+    buts_ext = temps.get("away")
+
+    statut = match.get("status", "INCONNU")
+
+    if statut == "FINISHED":
+        score_txt = (
+            f"{buts_dom} - {buts_ext}"
+            if buts_dom is not None and buts_ext is not None
+            else "Terminé"
+        )
+    elif statut in ("IN_PLAY", "PAUSED", "LIVE"):
+        score_txt = (
+            f"{buts_dom} - {buts_ext}"
+            if buts_dom is not None and buts_ext is not None
+            else "En direct"
+        )
+    else:
+        score_txt = "À jouer"
+
+    return {
+        "id": match.get("id"),
+        "date": match.get("utcDate", ""),
+        "domicile": afficher_nom_equipe(match, True),
+        "extérieur": afficher_nom_equipe(match, False),
+        "score": score_txt,
+        "statut": statut,
+        "buts_dom": buts_dom,
+        "buts_ext": buts_ext,
+        "equipe_dom_id": match.get("homeTeam", {}).get("id"),
+        "equipe_ext_id": match.get("awayTeam", {}).get("id"),
+        "compétition": match.get("competition", {}).get(
+            "name", "Championnat"
+        ),
+    }
+
+
+# =========================================================
+# HISTORIQUE DES ÉQUIPES
+# =========================================================
+
+@st.cache_data(ttl=900, show_spinner=False)
+def derniers_matchs_equipe(equipe_id, date_reference):
+    if not equipe_id:
+        return []
+
+    # Recherche jusqu'à un an avant la date du match analysé.
+    # Pour un match futur, on utilise les dernières rencontres terminées.
+    fin = date.fromisoformat(date_reference[:10])
+    debut = fin - timedelta(days=365)
+
+    resultat = appel_api(
+        f"/teams/{equipe_id}/matches",
         {
             "dateFrom": debut.isoformat(),
-            "dateTo": aujourd_hui.isoformat(),
-            "status": "FINISHED"
+            "dateTo": fin.isoformat(),
+            "status": "FINISHED",
+            "limit": 100,
         }
     )
 
-    if erreur:
-        return [], [erreur]
+    if not resultat:
+        return []
 
-    codes_autorises = set(COMPETITIONS.values())
-    resultats = []
+    matchs = resultat.get("matches", [])
 
-    for match in donnees.get("matches", []):
-        code = match.get("competition", {}).get("code")
+    matchs = [
+        m for m in matchs
+        if m.get("status") == "FINISHED"
+        and m.get("score", {}).get("fullTime", {}).get("home")
+        is not None
+        and m.get("score", {}).get("fullTime", {}).get("away")
+        is not None
+    ]
 
-        if code not in codes_autorises:
-            continue
-
-        score = match.get("score", {}).get("fullTime", {})
-        domicile = score.get("home")
-        exterieur = score.get("away")
-
-        if domicile is None or exterieur is None:
-            continue
-
-        match["buts_domicile"] = domicile
-        match["buts_exterieur"] = exterieur
-
-        resultats.append(match)
-
-    return resultats, []
-
-
-# =====================================================
-# STATISTIQUES DES ÉQUIPES
-# =====================================================
-
-def statistiques_equipe(team_id, resultats, domicile=None):
-    matchs_equipe = []
-
-    for match in resultats:
-        home_id = match.get("homeTeam", {}).get("id")
-        away_id = match.get("awayTeam", {}).get("id")
-
-        if domicile is True:
-            if home_id != team_id:
-                continue
-
-        elif domicile is False:
-            if away_id != team_id:
-                continue
-
-        else:
-            if team_id not in [home_id, away_id]:
-                continue
-
-        matchs_equipe.append(match)
-
-    matchs_equipe.sort(
+    matchs.sort(
         key=lambda m: m.get("utcDate", ""),
         reverse=True
     )
 
-    matchs_equipe = matchs_equipe[:5]
+    return matchs[:5]
 
-    if not matchs_equipe:
-        return {
-            "joues": 0,
-            "victoires": 0,
-            "nuls": 0,
-            "defaites": 0,
-            "buts_marques": 1.2,
-            "buts_encaisses": 1.2,
-            "forme": "Inconnue"
-        }
 
+def statistiques_equipe(equipe_id, nom_equipe, date_reference):
+    matchs = derniers_matchs_equipe(
+        equipe_id,
+        date_reference
+    )
+
+    if not matchs:
+        return None
+
+    buts_marques = []
+    buts_encaisses = []
     victoires = 0
     nuls = 0
     defaites = 0
-    buts_marques = 0
-    buts_encaisses = 0
-    forme = []
 
-    for match in matchs_equipe:
-        home_id = match.get("homeTeam", {}).get("id")
+    for match in matchs:
+        domicile = match.get("homeTeam", {})
+        score = match.get("score", {}).get("fullTime", {})
 
-        if home_id == team_id:
-            marques = match["buts_domicile"]
-            encaisses = match["buts_exterieur"]
-        else:
-            marques = match["buts_exterieur"]
-            encaisses = match["buts_domicile"]
+        bd = score.get("home")
+        be = score.get("away")
 
-        buts_marques += marques
-        buts_encaisses += encaisses
+        if bd is None or be is None:
+            continue
+
+        est_domicile = domicile.get("id") == equipe_id
+
+        marques = bd if est_domicile else be
+        encaisses = be if est_domicile else bd
+
+        buts_marques.append(marques)
+        buts_encaisses.append(encaisses)
 
         if marques > encaisses:
             victoires += 1
-            forme.append("V")
         elif marques == encaisses:
             nuls += 1
-            forme.append("N")
         else:
             defaites += 1
-            forme.append("D")
 
-    nombre = len(matchs_equipe)
+    nombre = len(buts_marques)
+
+    if nombre == 0:
+        return None
 
     return {
-        "joues": nombre,
+        "nom": nom_equipe,
+        "matchs": nombre,
+        "buts_marques": sum(buts_marques) / nombre,
+        "buts_encaisses": sum(buts_encaisses) / nombre,
         "victoires": victoires,
         "nuls": nuls,
         "defaites": defaites,
-        "buts_marques": buts_marques / nombre,
-        "buts_encaisses": buts_encaisses / nombre,
-        "forme": " - ".join(forme)
+        "forme": f"{victoires}V {nuls}N {defaites}D",
     }
 
 
-# =====================================================
+# =========================================================
 # MODÈLE DE POISSON
-# =====================================================
+# =========================================================
 
-def probabilite_poisson(k, moyenne):
+def probabilite_poisson(nombre_buts, moyenne):
     if moyenne <= 0:
-        return 1.0 if k == 0 else 0.0
+        return 1.0 if nombre_buts == 0 else 0.0
 
     return (
         math.exp(-moyenne)
-        * moyenne ** k
-        / math.factorial(k)
+        * moyenne ** nombre_buts
+        / math.factorial(nombre_buts)
     )
 
 
-def analyser_match(match, resultats):
-    domicile = match.get("homeTeam", {})
-    exterieur = match.get("awayTeam", {})
+def analyser_match(match):
+    match_info = formater_match(match)
 
-    id_domicile = domicile.get("id")
-    id_exterieur = exterieur.get("id")
+    date_reference = match_info["date"]
 
     stats_dom = statistiques_equipe(
-        id_domicile,
-        resultats
+        match_info["equipe_dom_id"],
+        match_info["domicile"],
+        date_reference
     )
 
     stats_ext = statistiques_equipe(
-        id_exterieur,
-        resultats
+        match_info["equipe_ext_id"],
+        match_info["extérieur"],
+        date_reference
     )
 
-    # Estimation simple à partir des cinq derniers matchs.
-    # Avantage domicile inclus dans l'estimation.
+    if not stats_dom or not stats_ext:
+        return {
+            "match": match_info,
+            "erreur": (
+                "Historique insuffisant pour analyser "
+                "correctement ce match."
+            ),
+        }
+
+    # Estimations simplifiées à partir des cinq derniers matchs.
     moyenne_dom = (
         stats_dom["buts_marques"]
         + stats_ext["buts_encaisses"]
@@ -371,391 +340,471 @@ def analyser_match(match, resultats):
         + stats_dom["buts_encaisses"]
     ) / 2
 
-    moyenne_dom = max(0.15, min(4.0, moyenne_dom * 1.12))
-    moyenne_ext = max(0.15, min(4.0, moyenne_ext * 0.92))
+    moyenne_dom = max(0.15, min(moyenne_dom, 5.0))
+    moyenne_ext = max(0.15, min(moyenne_ext, 5.0))
 
-    proba_dom = 0
-    proba_nul = 0
-    proba_ext = 0
-    proba_plus_15 = 0
-    proba_plus_25 = 0
-    proba_btts = 0
+    # Distribution des scores de 0 à 7 buts par équipe.
+    scores = []
 
-    for buts_dom in range(11):
-        for buts_ext in range(11):
+    for bd in range(8):
+        for be in range(8):
             p = (
-                probabilite_poisson(buts_dom, moyenne_dom)
-                * probabilite_poisson(buts_ext, moyenne_ext)
+                probabilite_poisson(bd, moyenne_dom)
+                * probabilite_poisson(be, moyenne_ext)
             )
 
-            if buts_dom > buts_ext:
-                proba_dom += p
-            elif buts_dom == buts_ext:
-                proba_nul += p
-            else:
-                proba_ext += p
+            scores.append({
+                "dom": bd,
+                "ext": be,
+                "p": p,
+            })
 
-            total = buts_dom + buts_ext
+    total = sum(s["p"] for s in scores)
 
-            if total >= 2:
-                proba_plus_15 += p
+    for s in scores:
+        s["p"] /= total
 
-            if total >= 3:
-                proba_plus_25 += p
+    p1 = sum(s["p"] for s in scores if s["dom"] > s["ext"])
+    pn = sum(s["p"] for s in scores if s["dom"] == s["ext"])
+    p2 = sum(s["p"] for s in scores if s["dom"] < s["ext"])
 
-            if buts_dom >= 1 and buts_ext >= 1:
-                proba_btts += p
+    p15 = sum(
+        s["p"] for s in scores
+        if s["dom"] + s["ext"] >= 2
+    )
+
+    p25 = sum(
+        s["p"] for s in scores
+        if s["dom"] + s["ext"] >= 3
+    )
+
+    btts = sum(
+        s["p"] for s in scores
+        if s["dom"] >= 1 and s["ext"] >= 1
+    )
+
+    scores_tries = sorted(
+        scores,
+        key=lambda s: s["p"],
+        reverse=True
+    )[:5]
+
+    meilleur_score = scores_tries[0]
 
     probabilites = {
-        "Victoire domicile": proba_dom,
-        "Match nul": proba_nul,
-        "Victoire extérieur": proba_ext,
-        "Plus de 1,5 but": proba_plus_15,
-        "Plus de 2,5 buts": proba_plus_25,
-        "Les deux équipes marquent": proba_btts
+        "Victoire domicile": p1,
+        "Match nul": pn,
+        "Victoire extérieur": p2,
     }
 
-    meilleur = max(
-        probabilites.items(),
-        key=lambda item: item[1]
+    meilleur_resultat = max(
+        probabilites,
+        key=probabilites.get
     )
 
     return {
-        "domicile": domicile.get("name", "Domicile"),
-        "exterieur": exterieur.get("name", "Extérieur"),
-        "heure": match.get("heure_paris", "--:--"),
-        "competition": match.get("competition", {}).get(
-            "name", "Compétition"
-        ),
-        "moyenne_dom": moyenne_dom,
-        "moyenne_ext": moyenne_ext,
+        "match": match_info,
         "stats_dom": stats_dom,
         "stats_ext": stats_ext,
-        "probabilites": probabilites,
-        "meilleur_marche": meilleur[0],
-        "meilleure_proba": meilleur[1]
+        "moyenne_dom": moyenne_dom,
+        "moyenne_ext": moyenne_ext,
+        "p1": p1,
+        "pn": pn,
+        "p2": p2,
+        "p15": p15,
+        "p25": p25,
+        "btts": btts,
+        "scores": scores_tries,
+        "score_principal": (
+            f"{meilleur_score['dom']} - {meilleur_score['ext']}"
+        ),
+        "resultat": meilleur_resultat,
+        "confiance": probabilites[meilleur_resultat],
     }
 
 
-# =====================================================
-# CHARGEMENT DES DONNÉES
-# =====================================================
+# =========================================================
+# AFFICHAGE D'UNE ANALYSE
+# =========================================================
 
-if not obtenir_cle_api():
-    st.error(
-        "Clé API absente. Dans Streamlit, ouvre "
-        "Settings > Secrets et vérifie la présence de "
-        "FOOTBALL_API_KEY."
+def afficher_analyse(analyse):
+    if analyse.get("erreur"):
+        st.warning(analyse["erreur"])
+        return
+
+    match = analyse["match"]
+
+    st.subheader(
+        f"{match['domicile']} - {match['extérieur']}"
     )
-    st.stop()
-
-aujourd_hui = date_paris()
-
-st.info(
-    f"📅 Matchs du {aujourd_hui.strftime('%d/%m/%Y')} "
-    "— heure française"
-)
-
-with st.spinner("Chargement des matchs du jour..."):
-    matchs, erreurs_matchs = charger_matchs_du_jour(
-        aujourd_hui.isoformat()
-    )
-
-with st.spinner("Chargement des derniers résultats..."):
-    resultats, erreurs_resultats = charger_resultats()
-
-# =====================================================
-# ONGLETS
-# =====================================================
-
-tab_accueil, tab_matchs, tab_combine, tab_stats = st.tabs([
-    "🏠 Accueil",
-    "⚽ Matchs du jour",
-    "🧠 Combiné IA",
-    "📊 Statistiques"
-])
-
-# =====================================================
-# ACCUEIL
-# =====================================================
-
-with tab_accueil:
-    st.subheader("Bienvenue sur Foot AI PRO")
 
     c1, c2, c3 = st.columns(3)
 
-    c1.metric("Matchs à venir", len(matchs))
-    c2.metric("Résultats chargés", len(resultats))
-    c3.metric("Championnats", len(COMPETITIONS))
+    c1.metric(
+        "Victoire domicile",
+        f"{analyse['p1'] * 100:.1f}%"
+    )
+
+    c2.metric(
+        "Match nul",
+        f"{analyse['pn'] * 100:.1f}%"
+    )
+
+    c3.metric(
+        "Victoire extérieur",
+        f"{analyse['p2'] * 100:.1f}%"
+    )
 
     st.write(
-        "L'application utilise les résultats récents "
-        "pour estimer les probabilités des matchs."
+        f"**Score exact principal estimé :** "
+        f"{analyse['score_principal']}"
     )
-
-    st.warning(
-        "Les probabilités sont des estimations statistiques, "
-        "pas des garanties. Les cotes des bookmakers ne sont "
-        "pas fournies par cette API."
-    )
-
-# =====================================================
-# MATCHS DU JOUR
-# =====================================================
-
-with tab_matchs:
-    st.subheader("Les matchs qui restent à jouer")
-
-    if erreurs_matchs:
-        for erreur in erreurs_matchs:
-            st.error(erreur)
-
-    elif not matchs:
-        st.warning(
-            "Aucun match à venir n'a été trouvé aujourd'hui "
-            "dans les compétitions sélectionnées."
-        )
-
-        st.write(
-            "Vérifie l'onglet Statistiques si tu penses "
-            "qu'il devrait y avoir des matchs."
-        )
-
-    else:
-        for match in matchs:
-            analyse = analyser_match(match, resultats)
-
-            with st.container(border=True):
-                st.markdown(
-                    f"### {analyse['domicile']} "
-                    f"vs {analyse['exterieur']}"
-                )
-
-                st.caption(
-                    f"{analyse['competition']} "
-                    f"— Coup d'envoi à {analyse['heure']}"
-                )
-
-                col1, col2, col3 = st.columns(3)
-
-                col1.metric(
-                    "Victoire domicile",
-                    f"{analyse['probabilites']['Victoire domicile'] * 100:.1f}%"
-                )
-
-                col2.metric(
-                    "Match nul",
-                    f"{analyse['probabilites']['Match nul'] * 100:.1f}%"
-                )
-
-                col3.metric(
-                    "Victoire extérieur",
-                    f"{analyse['probabilites']['Victoire extérieur'] * 100:.1f}%"
-                )
-
-                st.write(
-                    "**Plus de 1,5 but :** "
-                    f"{analyse['probabilites']['Plus de 1,5 but'] * 100:.1f}%"
-                )
-
-                st.write(
-                    "**Plus de 2,5 buts :** "
-                    f"{analyse['probabilites']['Plus de 2,5 buts'] * 100:.1f}%"
-                )
-
-                st.write(
-                    "**Les deux équipes marquent :** "
-                    f"{analyse['probabilites']['Les deux équipes marquent'] * 100:.1f}%"
-                )
-
-                st.success(
-                    f"Marché le plus probable selon le modèle : "
-                    f"{analyse['meilleur_marche']} "
-                    f"({analyse['meilleure_proba'] * 100:.1f}%)"
-                )
-
-                with st.expander("Voir la forme des équipes"):
-                    st.write(
-                        f"**{analyse['domicile']} :** "
-                        f"{analyse['stats_dom']['forme']}"
-                    )
-
-                    st.write(
-                        f"**{analyse['exterieur']} :** "
-                        f"{analyse['stats_ext']['forme']}"
-                    )
-
-                    st.write(
-                        f"Buts moyens estimés : "
-                        f"{analyse['moyenne_dom']:.2f} - "
-                        f"{analyse['moyenne_ext']:.2f}"
-                    )
-
-# =====================================================
-# COMBINÉ IA
-# =====================================================
-
-with tab_combine:
-    st.subheader("Combiné de deux matchs")
 
     st.write(
-        "L'application sélectionne les deux marchés ayant "
-        "les probabilités estimées les plus élevées parmi "
-        "les matchs du jour."
+        f"**Plus de 1,5 but :** "
+        f"{analyse['p15'] * 100:.1f}%"
     )
 
-    if erreurs_matchs:
-        st.error(
-            "Impossible de construire le combiné tant que "
-            "le chargement des matchs rencontre une erreur."
-        )
+    st.write(
+        f"**Plus de 2,5 buts :** "
+        f"{analyse['p25'] * 100:.1f}%"
+    )
 
-    elif erreurs_resultats:
-        st.error(
-            "Les résultats récents n'ont pas pu être chargés. "
-            "Les analyses ne sont pas suffisamment disponibles."
-        )
+    st.write(
+        f"**Les deux équipes marquent :** "
+        f"{analyse['btts'] * 100:.1f}%"
+    )
 
-    else:
-        candidats = []
+    st.write(
+        f"**Forme récente - {match['domicile']} :** "
+        f"{analyse['stats_dom']['forme']}"
+    )
 
-        for match in matchs:
-            analyse = analyser_match(match, resultats)
-
-            candidats.append({
-                "analyse": analyse,
-                "probabilite": analyse["meilleure_proba"],
-                "marche": analyse["meilleur_marche"]
-            })
-
-        candidats.sort(
-            key=lambda item: item["probabilite"],
-            reverse=True
-        )
-
-        if len(candidats) < 2:
-            st.warning(
-                "Il faut au moins deux matchs à venir "
-                "pour proposer un combiné."
-            )
-
-        else:
-            selection = candidats[:2]
-
-            probabilite_combine = (
-                selection[0]["probabilite"]
-                * selection[1]["probabilite"]
-            )
-
-            for numero, candidat in enumerate(selection, start=1):
-                a = candidat["analyse"]
-
-                st.markdown(f"### Sélection {numero}")
-
-                st.write(
-                    f"**{a['domicile']} vs {a['exterieur']}**"
-                )
-
-                st.write(f"Marché : {candidat['marche']}")
-
-                st.write(
-                    "Probabilité estimée : "
-                    f"{candidat['probabilite'] * 100:.1f}%"
-                )
-
-            st.divider()
-
-            st.metric(
-                "Probabilité théorique du combiné",
-                f"{probabilite_combine * 100:.1f}%"
-            )
-
-            st.caption(
-                "Cette estimation multiplie les probabilités "
-                "des deux sélections en supposant leur indépendance. "
-                "Cette hypothèse peut être imparfaite. Le modèle "
-                "n'est pas calibré sur des performances garanties."
-            )
-
-            st.warning(
-                "Une probabilité élevée ne signifie pas qu'un "
-                "pari est sûr. Les cotes réelles ne sont pas "
-                "disponibles via cette API."
-            )
-
-            st.write("### Cotes du bookmaker")
-
-            cote1 = st.number_input(
-                "Cote de la sélection 1",
-                min_value=1.0,
-                max_value=100.0,
-                value=1.30,
-                step=0.05
-            )
-
-            cote2 = st.number_input(
-                "Cote de la sélection 2",
-                min_value=1.0,
-                max_value=100.0,
-                value=1.30,
-                step=0.05
-            )
-
-            cote_combine = cote1 * cote2
-
-            st.metric(
-                "Cote totale du combiné",
-                f"{cote_combine:.2f}"
-            )
-
-            if 1.50 <= cote_combine <= 2.00:
-                st.success(
-                    "La cote totale se situe entre 1,50 et 2,00."
-                )
-            else:
-                st.info(
-                    "La cote totale est en dehors de la plage "
-                    "1,50–2,00. Ajuste les cotes saisies si "
-                    "elles correspondent à d'autres marchés."
-                )
-
-# =====================================================
-# STATISTIQUES ET ERREURS
-# =====================================================
-
-with tab_stats:
-    st.subheader("État de l'application")
-
-    st.write("### Compétitions configurées")
-
-    for nom, code in COMPETITIONS.items():
-        st.write(f"- {nom} (`{code}`)")
-
-    st.write("### Résultats de chargement")
-
-    st.write(f"Matchs à venir trouvés : {len(matchs)}")
-    st.write(f"Résultats récupérés : {len(resultats)}")
-
-    if erreurs_matchs:
-        st.error("Erreur lors du chargement des matchs")
-
-        for erreur in erreurs_matchs:
-            st.code(erreur)
-
-    if erreurs_resultats:
-        st.error("Erreur lors du chargement des résultats")
-
-        for erreur in erreurs_resultats:
-            st.code(erreur)
-
-    if not erreurs_matchs and not erreurs_resultats:
-        st.success("Les requêtes API ont fonctionné.")
+    st.write(
+        f"**Forme récente - {match['extérieur']} :** "
+        f"{analyse['stats_ext']['forme']}"
+    )
 
     st.caption(
-        "Les compétitions disponibles dépendent des droits "
-        "associés à la clé football-data.org."
+        "Estimations statistiques simplifiées, non garanties. "
+        "Elles ne constituent pas une certitude de résultat."
     )
 
-    if st.button("🔄 Actualiser les données"):
-        st.cache_data.clear()
-        st.rerun()
+    with st.expander("Voir les 5 scores les plus probables"):
+        lignes = []
+
+        for score in analyse["scores"]:
+            lignes.append({
+                "Score": f"{score['dom']} - {score['ext']}",
+                "Probabilité": f"{score['p'] * 100:.2f}%",
+            })
+
+        st.dataframe(
+            pd.DataFrame(lignes),
+            hide_index=True,
+            use_container_width=True
+        )
+
+
+# =========================================================
+# INTERFACE PRINCIPALE
+# =========================================================
+
+st.title("⚽ FOOT AI PRO")
+st.caption(
+    "Analyse footballistique basée sur les résultats "
+    "et les statistiques disponibles."
+)
+
+onglets = st.tabs([
+    "🏠 Accueil",
+    "📅 Matchs réels",
+    "🎯 Analyse personnalisée",
+    "🏆 Classement IA",
+])
+
+# ---------------------------------------------------------
+# ONGLET ACCUEIL
+# ---------------------------------------------------------
+
+with onglets[0]:
+    st.header("Bienvenue sur FOOT AI PRO")
+
+    st.write(
+        "Choisis une période, consulte les matchs réels "
+        "et lance une analyse statistique."
+    )
+
+    st.info(
+        "La période peut être passée, actuelle ou future. "
+        "La disponibilité des données dépend de l'API."
+    )
+
+    st.markdown(
+        """
+        **Fonctionnalités :**
+        - Calendrier personnalisable.
+        - Historique des rencontres.
+        - Estimations de scores.
+        - Probabilités 1N2.
+        - Marchés de buts.
+        - Classement des matchs analysés.
+        """
+    )
+
+
+# ---------------------------------------------------------
+# ONGLET MATCHS RÉELS
+# ---------------------------------------------------------
+
+with onglets[1]:
+    st.header("📅 Calendrier des matchs")
+
+    aujourd_hui = date.today()
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        date_debut = st.date_input(
+            "Date de début",
+            value=aujourd_hui,
+            key="date_debut",
+            format="DD/MM/YYYY",
+        )
+
+    with col2:
+        date_fin = st.date_input(
+            "Date de fin",
+            value=aujourd_hui + timedelta(days=7),
+            key="date_fin",
+            format="DD/MM/YYYY",
+        )
+
+    if date_debut > date_fin:
+        st.error(
+            "La date de début doit être antérieure "
+            "ou égale à la date de fin."
+        )
+    else:
+        championnats_choisis = st.multiselect(
+            "Championnats à afficher",
+            options=list(CHAMPIONNATS.keys()),
+            default=list(CHAMPIONNATS.keys()),
+        )
+
+        if st.button(
+            "🔎 Rechercher les matchs",
+            use_container_width=True
+        ):
+            tous_matchs = []
+
+            with st.spinner("Recherche des rencontres..."):
+                for nom, code in CHAMPIONNATS.items():
+                    if nom not in championnats_choisis:
+                        continue
+
+                    rencontres = charger_matchs(
+                        code,
+                        date_debut.isoformat(),
+                        date_fin.isoformat()
+                    )
+
+                    for rencontre in rencontres:
+                        ligne = formater_match(rencontre)
+                        ligne["championnat"] = nom
+                        ligne["match_original"] = rencontre
+                        tous_matchs.append(ligne)
+
+            tous_matchs.sort(key=lambda m: m["date"])
+
+            st.session_state["matchs_recherches"] = tous_matchs
+            st.session_state["periode_recherchee"] = (
+                date_debut.isoformat(),
+                date_fin.isoformat()
+            )
+
+        matchs = st.session_state.get(
+            "matchs_recherches",
+            []
+        )
+
+        if matchs:
+            st.success(
+                f"{len(matchs)} rencontre(s) trouvée(s)."
+            )
+
+            tableau = []
+
+            for m in matchs:
+                tableau.append({
+                    "Date UTC": m["date"].replace("T", " ")[:16],
+                    "Championnat": m.get("championnat", ""),
+                    "Domicile": m["domicile"],
+                    "Extérieur": m["extérieur"],
+                    "Score / statut": m["score"],
+                    "Statut": m["statut"],
+                })
+
+            st.dataframe(
+                pd.DataFrame(tableau),
+                hide_index=True,
+                use_container_width=True
+            )
+
+            options_matchs = {
+                (
+                    f"{m['date'][:16]} | "
+                    f"{m['domicile']} - {m['extérieur']} "
+                    f"({m.get('championnat', '')})"
+                ): m
+                for m in matchs
+            }
+
+            choix = st.selectbox(
+                "Choisir un match à analyser",
+                list(options_matchs.keys())
+            )
+
+            match_selectionne = options_matchs[choix]
+
+            if st.button(
+                "⚽ Analyser ce match",
+                use_container_width=True
+            ):
+                with st.spinner("Analyse statistique en cours..."):
+                    analyse = analyser_match(
+                        match_selectionne["match_original"]
+                    )
+
+                st.session_state["derniere_analyse"] = analyse
+
+            derniere_analyse = st.session_state.get(
+                "derniere_analyse"
+            )
+
+            if derniere_analyse:
+                afficher_analyse(derniere_analyse)
+
+        elif "matchs_recherches" in st.session_state:
+            st.info(
+                "Aucun match trouvé pour cette période "
+                "et ces compétitions, ou données indisponibles."
+            )
+
+
+# ---------------------------------------------------------
+# ONGLET ANALYSE PERSONNALISÉE
+# ---------------------------------------------------------
+
+with onglets[2]:
+    st.header("🎯 Analyse personnalisée")
+
+    st.write(
+        "Cette section permet d'estimer un match à partir "
+        "des équipes disponibles dans l'API."
+    )
+
+    equipe_dom = st.text_input(
+        "Équipe à domicile",
+        placeholder="Exemple : Paris Saint-Germain",
+    )
+
+    equipe_ext = st.text_input(
+        "Équipe à l'extérieur",
+        placeholder="Exemple : Marseille",
+    )
+
+    date_match_perso = st.date_input(
+        "Date de référence des statistiques",
+        value=date.today(),
+        key="date_match_perso",
+        format="DD/MM/YYYY",
+    )
+
+    if st.button(
+        "Analyser le match personnalisé",
+        use_container_width=True
+    ):
+        st.info(
+            "L'analyse personnalisée par noms d'équipes "
+            "nécessite une recherche des identifiants officiels "
+            "des équipes dans l'API. Utilise pour le moment "
+            "l'onglet « Matchs réels » pour obtenir une analyse "
+            "complète à partir d'une rencontre officielle."
+        )
+
+
+# ---------------------------------------------------------
+# ONGLET CLASSEMENT IA
+# ---------------------------------------------------------
+
+with onglets[3]:
+    st.header("🏆 Classement des matchs analysés")
+
+    derniere_analyse = st.session_state.get(
+        "derniere_analyse"
+    )
+
+    if derniere_analyse and not derniere_analyse.get("erreur"):
+        match = derniere_analyse["match"]
+
+        st.write(
+            f"**Dernier match analysé :** "
+            f"{match['domicile']} - {match['extérieur']}"
+        )
+
+        classement = pd.DataFrame([
+            {
+                "Marché": "Victoire domicile",
+                "Probabilité": derniere_analyse["p1"] * 100,
+            },
+            {
+                "Marché": "Match nul",
+                "Probabilité": derniere_analyse["pn"] * 100,
+            },
+            {
+                "Marché": "Victoire extérieur",
+                "Probabilité": derniere_analyse["p2"] * 100,
+            },
+            {
+                "Marché": "Plus de 1,5 but",
+                "Probabilité": derniere_analyse["p15"] * 100,
+            },
+            {
+                "Marché": "Plus de 2,5 buts",
+                "Probabilité": derniere_analyse["p25"] * 100,
+            },
+            {
+                "Marché": "Les deux équipes marquent",
+                "Probabilité": derniere_analyse["btts"] * 100,
+            },
+        ])
+
+        classement = classement.sort_values(
+            "Probabilité",
+            ascending=False
+        )
+
+        classement["Probabilité"] = classement[
+            "Probabilité"
+        ].map(lambda x: f"{x:.1f}%")
+
+        st.dataframe(
+            classement,
+            hide_index=True,
+            use_container_width=True
+        )
+
+    else:
+        st.info(
+            "Analyse d'abord un match dans l'onglet "
+            "« Matchs réels » pour afficher le classement."
+        )
+
+
+st.divider()
+
+st.caption(
+    "FOOT AI PRO — Les probabilités sont des estimations "
+    "et ne garantissent aucun résultat sportif."
+)
