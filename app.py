@@ -59,12 +59,10 @@ def api_get(endpoint, params=None):
     if not API_KEY:
         return None, "Clé API manquante."
 
-    headers = {"X-Auth-Token": API_KEY}
-
     try:
         response = requests.get(
             f"{API_BASE}{endpoint}",
-            headers=headers,
+            headers={"X-Auth-Token": API_KEY},
             params=params,
             timeout=20,
         )
@@ -78,18 +76,14 @@ def api_get(endpoint, params=None):
         if response.status_code == 403:
             return None, (
                 "Accès refusé par football-data.org. "
-                "Cette compétition ou cette donnée n'est peut-être "
-                "pas incluse dans ton abonnement."
+                "Vérifie les compétitions disponibles avec ta clé."
             )
 
         if response.status_code == 429:
-            return None, (
-                "Limite de requêtes API atteinte. "
-                "Attends un peu avant de réessayer."
-            )
+            return None, "Limite de requêtes API atteinte."
 
         return None, (
-            f"Erreur API HTTP {response.status_code} : "
+            f"Erreur API HTTP {response.status_code}: "
             f"{response.text[:200]}"
         )
 
@@ -98,7 +92,7 @@ def api_get(endpoint, params=None):
 
 
 # =========================================================
-# RÉCUPÉRATION DES MATCHS
+# MATCHS ET HISTORIQUE
 # =========================================================
 
 @st.cache_data(ttl=300, show_spinner=False)
@@ -115,7 +109,7 @@ def get_competition_matches(competition_code, date_from, date_to):
         return [], error
 
     matches = data.get("matches", [])
-    matches.sort(key=lambda match: match.get("utcDate", ""))
+    matches.sort(key=lambda m: m.get("utcDate", ""))
 
     return matches, None
 
@@ -135,9 +129,8 @@ def get_team_history(team_id, before_date):
         return [], error
 
     matches = data.get("matches", [])
-
     matches.sort(
-        key=lambda match: match.get("utcDate", ""),
+        key=lambda m: m.get("utcDate", ""),
         reverse=True,
     )
 
@@ -145,50 +138,45 @@ def get_team_history(team_id, before_date):
 
 
 # =========================================================
-# ANALYSE DE LA FORME
+# FORME DES ÉQUIPES
 # =========================================================
 
 def get_team_form(team_id, matches):
     goals_for = []
     goals_against = []
     points = []
-    opponents = []
+    form_letters = []
 
     for match in matches:
         home = match.get("homeTeam", {})
         away = match.get("awayTeam", {})
         score = match.get("score", {}).get("fullTime", {})
 
-        home_id = home.get("id")
-        away_id = away.get("id")
+        hg = score.get("home")
+        ag = score.get("away")
 
-        home_goals = score.get("home")
-        away_goals = score.get("away")
-
-        if home_goals is None or away_goals is None:
+        if hg is None or ag is None:
             continue
 
-        if home_id == team_id:
-            gf = home_goals
-            ga = away_goals
-            opponent = away.get("name", "Adversaire")
-        elif away_id == team_id:
-            gf = away_goals
-            ga = home_goals
-            opponent = home.get("name", "Adversaire")
+        if home.get("id") == team_id:
+            gf, ga = hg, ag
+        elif away.get("id") == team_id:
+            gf, ga = ag, hg
         else:
             continue
 
         goals_for.append(gf)
         goals_against.append(ga)
-        opponents.append(opponent)
 
         if gf > ga:
             points.append(3)
+            form_letters.append("V")
         elif gf == ga:
             points.append(1)
+            form_letters.append("N")
         else:
             points.append(0)
+            form_letters.append("D")
 
     count = len(goals_for)
 
@@ -199,19 +187,7 @@ def get_team_form(team_id, matches):
             "avg_against": 1.25,
             "points": 0,
             "form": "Données insuffisantes",
-            "goals_for": 0,
-            "goals_against": 0,
         }
-
-    form_letters = []
-
-    for gf, ga in zip(goals_for, goals_against):
-        if gf > ga:
-            form_letters.append("V")
-        elif gf == ga:
-            form_letters.append("N")
-        else:
-            form_letters.append("D")
 
     return {
         "count": count,
@@ -219,25 +195,19 @@ def get_team_form(team_id, matches):
         "avg_against": sum(goals_against) / count,
         "points": sum(points),
         "form": " ".join(form_letters[:5]),
-        "goals_for": sum(goals_for),
-        "goals_against": sum(goals_against),
     }
 
 
 # =========================================================
-# POISSON
+# MODÈLE DE POISSON
 # =========================================================
 
 def poisson_probability(lam, goals):
-    if lam < 0:
-        lam = 0
-
-    return (math.exp(-lam) * lam**goals) / math.factorial(goals)
+    lam = max(0.0, lam)
+    return math.exp(-lam) * lam**goals / math.factorial(goals)
 
 
 def calculate_probabilities(lambda_home, lambda_away):
-    max_goals = 8
-
     home_win = 0.0
     draw = 0.0
     away_win = 0.0
@@ -246,36 +216,34 @@ def calculate_probabilities(lambda_home, lambda_away):
     btts = 0.0
     score_probs = []
 
-    for home_goals in range(max_goals + 1):
-        p_home = poisson_probability(lambda_home, home_goals)
+    for hg in range(9):
+        ph = poisson_probability(lambda_home, hg)
 
-        for away_goals in range(max_goals + 1):
-            p_away = poisson_probability(lambda_away, away_goals)
-            probability = p_home * p_away
+        for ag in range(9):
+            pa = poisson_probability(lambda_away, ag)
+            p = ph * pa
 
-            score_probs.append(
-                (home_goals, away_goals, probability)
-            )
+            score_probs.append((hg, ag, p))
 
-            if home_goals > away_goals:
-                home_win += probability
-            elif home_goals == away_goals:
-                draw += probability
+            if hg > ag:
+                home_win += p
+            elif hg == ag:
+                draw += p
             else:
-                away_win += probability
+                away_win += p
 
-            if home_goals + away_goals >= 2:
-                over_15 += probability
+            if hg + ag >= 2:
+                over_15 += p
 
-            if home_goals + away_goals >= 3:
-                over_25 += probability
+            if hg + ag >= 3:
+                over_25 += p
 
-            if home_goals >= 1 and away_goals >= 1:
-                btts += probability
+            if hg >= 1 and ag >= 1:
+                btts += p
 
     total = home_win + draw + away_win
 
-    if total > 0:
+    if total:
         home_win /= total
         draw /= total
         away_win /= total
@@ -306,107 +274,102 @@ def analyze_match(match):
     home_id = home.get("id")
     away_id = away.get("id")
 
-    home_name = home.get("name", "Équipe domicile")
-    away_name = away.get("name", "Équipe extérieure")
-
     if not home_id or not away_id:
         return None
 
+    home_name = home.get("name", "Équipe domicile")
+    away_name = away.get("name", "Équipe extérieure")
+
     match_date = match.get("utcDate", "")
-    before_date = match_date[:10] if match_date else date.today().isoformat()
+    before_date = (
+        match_date[:10]
+        if match_date
+        else date.today().isoformat()
+    )
 
     home_history, home_error = get_team_history(
-        home_id,
-        before_date,
+        home_id, before_date
     )
     away_history, away_error = get_team_history(
-        away_id,
-        before_date,
+        away_id, before_date
     )
 
     home_form = get_team_form(home_id, home_history)
     away_form = get_team_form(away_id, away_history)
 
-    # Valeurs de secours si l'historique n'est pas disponible.
-    # Elles permettent d'afficher une estimation, mais pas une
-    # analyse aussi fiable qu'avec des données récentes.
-    home_attack = home_form["avg_for"]
-    away_defence = away_form["avg_against"]
-    away_attack = away_form["avg_for"]
-    home_defence = home_form["avg_against"]
+    lambda_home = (
+        home_form["avg_for"] + away_form["avg_against"]
+    ) / 2 + 0.20
 
-    lambda_home = (home_attack + away_defence) / 2 + 0.20
-    lambda_away = (away_attack + home_defence) / 2
+    lambda_away = (
+        away_form["avg_for"] + home_form["avg_against"]
+    ) / 2
 
-    # Ajustement modéré selon les résultats récents.
     if home_form["count"] >= 3:
-        home_points_per_match = home_form["points"] / home_form["count"]
-        lambda_home *= 0.90 + (home_points_per_match / 3) * 0.20
+        points_per_match = (
+            home_form["points"] / home_form["count"]
+        )
+        lambda_home *= 0.90 + points_per_match / 3 * 0.20
 
     if away_form["count"] >= 3:
-        away_points_per_match = away_form["points"] / away_form["count"]
-        lambda_away *= 0.90 + (away_points_per_match / 3) * 0.20
+        points_per_match = (
+            away_form["points"] / away_form["count"]
+        )
+        lambda_away *= 0.90 + points_per_match / 3 * 0.20
 
     lambda_home = max(0.15, min(lambda_home, 3.5))
     lambda_away = max(0.15, min(lambda_away, 3.5))
 
-    probabilities = calculate_probabilities(
+    probs = calculate_probabilities(
         lambda_home,
         lambda_away,
     )
 
-    home_win = probabilities["home_win"]
-    draw = probabilities["draw"]
-    away_win = probabilities["away_win"]
+    home_win = probs["home_win"]
+    draw = probs["draw"]
+    away_win = probs["away_win"]
 
     selections = [
-        {
-            "name": "1X - Domicile ou nul",
-            "probability": home_win + draw,
-        },
-        {
-            "name": "X2 - Extérieur ou nul",
-            "probability": away_win + draw,
-        },
-        {
-            "name": "Plus de 1,5 but",
-            "probability": probabilities["over_15"],
-        },
-        {
-            "name": "Victoire domicile",
-            "probability": home_win,
-        },
-        {
-            "name": "Match nul",
-            "probability": draw,
-        },
-        {
-            "name": "Victoire extérieur",
-            "probability": away_win,
-        },
-        {
-            "name": "Plus de 2,5 buts",
-            "probability": probabilities["over_25"],
-        },
-        {
-            "name": "Les deux équipes marquent",
-            "probability": probabilities["btts"],
-        },
+        {"name": "1X - Domicile ou nul",
+         "market": "double_chance",
+         "probability": home_win + draw},
+
+        {"name": "X2 - Extérieur ou nul",
+         "market": "double_chance",
+         "probability": away_win + draw},
+
+        {"name": "Plus de 1,5 but",
+         "market": "over15",
+         "probability": probs["over_15"]},
+
+        {"name": "Plus de 2,5 buts",
+         "market": "over25",
+         "probability": probs["over_25"]},
+
+        {"name": "Victoire domicile",
+         "market": "home_win",
+         "probability": home_win},
+
+        {"name": "Match nul",
+         "market": "draw",
+         "probability": draw},
+
+        {"name": "Victoire extérieur",
+         "market": "away_win",
+         "probability": away_win},
+
+        {"name": "Les deux équipes marquent",
+         "market": "btts",
+         "probability": probs["btts"]},
     ]
 
-    selections.sort(
-        key=lambda item: item["probability"],
-        reverse=True,
-    )
-
-    best_score = probabilities["score_probs"][0]
+    best_score = probs["score_probs"][0]
 
     return {
         "id": match.get("id"),
         "date": match_date,
         "competition": match.get("competition", {}).get(
-            "name",
-            "Compétition",
+            "name", "Compétition"
         ),
         "home_name": home_name,
         "away_name": away_name,
@@ -414,7 +377,7 @@ def analyze_match(match):
         "away_form": away_form,
         "lambda_home": lambda_home,
         "lambda_away": lambda_away,
-        "probabilities": probabilities,
+        "probabilities": probs,
         "selections": selections,
         "best_score": f"{best_score[0]} - {best_score[1]}",
         "history_error": bool(home_error or away_error),
@@ -422,148 +385,257 @@ def analyze_match(match):
 
 
 # =========================================================
-# COMBINÉS AUTOMATIQUES
+# MARCHÉS DISPONIBLES
 # =========================================================
 
-def best_combo_selection(result):
-    selections = result.get("selections", [])
+def market_selection(result, market):
+    for selection in result["selections"]:
+        if selection["market"] == market:
+            return selection
+    return None
 
-    if not selections:
-        return None
 
-    # On choisit le marché le mieux évalué pour chaque match.
-    # Cette probabilité reste une estimation statistique.
-    valid = [
-        selection
-        for selection in selections
-        if selection.get("probability") is not None
-    ]
-
-    if not valid:
-        return None
-
-    return max(
-        valid,
-        key=lambda selection: selection["probability"],
+def candidate_from_result(result, selection):
+    history_count = min(
+        result["home_form"]["count"],
+        result["away_form"]["count"],
     )
 
+    return {
+        "match_id": result["id"],
+        "match": (
+            f'{result["home_name"]} - {result["away_name"]}'
+        ),
+        "market": selection["market"],
+        "name": selection["name"],
+        "probability": float(selection["probability"]),
+        "history_count": history_count,
+    }
 
-def build_combo_candidates(results):
+
+# =========================================================
+# CRÉATION DES CANDIDATS POUR CHAQUE CATÉGORIE
+# =========================================================
+
+def get_candidates(results, category):
     candidates = []
-    seen = set()
+
+    # FIABLE : les marchés les plus prudents sont favorisés,
+    # mais pas exclusivement le Plus de 1,5 but.
+    if category == "fiable":
+        allowed_markets = [
+            "double_chance",
+            "over15",
+            "over25",
+            "home_win",
+            "away_win",
+            "btts",
+            "draw",
+        ]
+        minimum_probability = 0.58
+
+    # ÉQUILIBRÉ : davantage de diversité des marchés.
+    elif category == "equilibre":
+        allowed_markets = [
+            "double_chance",
+            "over15",
+            "over25",
+            "home_win",
+            "away_win",
+            "btts",
+            "draw",
+        ]
+        minimum_probability = 0.35
+
+    # RISQUÉ : marchés plus incertains acceptés.
+    else:
+        allowed_markets = [
+            "over25",
+            "home_win",
+            "away_win",
+            "btts",
+            "draw",
+            "over15",
+            "double_chance",
+        ]
+        minimum_probability = 0.20
 
     for result in results:
-        selection = best_combo_selection(result)
+        match_candidates = []
 
-        if selection is None:
-            continue
+        for market in allowed_markets:
+            selection = market_selection(result, market)
 
-        match_id = result.get("id")
+            if not selection:
+                continue
 
-        if match_id is None:
-            match_id = (
-                result.get("home_name"),
-                result.get("away_name"),
-                result.get("date"),
+            p = float(selection["probability"])
+
+            if p < minimum_probability or p >= 0.99:
+                continue
+
+            # Le combiné fiable conserve les sélections les
+            # plus probables, tout en évitant de forcer un marché.
+            match_candidates.append(
+                candidate_from_result(result, selection)
             )
 
-        if match_id in seen:
+        if not match_candidates:
             continue
 
-        seen.add(match_id)
+        if category == "fiable":
+            # Favorise la probabilité sans supprimer les autres marchés.
+            match_candidates.sort(
+                key=lambda c: (
+                    c["probability"]
+                    + min(c["history_count"], 5) * 0.008
+                ),
+                reverse=True,
+            )
 
-        probability = float(selection["probability"])
+        elif category == "equilibre":
+            # Favorise un compromis autour de 55 %, avec une
+            # petite prime à la diversité des marchés.
+            match_candidates.sort(
+                key=lambda c: (
+                    c["probability"]
+                    - abs(c["probability"] - 0.55) * 0.10
+                ),
+                reverse=True,
+            )
 
-        if not 0 < probability <= 1:
-            continue
+        else:
+            # Les marchés moins probables sont permis.
+            # On évite toutefois les probabilités extrêmement faibles.
+            match_candidates.sort(
+                key=lambda c: (
+                    0.55 - abs(c["probability"] - 0.42)
+                ),
+                reverse=True,
+            )
 
-        history_count = min(
-            result["home_form"]["count"],
-            result["away_form"]["count"],
-        )
+        # Un seul marché par match et par catégorie.
+        candidates.append(match_candidates[0])
 
-        candidates.append({
-            "match": (
-                f'{result["home_name"]} - '
-                f'{result["away_name"]}'
-            ),
-            "date": result.get("date", ""),
-            "market": selection["name"],
-            "probability": probability,
-            "history_count": history_count,
-            "result": result,
-        })
-
+    # Trier les candidats en fonction de la probabilité.
     candidates.sort(
-        key=lambda candidate: candidate["probability"],
+        key=lambda c: c["probability"],
         reverse=True,
     )
 
     return candidates
 
 
-def generate_combinations(candidates, size, limit=5):
+# =========================================================
+# COMBINÉS DIVERSIFIÉS
+# =========================================================
+
+def combo_score(combo, category):
+    probabilities = [item["probability"] for item in combo]
+
+    if not probabilities:
+        return 0.0
+
+    product = math.prod(probabilities)
+
+    markets = [item["market"] for item in combo]
+    unique_markets = len(set(markets))
+    diversity_bonus = unique_markets / len(markets)
+
+    if category == "fiable":
+        # La probabilité combinée domine le classement.
+        return product * (1 + 0.03 * diversity_bonus)
+
+    if category == "equilibre":
+        # Récompense davantage la diversité, sans la faire
+        # passer devant une probabilité trop faible.
+        return product * (1 + 0.20 * diversity_bonus)
+
+    # Pour le combiné risqué, on privilégie un profil de marchés
+    # plus variés et plus incertains.
+    return product * (1 + 0.25 * diversity_bonus)
+
+
+def generate_combinations(candidates, size, category, limit=5):
     if len(candidates) < size:
         return []
 
-    # On prend les meilleurs candidats pour éviter de parcourir
-    # un nombre excessif de combinaisons.
-    pool = candidates[:20]
-    combinations = []
+    # Plusieurs marchés ont été évalués par match en amont.
+    # La génération combine des matchs distincts.
+    pool = candidates[:30]
+    combos = []
 
     for combo in itertools.combinations(pool, size):
-        # Évite de proposer plusieurs sélections du même match.
-        match_names = [item["match"] for item in combo]
+        ids = [item["match_id"] for item in combo]
 
-        if len(match_names) != len(set(match_names)):
+        if len(ids) != len(set(ids)):
             continue
 
-        probability = 1.0
+        probability = math.prod(
+            item["probability"] for item in combo
+        )
 
-        for item in combo:
-            probability *= item["probability"]
-
-        combinations.append({
+        combos.append({
             "selections": combo,
             "probability": probability,
+            "score": combo_score(combo, category),
         })
 
-    combinations.sort(
-        key=lambda item: item["probability"],
+    combos.sort(
+        key=lambda c: c["score"],
         reverse=True,
     )
 
-    return combinations[:limit]
+    # Enlève les doublons de combinaisons.
+    unique = []
+    seen = set()
+
+    for combo in combos:
+        signature = tuple(sorted(
+            (
+                item["match_id"],
+                item["market"],
+            )
+            for item in combo["selections"]
+        ))
+
+        if signature in seen:
+            continue
+
+        seen.add(signature)
+        unique.append(combo)
+
+        if len(unique) >= limit:
+            break
+
+    return unique
 
 
-def display_combinations(results):
-    st.header("🔗 Combinés automatiques")
+# =========================================================
+# AFFICHAGE DES COMBINÉS
+# =========================================================
 
-    candidates = build_combo_candidates(results)
+def display_category(results, category, title, description):
+    st.subheader(title)
+    st.caption(description)
 
-    st.write(
-        f"**Matchs utilisables pour les combinés : "
-        f"{len(candidates)}**"
-    )
+    candidates = get_candidates(results, category)
 
     if len(candidates) < 2:
         st.warning(
-            "Il faut au moins 2 matchs analysables pour créer "
-            "un combiné. Essaie une période plus large ou vérifie "
-            "que l'API renvoie des matchs."
+            "Pas assez de matchs admissibles pour cette catégorie. "
+            "Essaie une période plus large."
         )
         return
 
-    st.caption(
-        "Les pourcentages sont des estimations statistiques, "
-        "pas des garanties. Le produit des probabilités suppose "
-        "notamment que les sélections sont indépendantes."
+    st.write(
+        f"Matchs candidats pour cette catégorie : **{len(candidates)}**"
     )
 
     tabs = st.tabs([
-        "Combinés de 2",
-        "Combinés de 3",
-        "Combinés de 4",
+        "2 matchs",
+        "3 matchs",
+        "4 matchs",
     ])
 
     for tab, size in zip(tabs, [2, 3, 4]):
@@ -571,6 +643,7 @@ def display_combinations(results):
             combos = generate_combinations(
                 candidates,
                 size,
+                category,
                 limit=5,
             )
 
@@ -580,91 +653,123 @@ def display_combinations(results):
                 )
                 continue
 
-            for index, combo in enumerate(combos, start=1):
-                percentage = combo["probability"] * 100
+            for number, combo in enumerate(combos, start=1):
+                st.markdown(
+                    f"### Combiné {number} — {size} matchs"
+                )
 
-                st.subheader(
-                    f"Combiné {index} — probabilité théorique "
-                    f"{percentage:.1f} %"
+                st.metric(
+                    "Probabilité théorique combinée",
+                    f'{combo["probability"] * 100:.2f} %',
                 )
 
                 for item in combo["selections"]:
                     st.write(
-                        f"• **{item['match']}** — "
-                        f"{item['market']} "
-                        f"({item['probability'] * 100:.1f} %)"
+                        f'• **{item["match"]}** — {item["name"]} '
+                        f'({item["probability"] * 100:.1f} %)'
                     )
 
                     if item["history_count"] < 3:
                         st.caption(
-                            "⚠️ Historique limité pour au moins "
-                            "une des deux équipes."
+                            "⚠️ Historique insuffisant ou limité."
                         )
 
                 st.divider()
 
 
+def display_combinations(results):
+    st.header("🔗 Les 3 types de combinés FOOT AI PRO")
+
+    st.info(
+        "Les probabilités sont des estimations statistiques. "
+        "Elles ne garantissent pas le résultat des matchs."
+    )
+
+    display_category(
+        results,
+        "fiable",
+        "🟢 Combiné fiable",
+        "Privilégie les probabilités estimées les plus élevées.",
+    )
+
+    display_category(
+        results,
+        "equilibre",
+        "🟠 Combiné équilibré",
+        "Recherche un compromis entre probabilité et diversité.",
+    )
+
+    display_category(
+        results,
+        "risque",
+        "🔴 Combiné risqué",
+        "Explore des marchés plus incertains et plus variés.",
+    )
+
+
 # =========================================================
-# AFFICHAGE D'UNE ANALYSE
+# AFFICHAGE DES ANALYSES
 # =========================================================
 
 def display_match_analysis(result):
-    home = result["home_name"]
-    away = result["away_name"]
     probs = result["probabilities"]
 
-    st.subheader(f"⚽ {home} - {away}")
+    st.subheader(
+        f'⚽ {result["home_name"]} - {result["away_name"]}'
+    )
 
-    if result["date"]:
-        st.caption(
-            f"Date : {result['date']} | "
-            f"Compétition : {result['competition']}"
-        )
+    st.caption(
+        f'Date : {result["date"]} | '
+        f'Compétition : {result["competition"]}'
+    )
 
     col1, col2, col3 = st.columns(3)
 
     col1.metric(
         "Victoire domicile",
-        f"{probs['home_win'] * 100:.1f} %",
+        f'{probs["home_win"] * 100:.1f} %',
     )
+
     col2.metric(
         "Match nul",
-        f"{probs['draw'] * 100:.1f} %",
+        f'{probs["draw"] * 100:.1f} %',
     )
+
     col3.metric(
         "Victoire extérieur",
-        f"{probs['away_win'] * 100:.1f} %",
+        f'{probs["away_win"] * 100:.1f} %',
     )
 
     st.write(
-        f"**Forme récente domicile :** "
-        f"{result['home_form']['form']} "
-        f"({result['home_form']['count']} matchs)"
+        f'**Forme domicile :** {result["home_form"]["form"]} '
+        f'({result["home_form"]["count"]} matchs)'
     )
 
     st.write(
-        f"**Forme récente extérieur :** "
-        f"{result['away_form']['form']} "
-        f"({result['away_form']['count']} matchs)"
+        f'**Forme extérieur :** {result["away_form"]["form"]} '
+        f'({result["away_form"]["count"]} matchs)'
     )
 
     st.write(
-        f"**Buts attendus estimés :** "
-        f"{home} {result['lambda_home']:.2f} — "
-        f"{result['lambda_away']:.2f} {away}"
+        f'**Buts attendus :** {result["home_name"]} '
+        f'{result["lambda_home"]:.2f} — '
+        f'{result["lambda_away"]:.2f} {result["away_name"]}'
     )
 
     st.write(
-        f"**Score exact le plus probable selon le modèle :** "
-        f"{result['best_score']}"
+        f'**Score exact le plus probable :** {result["best_score"]}'
     )
 
-    st.markdown("**Meilleurs marchés estimés :**")
+    st.markdown("**Probabilités par marché :**")
 
-    for selection in result["selections"][:5]:
+    for selection in sorted(
+        result["selections"],
+        key=lambda s: s["probability"],
+        reverse=True,
+    ):
         st.write(
-            f"• {selection['name']} : "
-            f"**{selection['probability'] * 100:.1f} %**"
+            f'• {selection["name"]} : '
+            f'**{selection["probability"] * 100:.1f} %**'
         )
 
     if (
@@ -672,8 +777,8 @@ def display_match_analysis(result):
         or result["away_form"]["count"] < 3
     ):
         st.warning(
-            "Historique récent incomplet : "
-            "la précision de cette analyse peut être réduite."
+            "Historique récent incomplet : la fiabilité de "
+            "l'estimation peut être réduite."
         )
 
     st.divider()
@@ -685,18 +790,16 @@ def display_match_analysis(result):
 
 st.title("⚽ FOOT AI PRO")
 st.write(
-    "Analyse automatique des matchs et estimation des probabilités "
-    "à partir des résultats disponibles."
+    "Analyse automatique des matchs avec modèle de Poisson, "
+    "forme récente et génération de combinés."
 )
 
 if not API_KEY:
     st.error(
-        "Clé API introuvable. Dans Streamlit, ouvre les paramètres "
-        "Secrets et ajoute :\n\n"
+        "Clé API introuvable. Dans Streamlit Secrets, ajoute :\n\n"
         'FOOTBALL_DATA_API_KEY = "TA_CLE_API"'
     )
     st.stop()
-
 
 today = date.today()
 
@@ -723,50 +826,37 @@ selected_competitions = st.multiselect(
 )
 
 if date_to < date_from:
-    st.error(
-        "La date de fin doit être égale ou postérieure "
-        "à la date de début."
-    )
+    st.error("La date de fin doit être égale ou postérieure à la date de début.")
     st.stop()
 
 if not selected_competitions:
     st.warning("Sélectionne au moins un championnat.")
     st.stop()
 
-
-analyze_button = st.button(
+if st.button(
     "🔎 Rechercher les matchs et lancer les pronostics",
     type="primary",
     use_container_width=True,
-)
-
-if analyze_button:
+):
     all_matches = []
     api_errors = []
 
-    date_from_string = date_from.isoformat()
-    date_to_string = date_to.isoformat()
-
     progress = st.progress(0)
     status = st.empty()
-
-    total_competitions = len(selected_competitions)
 
     for index, competition_name in enumerate(
         selected_competitions,
         start=1,
     ):
-        code = COMPETITIONS[competition_name]
-
         status.write(
             f"Recherche : {competition_name} "
-            f"({index}/{total_competitions})..."
+            f"({index}/{len(selected_competitions)})..."
         )
 
         matches, error = get_competition_matches(
-            code,
-            date_from_string,
-            date_to_string,
+            COMPETITIONS[competition_name],
+            date_from.isoformat(),
+            date_to.isoformat(),
         )
 
         if error:
@@ -775,51 +865,41 @@ if analyze_button:
             )
         else:
             for match in matches:
+                match.setdefault("competition", {})
                 match["competition"]["name"] = competition_name
-
-            all_matches.extend(matches)
+                all_matches.append(match)
 
         progress.progress(
-            index / total_competitions
+            index / len(selected_competitions)
         )
 
     progress.empty()
     status.empty()
 
-    # Supprime les éventuels doublons.
     unique_matches = {}
 
     for match in all_matches:
         unique_matches[match.get("id", str(match))] = match
 
-    all_matches = list(unique_matches.values())
-    all_matches.sort(
-        key=lambda match: match.get("utcDate", "")
+    all_matches = sorted(
+        unique_matches.values(),
+        key=lambda m: m.get("utcDate", ""),
     )
 
     if api_errors:
-        with st.expander("Voir les problèmes de connexion API"):
+        with st.expander("Problèmes API"):
             for error in api_errors:
                 st.warning(error)
 
     if not all_matches:
         st.warning(
-            "Aucun match disponible pour cette période "
-            "avec les compétitions et les accès API sélectionnés."
-        )
-        st.info(
-            "Essaie d'élargir les dates, de sélectionner d'autres "
-            "championnats ou de vérifier les autorisations de ta clé."
+            "Aucun match trouvé. Essaie une période plus large "
+            "ou vérifie les accès de ta clé API."
         )
         st.stop()
 
-    st.success(
-        f"{len(all_matches)} match(s) récupéré(s). "
-        "Lancement des analyses..."
-    )
-
     results = []
-    analysis_progress = st.progress(0)
+    progress = st.progress(0)
 
     for index, match in enumerate(all_matches, start=1):
         result = analyze_match(match)
@@ -827,27 +907,21 @@ if analyze_button:
         if result is not None:
             results.append(result)
 
-        analysis_progress.progress(
-            index / len(all_matches)
-        )
+        progress.progress(index / len(all_matches))
 
-    analysis_progress.empty()
+    progress.empty()
 
     if not results:
         st.error(
-            "Impossible de produire des analyses avec les données "
-            "reçues. Vérifie les identifiants des équipes et les "
-            "réponses de l'API."
+            "Aucune analyse exploitable n'a été produite."
         )
         st.stop()
+
+    st.session_state["foot_ai_results"] = results
 
     st.success(
         f"{len(results)} match(s) analysé(s)."
     )
-
-    # Sauvegarde dans la session Streamlit pour que les onglets
-    # restent accessibles lors des interactions suivantes.
-    st.session_state["foot_ai_results"] = results
 
 
 # =========================================================
@@ -859,7 +933,7 @@ results = st.session_state.get("foot_ai_results", [])
 if results:
     tab_matches, tab_ranking, tab_combos = st.tabs([
         "📋 Analyses des matchs",
-        "🏆 Classement des pronostics",
+        "🏆 Classement",
         "🔗 Combinés",
     ])
 
@@ -868,34 +942,24 @@ if results:
             display_match_analysis(result)
 
     with tab_ranking:
-        st.subheader("Pronostics les mieux évalués")
-
         ranking = []
 
         for result in results:
-            selection = best_combo_selection(result)
-
-            if selection:
+            for selection in result["selections"]:
                 ranking.append({
                     "Match": (
                         f'{result["home_name"]} - '
                         f'{result["away_name"]}'
                     ),
                     "Pronostic": selection["name"],
-                    "Probabilité estimée": (
+                    "Probabilité": (
                         f'{selection["probability"] * 100:.1f} %'
-                    ),
-                    "Historique domicile": (
-                        result["home_form"]["count"]
-                    ),
-                    "Historique extérieur": (
-                        result["away_form"]["count"]
                     ),
                 })
 
         ranking.sort(
             key=lambda row: float(
-                row["Probabilité estimée"].replace("%", "")
+                row["Probabilité"].replace("%", "")
             ),
             reverse=True,
         )
@@ -911,14 +975,13 @@ if results:
 
 else:
     st.info(
-        "Choisis les dates et les championnats, puis appuie sur "
-        "« Rechercher les matchs et lancer les pronostics »."
+        "Choisis les dates et les championnats, puis lance l'analyse."
     )
 
 
 st.caption(
-    "FOOT AI PRO fournit des estimations statistiques et non "
-    "des certitudes. Les probabilités ne garantissent pas le résultat "
-    "d'un match. Vérifie les compositions, les blessures et les "
-    "informations récentes auprès de sources fiables."
+    "Les probabilités sont des estimations statistiques et ne "
+    "garantissent aucun résultat. Les compositions, blessures, "
+    "suspensions et informations de dernière minute ne sont pas "
+    "automatiquement intégrées à cette version."
 )
