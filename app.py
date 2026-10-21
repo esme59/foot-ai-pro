@@ -1,14 +1,15 @@
-import os
 import math
-from datetime import date, timedelta
+import os
+from datetime import date, datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 import requests
 import streamlit as st
 
 
-# =====================================================
+# =========================================================
 # CONFIGURATION
-# =====================================================
+# =========================================================
 
 st.set_page_config(
     page_title="FOOT AI PRO",
@@ -17,38 +18,24 @@ st.set_page_config(
 )
 
 API_BASE = "https://api.football-data.org/v4"
+LOCAL_TZ = ZoneInfo("Europe/Paris")
 
 COMPETITIONS = {
-    "🇫🇷 Ligue 1": "FL1",
-    "🏴 Premier League": "PL",
-    "🇪🇸 Liga": "PD",
-    "🇩🇪 Bundesliga": "BL1",
-    "🇮🇹 Serie A": "SA",
-    "🏆 Ligue des Champions": "CL",
+    "Ligue 1 🇫🇷": "FL1",
+    "Premier League 🏴": "PL",
+    "Liga 🇪🇸": "PD",
+    "Bundesliga 🇩🇪": "BL1",
+    "Serie A 🇮🇹": "SA",
+    "Ligue des champions ⭐": "CL",
 }
 
-st.markdown(
-    """
-    <style>
-    .block-container {
-        padding-top: 1.5rem;
-        padding-bottom: 3rem;
-    }
-    div[data-testid="stMetric"] {
-        background-color: rgba(128,128,128,0.08);
-        border: 1px solid rgba(128,128,128,0.2);
-        padding: 12px;
-        border-radius: 12px;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+LIVE_STATUSES = {"IN_PLAY", "LIVE", "PAUSED"}
+UPCOMING_STATUSES = {"SCHEDULED", "TIMED"}
 
 
-# =====================================================
-# CLÉ API
-# =====================================================
+# =========================================================
+# API
+# =========================================================
 
 def get_api_key():
     try:
@@ -58,53 +45,61 @@ def get_api_key():
     except Exception:
         pass
 
-    return os.environ.get("FOOTBALL_DATA_API_KEY", "")
+    return os.getenv("FOOTBALL_DATA_API_KEY", "")
 
-
-# =====================================================
-# REQUÊTES API
-# =====================================================
 
 def api_get(endpoint, params=None):
     key = get_api_key()
 
     if not key:
         raise RuntimeError(
-            "Clé API manquante. Configure "
+            "Clé API absente. Ajoute "
             "FOOTBALL_DATA_API_KEY dans Streamlit Secrets."
         )
 
+    headers = {"X-Auth-Token": key}
+
     try:
         response = requests.get(
-            API_BASE + endpoint,
-            headers={"X-Auth-Token": key},
-            params=params,
+            f"{API_BASE}{endpoint}",
+            headers=headers,
+            params=params or {},
             timeout=20,
         )
-    except requests.RequestException as exc:
-        raise RuntimeError(f"Connexion impossible : {exc}")
 
-    if response.status_code == 429:
-        raise RuntimeError(
-            "Limite de requêtes atteinte. Réessaie plus tard."
-        )
+        if response.status_code == 429:
+            raise RuntimeError(
+                "Limite de requêtes API atteinte. "
+                "Attends une minute avant de réessayer."
+            )
 
-    if response.status_code == 403:
-        raise RuntimeError(
-            "Cette compétition n'est peut-être pas disponible "
-            "avec ton abonnement API."
-        )
+        if response.status_code == 403:
+            raise RuntimeError(
+                "Accès refusé par football-data.org. "
+                "Ton offre API ne permet peut-être pas "
+                "d'accéder à ces données."
+            )
 
-    if response.status_code != 200:
-        raise RuntimeError(
-            f"Erreur API {response.status_code} : "
-            f"{response.text[:200]}"
-        )
+        if response.status_code == 401:
+            raise RuntimeError(
+                "Clé API invalide. Vérifie Streamlit Secrets."
+            )
 
-    return response.json()
+        response.raise_for_status()
+        return response.json()
+
+    except requests.exceptions.Timeout:
+        raise RuntimeError("L'API met trop de temps à répondre.")
+
+    except requests.exceptions.RequestException as exc:
+        raise RuntimeError(f"Erreur de connexion API : {exc}")
 
 
-@st.cache_data(ttl=600, show_spinner=False)
+# =========================================================
+# MATCHS DU CALENDRIER
+# =========================================================
+
+@st.cache_data(ttl=120, show_spinner=False)
 def load_matches(competition_code, date_from, date_to):
     data = api_get(
         f"/competitions/{competition_code}/matches",
@@ -117,591 +112,957 @@ def load_matches(competition_code, date_from, date_to):
     return data.get("matches", [])
 
 
-@st.cache_data(ttl=3600, show_spinner=False)
-def load_team_history(team_id, before_date):
-    data = api_get(
-        f"/teams/{team_id}/matches",
-        {
-            "status": "FINISHED",
-            "dateTo": before_date,
-            "limit": 10,
-        },
-    )
+def load_selected_competitions(competition_names, date_from, date_to):
+    matches = []
+    errors = []
 
-    return data.get("matches", [])
+    for competition_name in competition_names:
+        code = COMPETITIONS[competition_name]
 
+        try:
+            competition_matches = load_matches(
+                code,
+                date_from,
+                date_to,
+            )
 
-# =====================================================
-# FORME RÉCENTE
-# =====================================================
+            for match in competition_matches:
+                match["_competition_label"] = competition_name
+                matches.append(match)
 
-def team_statistics(team_id, before_date):
-    try:
-        matches = load_team_history(team_id, before_date)
-    except Exception:
-        matches = []
+        except Exception as exc:
+            errors.append(f"{competition_name} : {exc}")
 
-    valid_matches = []
+    # Évite les doublons
+    unique = {}
 
     for match in matches:
-        score = match.get("score", {}).get("fullTime", {})
+        unique[match.get("id", str(match))] = match
 
-        if score.get("home") is None or score.get("away") is None:
-            continue
+    return list(unique.values()), errors
 
-        valid_matches.append(match)
 
-    valid_matches.sort(
-        key=lambda m: m.get("utcDate", ""),
+# =========================================================
+# HISTORIQUE DOMICILE / EXTÉRIEUR
+# =========================================================
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def load_team_history(team_id, before_date, venue):
+    """
+    Récupère les matchs terminés de l'équipe avant le match étudié.
+    venue = HOME ou AWAY.
+    """
+
+    params = {
+        "status": "FINISHED",
+        "dateTo": before_date,
+        "venue": venue,
+        "limit": 20,
+    }
+
+    data = api_get(f"/teams/{team_id}/matches", params)
+
+    matches = data.get("matches", [])
+
+    finished = [
+        match for match in matches
+        if match.get("status") == "FINISHED"
+    ]
+
+    finished.sort(
+        key=lambda item: item.get("utcDate", ""),
         reverse=True,
     )
 
-    valid_matches = valid_matches[:5]
+    return finished[:5]
 
-    scored_goals = []
-    conceded_goals = []
-    points = []
-    form = []
 
-    for match in valid_matches:
-        home_id = match.get("homeTeam", {}).get("id")
-        away_id = match.get("awayTeam", {}).get("id")
+def get_score(match):
+    score = match.get("score", {})
 
-        score = match["score"]["fullTime"]
+    full_time = score.get("fullTime") or {}
 
-        if team_id == home_id:
-            scored = score["home"]
-            conceded = score["away"]
-        elif team_id == away_id:
-            scored = score["away"]
-            conceded = score["home"]
+    home = full_time.get("home")
+    away = full_time.get("away")
+
+    if home is None or away is None:
+        regular = score.get("regularTime") or {}
+        home = regular.get("home")
+        away = regular.get("away")
+
+    if home is None or away is None:
+        return None, None
+
+    return int(home), int(away)
+
+
+def calculate_team_stats(matches, team_id, venue):
+    """
+    Statistiques de l'équipe dans le rôle demandé :
+    HOME = équipe à domicile
+    AWAY = équipe à l'extérieur
+    """
+
+    games = []
+
+    for match in matches:
+        home_id = (match.get("homeTeam") or {}).get("id")
+        away_id = (match.get("awayTeam") or {}).get("id")
+
+        home_goals, away_goals = get_score(match)
+
+        if home_goals is None or away_goals is None:
+            continue
+
+        if venue == "HOME" and home_id == team_id:
+            scored = home_goals
+            conceded = away_goals
+
+        elif venue == "AWAY" and away_id == team_id:
+            scored = away_goals
+            conceded = home_goals
+
         else:
             continue
 
-        scored_goals.append(scored)
-        conceded_goals.append(conceded)
-
         if scored > conceded:
-            points.append(3)
-            form.append("V")
+            points = 3
+            result = "V"
         elif scored == conceded:
-            points.append(1)
-            form.append("N")
+            points = 1
+            result = "N"
         else:
-            points.append(0)
-            form.append("D")
+            points = 0
+            result = "D"
 
-    if not scored_goals:
+        games.append({
+            "scored": scored,
+            "conceded": conceded,
+            "points": points,
+            "result": result,
+        })
+
+    if not games:
         return {
-            "scored": 1.25,
-            "conceded": 1.25,
-            "points": 1.0,
-            "form": "Données indisponibles",
             "count": 0,
+            "avg_scored": 1.25,
+            "avg_conceded": 1.25,
+            "points_avg": 1.0,
+            "form": "—",
         }
 
     return {
-        "scored": sum(scored_goals) / len(scored_goals),
-        "conceded": sum(conceded_goals) / len(conceded_goals),
-        "points": sum(points) / len(points),
-        "form": " – ".join(form),
-        "count": len(scored_goals),
+        "count": len(games),
+        "avg_scored": sum(g["scored"] for g in games) / len(games),
+        "avg_conceded": sum(g["conceded"] for g in games) / len(games),
+        "points_avg": sum(g["points"] for g in games) / len(games),
+        "form": " ".join(g["result"] for g in games),
     }
 
 
-# =====================================================
-# CALCUL DES PROBABILITÉS DE SCORE
-# =====================================================
+@st.cache_data(ttl=3600, show_spinner=False)
+def load_venue_stats(team_id, before_date, venue):
+    history = load_team_history(team_id, before_date, venue)
 
-def poisson(k, expected):
-    expected = max(0.01, expected)
+    stats = calculate_team_stats(history, team_id, venue)
+
+    # Si aucun match n'est disponible pour ce lieu,
+    # on essaie de récupérer les derniers matchs toutes positions.
+    if stats["count"] == 0:
+        fallback_data = api_get(
+            f"/teams/{team_id}/matches",
+            {
+                "status": "FINISHED",
+                "dateTo": before_date,
+                "limit": 10,
+            },
+        )
+
+        fallback_matches = [
+            match for match in fallback_data.get("matches", [])
+            if match.get("status") == "FINISHED"
+        ]
+
+        fallback_matches.sort(
+            key=lambda item: item.get("utcDate", ""),
+            reverse=True,
+        )
+
+        stats = calculate_team_stats(
+            fallback_matches[:5],
+            team_id,
+            venue,
+        )
+
+        stats["fallback"] = True
+
+    else:
+        stats["fallback"] = False
+
+    return stats
+
+
+# =========================================================
+# POISSON : PROBABILITÉS DES SCORES
+# =========================================================
+
+def poisson_probability(goals, expected_goals):
+    expected_goals = max(0.01, float(expected_goals))
 
     return (
-        math.exp(-expected)
-        * expected**k
-        / math.factorial(k)
+        math.exp(-expected_goals)
+        * expected_goals ** goals
+        / math.factorial(goals)
     )
 
 
-def calculate_markets(expected_home, expected_away):
-    max_goals = 10
+def score_matrix(expected_home, expected_away, max_goals=10):
+    matrix = []
 
-    home_probs = [
-        poisson(i, expected_home)
-        for i in range(max_goals + 1)
-    ]
+    for home_goals in range(max_goals + 1):
+        row = []
 
-    away_probs = [
-        poisson(i, expected_away)
-        for i in range(max_goals + 1)
-    ]
+        for away_goals in range(max_goals + 1):
+            probability = (
+                poisson_probability(home_goals, expected_home)
+                * poisson_probability(away_goals, expected_away)
+            )
 
-    scores = []
-    total_mass = 0.0
+            row.append(probability)
 
+        matrix.append(row)
+
+    total = sum(sum(row) for row in matrix)
+
+    if total > 0:
+        matrix = [
+            [value / total for value in row]
+            for row in matrix
+        ]
+
+    return matrix
+
+
+def markets_from_matrix(matrix):
     home_win = 0.0
     draw = 0.0
     away_win = 0.0
 
-    over05 = 0.0
-    over15 = 0.0
-    over25 = 0.0
-    over35 = 0.0
+    over = {0.5: 0.0, 1.5: 0.0, 2.5: 0.0, 3.5: 0.0}
+    under = {2.5: 0.0, 3.5: 0.0}
 
     btts_yes = 0.0
-    home_scores = {}
-    away_scores = {}
+    btts_no = 0.0
 
-    for h in range(max_goals + 1):
-        for a in range(max_goals + 1):
-            p = home_probs[h] * away_probs[a]
+    scores = []
 
-            total_mass += p
-            scores.append((h, a, p))
-
-            if h > a:
-                home_win += p
-            elif h == a:
-                draw += p
+    for home_goals, row in enumerate(matrix):
+        for away_goals, probability in enumerate(row):
+            if home_goals > away_goals:
+                home_win += probability
+            elif home_goals == away_goals:
+                draw += probability
             else:
-                away_win += p
+                away_win += probability
 
-            if h + a >= 1:
-                over05 += p
-            if h + a >= 2:
-                over15 += p
-            if h + a >= 3:
-                over25 += p
-            if h + a >= 4:
-                over35 += p
+            total_goals = home_goals + away_goals
 
-            if h >= 1 and a >= 1:
-                btts_yes += p
+            for line in over:
+                if total_goals > line:
+                    over[line] += probability
 
-    if total_mass <= 0:
-        total_mass = 1.0
+            for line in under:
+                if total_goals < line:
+                    under[line] += probability
 
-    def norm(value):
-        return value / total_mass
+            if home_goals >= 1 and away_goals >= 1:
+                btts_yes += probability
+            else:
+                btts_no += probability
 
-    markets = {
-        "Victoire domicile": norm(home_win),
-        "Match nul": norm(draw),
-        "Victoire extérieur": norm(away_win),
-        "Double chance 1X": norm(home_win + draw),
-        "Double chance X2": norm(away_win + draw),
-        "Plus de 0,5 but": norm(over05),
-        "Plus de 1,5 but": norm(over15),
-        "Plus de 2,5 buts": norm(over25),
-        "Plus de 3,5 buts": norm(over35),
-        "Les deux équipes marquent — Oui": norm(btts_yes),
-        "Les deux équipes marquent — Non": norm(total_mass - btts_yes),
-        "Moins de 2,5 buts": norm(total_mass - over25),
-        "Moins de 3,5 buts": norm(total_mass - over35),
+            scores.append((
+                probability,
+                home_goals,
+                away_goals,
+            ))
+
+    scores.sort(reverse=True)
+
+    return {
+        "home_win": home_win,
+        "draw": draw,
+        "away_win": away_win,
+        "1X": home_win + draw,
+        "X2": away_win + draw,
+        "over": over,
+        "under": under,
+        "btts_yes": btts_yes,
+        "btts_no": btts_no,
+        "scores": scores[:5],
     }
 
-    top_scores = sorted(
-        scores,
-        key=lambda item: item[2],
-        reverse=True,
-    )[:5]
 
-    top_scores = [
-        {
-            "score": f"{h} - {a}",
-            "probability": norm(p),
-        }
-        for h, a, p in top_scores
-    ]
+# =========================================================
+# ESTIMATION DES BUTS ATTENDUS
+# =========================================================
 
-    return markets, top_scores
+def estimate_expected_goals(home_stats, away_stats):
+    """
+    Croise :
+    - les buts marqués à domicile par l'équipe qui reçoit ;
+    - les buts encaissés à domicile par cette équipe ;
+    - les buts marqués à l'extérieur par l'adversaire ;
+    - les buts encaissés à l'extérieur par l'adversaire.
+    """
+
+    home_attack = home_stats["avg_scored"]
+    home_defence = home_stats["avg_conceded"]
+
+    away_attack = away_stats["avg_scored"]
+    away_defence = away_stats["avg_conceded"]
+
+    expected_home = (
+        0.55 * home_attack
+        + 0.45 * away_defence
+        + 0.15
+    )
+
+    expected_away = (
+        0.55 * away_attack
+        + 0.45 * home_defence
+    )
+
+    # Petit ajustement de forme, sans laisser la forme
+    # écraser les statistiques de buts.
+    home_form_adjustment = (
+        home_stats["points_avg"] - 1.5
+    ) * 0.08
+
+    away_form_adjustment = (
+        away_stats["points_avg"] - 1.5
+    ) * 0.08
+
+    expected_home += home_form_adjustment
+    expected_away += away_form_adjustment
+
+    expected_home = max(0.15, min(4.0, expected_home))
+    expected_away = max(0.15, min(4.0, expected_away))
+
+    return expected_home, expected_away
 
 
-# =====================================================
-# ANALYSE COMPLÈTE D'UN MATCH
-# =====================================================
+# =========================================================
+# ANALYSE D'UN MATCH AVANT LE COUP D'ENVOI
+# =========================================================
 
 def analyze_match(match):
-    home = match.get("homeTeam", {})
-    away = match.get("awayTeam", {})
+    home_team = match.get("homeTeam") or {}
+    away_team = match.get("awayTeam") or {}
 
-    home_id = home.get("id")
-    away_id = away.get("id")
+    home_id = home_team.get("id")
+    away_id = away_team.get("id")
 
     if not home_id or not away_id:
         return None
 
-    home_name = home.get("name", "Domicile")
-    away_name = away.get("name", "Extérieur")
+    match_date = match.get("utcDate", "")[:10]
 
-    kickoff = match.get("utcDate", "")
-    before_date = kickoff[:10] if kickoff else date.today().isoformat()
+    if not match_date:
+        match_date = date.today().isoformat()
 
-    home_stats = team_statistics(home_id, before_date)
-    away_stats = team_statistics(away_id, before_date)
-
-    # Estimation des buts attendus.
-    # La méthode est volontairement simple : ce n'est pas un modèle
-    # entraîné sur plusieurs saisons et ses probabilités peuvent être
-    # mal calibrées.
-    expected_home = (
-        0.55 * home_stats["scored"]
-        + 0.45 * away_stats["conceded"]
-        + 0.20
+    home_stats = load_venue_stats(
+        home_id,
+        match_date,
+        "HOME",
     )
 
-    expected_away = (
-        0.55 * away_stats["scored"]
-        + 0.45 * home_stats["conceded"]
+    away_stats = load_venue_stats(
+        away_id,
+        match_date,
+        "AWAY",
     )
 
-    expected_home *= 0.90 + home_stats["points"] * 0.07
-    expected_away *= 0.90 + away_stats["points"] * 0.07
-
-    expected_home = max(0.10, min(expected_home, 4.0))
-    expected_away = max(0.10, min(expected_away, 4.0))
-
-    markets, top_scores = calculate_markets(
-        expected_home,
-        expected_away,
+    expected_home, expected_away = estimate_expected_goals(
+        home_stats,
+        away_stats,
     )
+
+    matrix = score_matrix(expected_home, expected_away)
+    markets = markets_from_matrix(matrix)
 
     return {
-        "id": match.get("id"),
-        "home": home_name,
-        "away": away_name,
-        "kickoff": kickoff,
-        "competition": match.get("competition", {}).get("name", ""),
         "home_stats": home_stats,
         "away_stats": away_stats,
         "expected_home": expected_home,
         "expected_away": expected_away,
         "markets": markets,
-        "top_scores": top_scores,
     }
 
 
-# =====================================================
-# AFFICHAGE DES MATCHS
-# =====================================================
+# =========================================================
+# ANALYSE DES MATCHS EN DIRECT
+# =========================================================
 
-def probability_color(probability):
-    if probability >= 0.75:
-        return "🟢"
-    if probability >= 0.60:
-        return "🟡"
-    if probability >= 0.45:
-        return "🟠"
-    return "⚪"
+def live_score(match):
+    score = match.get("score") or {}
+
+    # Pour un match en cours, le score courant est généralement
+    # disponible dans regularTime ou fullTime selon le flux.
+    regular = score.get("regularTime") or {}
+    full_time = score.get("fullTime") or {}
+    half_time = score.get("halfTime") or {}
+
+    home = regular.get("home")
+    away = regular.get("away")
+
+    if home is None or away is None:
+        home = full_time.get("home")
+        away = full_time.get("away")
+
+    if home is None or away is None:
+        home = half_time.get("home", 0)
+        away = half_time.get("away", 0)
+
+    return int(home or 0), int(away or 0)
 
 
-def show_match(analysis):
-    kickoff = analysis["kickoff"]
+def live_expected_goals(expected_home, expected_away, minute):
+    """
+    Estimation simplifiée des buts supplémentaires attendus.
+    Elle ne tient pas compte des tirs, xG ou cartons en direct.
+    """
 
-    if kickoff:
-        time_text = kickoff[11:16] + " UTC"
-    else:
-        time_text = "Horaire inconnu"
+    if minute is None:
+        minute = 45
 
-    st.markdown(
-        f"### ⚽ {analysis['home']} — {analysis['away']}"
+    minute = max(0, min(120, int(minute)))
+
+    remaining_fraction = max(0.02, (90 - minute) / 90)
+
+    # En première période, le modèle conserve une estimation prudente
+    # du temps restant.
+    if minute > 90:
+        remaining_fraction = 0.02
+
+    return (
+        max(0.01, expected_home * remaining_fraction),
+        max(0.01, expected_away * remaining_fraction),
     )
 
-    st.caption(
-        f"{analysis['competition']} · {time_text}"
+
+def calculate_live_markets(
+    expected_home,
+    expected_away,
+    current_home,
+    current_away,
+    minute,
+):
+    remaining_home, remaining_away = live_expected_goals(
+        expected_home,
+        expected_away,
+        minute,
     )
+
+    remaining_matrix = score_matrix(
+        remaining_home,
+        remaining_away,
+        max_goals=8,
+    )
+
+    final_matrix = []
+
+    for additional_home, row in enumerate(remaining_matrix):
+        for additional_away, probability in enumerate(row):
+            final_home = current_home + additional_home
+            final_away = current_away + additional_away
+
+            while len(final_matrix) <= final_home:
+                final_matrix.append([])
+
+            # Construit la matrice finale dans un dictionnaire séparé
+            # pour gérer les scores déjà inscrits.
+    final_scores = {}
+
+    for additional_home, row in enumerate(remaining_matrix):
+        for additional_away, probability in enumerate(row):
+            score = (
+                current_home + additional_home,
+                current_away + additional_away,
+            )
+
+            final_scores[score] = probability
+
+    home_win = draw = away_win = 0.0
+    btts_yes = 0.0
+    over = {0.5: 0.0, 1.5: 0.0, 2.5: 0.0, 3.5: 0.0}
+    under = {2.5: 0.0, 3.5: 0.0}
+    score_list = []
+
+    for (home_goals, away_goals), probability in final_scores.items():
+        if home_goals > away_goals:
+            home_win += probability
+        elif home_goals == away_goals:
+            draw += probability
+        else:
+            away_win += probability
+
+        total = home_goals + away_goals
+
+        for line in over:
+            if total > line:
+                over[line] += probability
+
+        for line in under:
+            if total < line:
+                under[line] += probability
+
+        if home_goals > 0 and away_goals > 0:
+            btts_yes += probability
+
+        score_list.append((
+            probability,
+            home_goals,
+            away_goals,
+        ))
+
+    score_list.sort(reverse=True)
+
+    return {
+        "home_win": home_win,
+        "draw": draw,
+        "away_win": away_win,
+        "1X": home_win + draw,
+        "X2": away_win + draw,
+        "over": over,
+        "under": under,
+        "btts_yes": btts_yes,
+        "btts_no": 1.0 - btts_yes,
+        "scores": score_list[:5],
+        "remaining_home": remaining_home,
+        "remaining_away": remaining_away,
+    }
+
+
+# =========================================================
+# AFFICHAGE DES PROBABILITÉS
+# =========================================================
+
+def pct(value):
+    return f"{value * 100:.1f} %"
+
+
+def display_markets(markets):
+    st.markdown("#### 🏆 Résultat du match")
 
     col1, col2, col3 = st.columns(3)
 
+    col1.metric("Victoire domicile", pct(markets["home_win"]))
+    col2.metric("Match nul", pct(markets["draw"]))
+    col3.metric("Victoire extérieur", pct(markets["away_win"]))
+
+    col1, col2 = st.columns(2)
+    col1.metric("Double chance 1X", pct(markets["1X"]))
+    col2.metric("Double chance X2", pct(markets["X2"]))
+
+    st.markdown("#### ⚽ Probabilité de buts")
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric("Plus de 0,5", pct(markets["over"][0.5]))
+    col2.metric("Plus de 1,5", pct(markets["over"][1.5]))
+    col3.metric("Plus de 2,5", pct(markets["over"][2.5]))
+    col4.metric("Plus de 3,5", pct(markets["over"][3.5]))
+
+    col1, col2 = st.columns(2)
+    col1.metric("Moins de 2,5", pct(markets["under"][2.5]))
+    col2.metric("Moins de 3,5", pct(markets["under"][3.5]))
+
+    st.markdown("#### 🎯 Les deux équipes marquent")
+
+    col1, col2 = st.columns(2)
+    col1.metric("BTTS — Oui", pct(markets["btts_yes"]))
+    col2.metric("BTTS — Non", pct(markets["btts_no"]))
+
+    st.markdown("#### 🔢 Scores exacts les plus probables")
+
+    score_columns = st.columns(5)
+
+    for index, (probability, home_goals, away_goals) in enumerate(
+        markets["scores"]
+    ):
+        score_columns[index].metric(
+            f"Score {index + 1}",
+            f"{home_goals} - {away_goals}",
+            pct(probability),
+        )
+
+
+def show_team_stats(home_team, away_team, analysis):
+    home_stats = analysis["home_stats"]
+    away_stats = analysis["away_stats"]
+
+    st.markdown("#### 🏠 Analyse domicile / extérieur")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown(f"**{home_team} — à domicile**")
+        st.write(f"Matchs utilisés : {home_stats['count']}")
+        st.write(f"Forme récente : {home_stats['form']}")
+        st.write(
+            f"Buts marqués / match : "
+            f"{home_stats['avg_scored']:.2f}"
+        )
+        st.write(
+            f"Buts encaissés / match : "
+            f"{home_stats['avg_conceded']:.2f}"
+        )
+
+        if home_stats.get("fallback"):
+            st.caption(
+                "Peu de données à domicile : statistiques de remplacement utilisées."
+            )
+
+    with col2:
+        st.markdown(f"**{away_team} — à l'extérieur**")
+        st.write(f"Matchs utilisés : {away_stats['count']}")
+        st.write(f"Forme récente : {away_stats['form']}")
+        st.write(
+            f"Buts marqués / match : "
+            f"{away_stats['avg_scored']:.2f}"
+        )
+        st.write(
+            f"Buts encaissés / match : "
+            f"{away_stats['avg_conceded']:.2f}"
+        )
+
+        if away_stats.get("fallback"):
+            st.caption(
+                "Peu de données à l'extérieur : statistiques de remplacement utilisées."
+            )
+
+    col1, col2 = st.columns(2)
+
     col1.metric(
-        "Buts attendus domicile",
+        f"Buts attendus — {home_team}",
         f"{analysis['expected_home']:.2f}",
     )
 
     col2.metric(
-        "Buts attendus extérieur",
+        f"Buts attendus — {away_team}",
         f"{analysis['expected_away']:.2f}",
     )
 
-    col3.metric(
-        "Matchs récents utilisés",
-        f"{analysis['home_stats']['count']} / "
-        f"{analysis['away_stats']['count']}",
-    )
 
-    st.markdown("#### 📊 Probabilités de chaque marché")
+def show_prematch(match):
+    home_team = (match.get("homeTeam") or {}).get("name", "Domicile")
+    away_team = (match.get("awayTeam") or {}).get("name", "Extérieur")
 
-    # Afficher les marchés par ordre de probabilité décroissante.
-    sorted_markets = sorted(
-        analysis["markets"].items(),
-        key=lambda item: item[1],
-        reverse=True,
-    )
+    competition = match.get("_competition_label", "Championnat")
+    utc_date = match.get("utcDate")
 
-    for start in range(0, len(sorted_markets), 2):
-        cols = st.columns(2)
+    st.markdown("---")
+    st.subheader(f"⚽ {home_team} - {away_team}")
+    st.caption(f"{competition} · Coup d'envoi : {format_local_time(utc_date)}")
 
-        for offset, col in enumerate(cols):
-            index = start + offset
+    with st.spinner(f"Analyse de {home_team} - {away_team}..."):
+        try:
+            analysis = analyze_match(match)
 
-            if index >= len(sorted_markets):
-                continue
+            if not analysis:
+                st.warning("Impossible de récupérer les identifiants des équipes.")
+                return
 
-            label, probability = sorted_markets[index]
+            show_team_stats(home_team, away_team, analysis)
+            display_markets(analysis["markets"])
 
-            with col:
-                st.markdown(
-                    f"**{probability_color(probability)} {label}**"
-                )
-
-                st.progress(
-                    max(0.0, min(1.0, probability))
-                )
-
-                st.caption(
-                    f"{probability * 100:.1f} % estimés"
-                )
-
-    with st.expander("📈 Forme récente des équipes"):
-        left, right = st.columns(2)
-
-        with left:
-            st.markdown(f"**{analysis['home']}**")
-            st.write(
-                f"Forme : {analysis['home_stats']['form']}"
-            )
-            st.write(
-                f"Buts marqués par match : "
-                f"{analysis['home_stats']['scored']:.2f}"
-            )
-            st.write(
-                f"Buts encaissés par match : "
-                f"{analysis['home_stats']['conceded']:.2f}"
+        except Exception as exc:
+            st.error(
+                "Impossible d'analyser ce match. "
+                f"Détail : {exc}"
             )
 
-        with right:
-            st.markdown(f"**{analysis['away']}**")
-            st.write(
-                f"Forme : {analysis['away_stats']['form']}"
-            )
-            st.write(
-                f"Buts marqués par match : "
-                f"{analysis['away_stats']['scored']:.2f}"
-            )
-            st.write(
-                f"Buts encaissés par match : "
-                f"{analysis['away_stats']['conceded']:.2f}"
-            )
 
-    with st.expander("🎯 Scores exacts théoriques"):
-        for item in analysis["top_scores"]:
-            st.write(
-                f"**{item['score']}** : "
-                f"{item['probability'] * 100:.1f} %"
-            )
+def format_local_time(utc_date):
+    if not utc_date:
+        return "Horaire indisponible"
 
-    st.divider()
+    try:
+        parsed = datetime.fromisoformat(
+            utc_date.replace("Z", "+00:00")
+        )
+
+        return parsed.astimezone(LOCAL_TZ).strftime("%d/%m/%Y à %H:%M")
+
+    except Exception:
+        return utc_date
 
 
-# =====================================================
-# APPLICATION
-# =====================================================
+def show_live_match(match):
+    home_team = (match.get("homeTeam") or {}).get("name", "Domicile")
+    away_team = (match.get("awayTeam") or {}).get("name", "Extérieur")
+
+    competition = match.get("_competition_label", "Championnat")
+    status = match.get("status", "LIVE")
+    minute = match.get("minute")
+
+    home_score, away_score = live_score(match)
+
+    if minute is not None:
+        minute_text = f"{minute}'"
+    elif status == "PAUSED":
+        minute_text = "Mi-temps / pause"
+    else:
+        minute_text = status.replace("_", " ")
+
+    st.markdown("---")
+    st.subheader(f"🔴 {home_team} {home_score} - {away_score} {away_team}")
+    st.caption(f"{competition} · {minute_text}")
+
+    if status == "PAUSED":
+        st.info("Le match est en pause. La minute exacte peut ne pas être fournie.")
+
+    with st.spinner("Calcul de l'estimation en direct..."):
+        try:
+            analysis = analyze_match(match)
+
+            if not analysis:
+                st.warning("Données insuffisantes pour ce match.")
+                return
+
+            if minute is None:
+                minute = 45
+
+            markets = calculate_live_markets(
+                analysis["expected_home"],
+                analysis["expected_away"],
+                home_score,
+                away_score,
+                minute,
+            )
+
+            st.info(
+                "Estimation statistique de la fin du match. "
+                "Elle utilise le score actuel, la minute et les statistiques "
+                "pré-match ; elle ne dispose pas nécessairement des tirs, "
+                "des xG ou des cartons en temps réel."
+            )
+
+            st.markdown("#### 📈 Probabilités estimées à la fin du match")
+            display_markets(markets)
+
+            st.caption(
+                f"Buts supplémentaires attendus selon le modèle : "
+                f"{markets['remaining_home']:.2f} pour {home_team}, "
+                f"{markets['remaining_away']:.2f} pour {away_team}."
+            )
+
+        except Exception as exc:
+            st.error(f"Analyse en direct indisponible : {exc}")
+
+
+# =========================================================
+# INTERFACE
+# =========================================================
 
 st.title("⚽ FOOT AI PRO")
-st.markdown(
-    "### Tous les matchs, toutes les probabilités, une analyse à la fois."
-)
+st.subheader("Pronostics statistiques domicile / extérieur et matchs en direct")
 
-st.info(
-    "Les pourcentages sont des estimations d'un modèle de Poisson "
-    "simple, et non des garanties. Les probabilités doivent être "
-    "évaluées sur des résultats historiques avant de pouvoir être "
-    "considérées comme fiables."
+st.write(
+    "L'application analyse les statistiques récentes des équipes, "
+    "calcule plusieurs marchés et estime les scores possibles."
 )
 
 if not get_api_key():
-    st.error("La clé API football-data.org n'a pas été trouvée.")
-    st.code(
-        'FOOTBALL_DATA_API_KEY = "TA_CLE_API"',
-        language="toml",
+    st.error(
+        "Clé API manquante. Dans les paramètres Streamlit, "
+        "ajoute le secret FOOTBALL_DATA_API_KEY."
     )
+    st.code('FOOTBALL_DATA_API_KEY = "TA_CLE_API"')
     st.stop()
 
 
-# =====================================================
-# FILTRES
-# =====================================================
+# Sélection des dates
+today = date.today()
 
-with st.sidebar:
-    st.header("🔎 Rechercher les matchs")
+col1, col2 = st.columns(2)
 
-    selected_date = st.date_input(
-        "Date des matchs",
-        value=date.today(),
+with col1:
+    date_from = st.date_input(
+        "Date de début",
+        value=today,
     )
 
-    selected_competitions = st.multiselect(
-        "Championnats",
-        options=list(COMPETITIONS.keys()),
-        default=list(COMPETITIONS.keys()),
+with col2:
+    date_to = st.date_input(
+        "Date de fin",
+        value=today,
     )
 
-    show_button = st.button(
-        "Afficher les matchs",
+if date_to < date_from:
+    st.error("La date de fin doit être égale ou postérieure à la date de début.")
+    st.stop()
+
+competition_names = st.multiselect(
+    "Championnats à analyser",
+    options=list(COMPETITIONS.keys()),
+    default=list(COMPETITIONS.keys()),
+)
+
+col1, col2 = st.columns(2)
+
+with col1:
+    load_button = st.button(
+        "🔎 Charger les matchs",
         use_container_width=True,
     )
 
-    st.caption(
-        "La première ouverture récupère les matchs du jour. "
-        "Tu peux ensuite choisir une autre date."
+with col2:
+    refresh_live_button = st.button(
+        "🔄 Actualiser les matchs en direct",
+        use_container_width=True,
     )
 
-
-# Charge automatiquement les matchs du jour au premier lancement.
-if "loaded_date" not in st.session_state:
-    st.session_state["loaded_date"] = date.today().isoformat()
-    st.session_state["loaded_competitions"] = list(COMPETITIONS.keys())
-    st.session_state["analyses"] = []
-    st.session_state["load_requested"] = True
-
-if show_button:
-    st.session_state["loaded_date"] = selected_date.isoformat()
-    st.session_state["loaded_competitions"] = selected_competitions
-    st.session_state["load_requested"] = True
-
-if st.session_state.get("load_requested"):
-    target_date = st.session_state["loaded_date"]
-    target_competitions = st.session_state["loaded_competitions"]
-
-    all_matches = []
-    errors = []
-
-    if not target_competitions:
-        st.warning("Choisis au moins un championnat.")
-        st.session_state["load_requested"] = False
-        st.stop()
-
-    with st.spinner("Récupération des matchs..."):
-        for competition_name in target_competitions:
-            code = COMPETITIONS[competition_name]
-
-            try:
-                matches = load_matches(
-                    code,
-                    target_date,
-                    target_date,
-                )
-
-                for match in matches:
-                    match["_competition_label"] = competition_name
-
-                all_matches.extend(matches)
-
-            except Exception as exc:
-                errors.append(f"{competition_name} : {exc}")
-
-    # Supprimer les doublons éventuels.
-    unique_matches = {
-        match.get("id"): match
-        for match in all_matches
-        if match.get("id") is not None
-    }
-
-    all_matches = list(unique_matches.values())
-
-    all_matches.sort(
-        key=lambda match: match.get("utcDate", "")
-    )
-
-    analyses = []
-
-    with st.spinner(
-        f"Analyse de {len(all_matches)} match(s)..."
-    ):
-        for match in all_matches:
-            status = match.get("status", "")
-
-            # Ne pas analyser comme prochains matchs les rencontres
-            # déjà terminées ou annulées.
-            if status not in ("SCHEDULED", "TIMED"):
-                continue
-
-            try:
-                analysis = analyze_match(match)
-
-                if analysis:
-                    analysis["competition"] = (
-                        match.get("_competition_label")
-                        or analysis["competition"]
-                    )
-
-                    analyses.append(analysis)
-
-            except Exception as exc:
-                errors.append(
-                    f"{match.get('homeTeam', {}).get('name', '?')} "
-                    f"– {match.get('awayTeam', {}).get('name', '?')} : "
-                    f"{exc}"
-                )
-
-    st.session_state["analyses"] = analyses
-    st.session_state["errors"] = errors
-    st.session_state["load_requested"] = False
+if refresh_live_button:
+    load_matches.clear()
+    load_team_history.clear()
+    load_venue_stats.clear()
+    st.rerun()
 
 
-# =====================================================
-# RÉSULTATS
-# =====================================================
+if "loaded_matches" not in st.session_state:
+    st.session_state.loaded_matches = []
+    st.session_state.load_errors = []
+    st.session_state.last_loaded_range = None
 
-analyses = st.session_state.get("analyses", [])
 
-for error in st.session_state.get("errors", []):
+if load_button or st.session_state.last_loaded_range != (
+    str(date_from),
+    str(date_to),
+    tuple(competition_names),
+):
+    if not competition_names:
+        st.warning("Sélectionne au moins un championnat.")
+    else:
+        with st.spinner("Récupération des matchs..."):
+            matches, errors = load_selected_competitions(
+                competition_names,
+                date_from.isoformat(),
+                date_to.isoformat(),
+            )
+
+            st.session_state.loaded_matches = matches
+            st.session_state.load_errors = errors
+            st.session_state.last_loaded_range = (
+                str(date_from),
+                str(date_to),
+                tuple(competition_names),
+            )
+
+
+for error in st.session_state.load_errors:
     st.warning(error)
 
-target_date = st.session_state.get(
-    "loaded_date",
-    date.today().isoformat(),
-)
 
-st.markdown(f"## 📅 Matchs du {target_date}")
+matches = st.session_state.loaded_matches
 
-if not analyses:
-    st.warning(
-        "Aucun match à venir trouvé pour cette date et ces compétitions. "
-        "Essaie une autre date ou vérifie l'accès de ta clé API."
-    )
+live_matches = [
+    match for match in matches
+    if match.get("status") in LIVE_STATUSES
+]
+
+upcoming_matches = [
+    match for match in matches
+    if match.get("status") in UPCOMING_STATUSES
+]
+
+other_matches = [
+    match for match in matches
+    if match.get("status") not in LIVE_STATUSES | UPCOMING_STATUSES
+]
+
+
+# =========================================================
+# SECTION EN DIRECT
+# =========================================================
+
+st.markdown("---")
+st.header("🔴 Matchs en direct")
+
+if live_matches:
+    st.success(f"{len(live_matches)} match(s) en direct trouvé(s).")
+
+    for match in live_matches:
+        show_live_match(match)
+
 else:
-    st.success(f"{len(analyses)} match(s) à analyser.")
-
-    # Filtre rapide par équipe.
-    team_search = st.text_input(
-        "🔍 Rechercher une équipe",
-        placeholder="Exemple : PSG, Lille, Arsenal...",
+    st.info(
+        "Aucun match en direct n'a été trouvé dans les championnats "
+        "et la période sélectionnés. Vérifie les dates ou actualise."
     )
 
-    filtered = analyses
 
-    if team_search.strip():
-        query = team_search.strip().lower()
+# =========================================================
+# SECTION AVANT-MATCH
+# =========================================================
 
-        filtered = [
-            item for item in analyses
-            if query in item["home"].lower()
-            or query in item["away"].lower()
-        ]
+st.markdown("---")
+st.header("📅 Pronostics des matchs à venir")
 
-    st.caption(
-        "Ouvre chaque rencontre pour retrouver toutes les "
-        "probabilités calculées pour ce match."
+if upcoming_matches:
+    st.write(f"{len(upcoming_matches)} match(s) à analyser.")
+
+    sort_matches = sorted(
+        upcoming_matches,
+        key=lambda item: item.get("utcDate", ""),
     )
 
-    for analysis in filtered:
-        with st.container(border=True):
-            show_match(analysis)
+    for match in sort_matches:
+        show_prematch(match)
 
+else:
+    st.info(
+        "Aucun match programmé trouvé pour la période et les championnats "
+        "sélectionnés."
+    )
+
+
+# =========================================================
+# AUTRES STATUTS
+# =========================================================
+
+if other_matches:
+    with st.expander("📋 Matchs terminés ou autres statuts"):
+        for match in sorted(
+            other_matches,
+            key=lambda item: item.get("utcDate", ""),
+        ):
+            home = (match.get("homeTeam") or {}).get("name", "?")
+            away = (match.get("awayTeam") or {}).get("name", "?")
+            status = match.get("status", "INCONNU")
+            home_score, away_score = live_score(match)
+
+            if status == "FINISHED":
+                st.write(
+                    f"✅ {home} {home_score} - {away_score} {away} "
+                    f"({match.get('_competition_label', '')})"
+                )
+            else:
+                st.write(
+                    f"ℹ️ {home} - {away} : {status} "
+                    f"({match.get('_competition_label', '')})"
+                )
+
+
+# =========================================================
+# AVERTISSEMENT
+# =========================================================
+
+st.markdown("---")
 st.caption(
-    "FOOT AI PRO — Analyse statistique. "
-    "Les données de blessures, les compositions officielles "
-    "et les nouvelles de dernière minute ne sont pas incluses "
-    "dans cette version."
+    "FOOT AI PRO fournit des estimations statistiques et non des garanties. "
+    "Les probabilités ne sont pas des cotes de bookmaker. "
+    "Les compositions, blessures, suspensions, statistiques détaillées en direct "
+    "et informations de dernière minute ne sont pas automatiquement disponibles "
+    "avec toutes les offres de l'API."
 )
