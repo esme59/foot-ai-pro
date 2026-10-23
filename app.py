@@ -356,8 +356,37 @@ def match_date_local(raw):
 
 
 def get_market_pick(predictions):
-    # Choix automatique du marché le plus probable, parmi les marchés affichés.
+    """
+    Mode audacieux :
+    privilégie les deux équipes qui marquent et les marchés de buts.
+    """
+
     markets = predictions["markets"]
+
+    priorities = {
+        "Les deux marquent : OUI": 1.25,
+        "+2.5 buts": 1.20,
+        "+3.5 buts": 1.15,
+        "Victoire domicile": 1.00,
+        "Victoire extérieur": 1.00,
+        "Match nul": 0.90,
+    }
+
+    candidates = []
+
+    for market, weight in priorities.items():
+        probability = markets.get(market, 0)
+
+        # Écarte les marchés dont la probabilité estimée est trop faible.
+        if probability >= 0.45:
+            score = probability * weight
+            candidates.append((score, market, probability))
+
+    if candidates:
+        _, market, probability = max(candidates)
+        return market, probability
+
+    # Solution de secours si aucun marché prioritaire n'atteint le seuil.
     market = max(markets, key=markets.get)
     return market, markets[market]
 
