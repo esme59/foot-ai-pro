@@ -712,7 +712,7 @@ with tab_history:
         st.caption("L'historique apparaîtra après le premier lancement d'analyse.")
 
 st.divider()
-st.caption(
+st.caption()
     "FOOT AI PRO V5+ • Modèle Poisson simplifié. Les probabilités sont indicatives et "
     "dépendent des données accessibles via football-data.org. L'historique SQLite est local "
     "à l'instance Streamlit ; selon l'hébergement, il peut ne pas être conservé après un redéploiement."
