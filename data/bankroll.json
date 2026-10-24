@@ -1,1124 +1,223 @@
-{
-  "bankroll_initiale": 20.0,
-  "bankroll_actuelle": 0.0,
-  "benefice_total": 0.0,
-  "mises_totales": 20.0,
-  "gains_totaux": 0.0,
-  "paris": [
-    {
-      "match_id": 559652,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-24T18:45:00Z",
-      "domicile": "Racing Club de Lens",
-      "exterieur": "Paris FC",
-      "marche": "Moins de 3,5 buts",
-      "probabilite": 86.82,
-      "cote_estimee": 1.15,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "0-1",
-      "buts_attendus_domicile": 0.91,
-      "buts_attendus_exterieur": 1.03,
-      "date_creation": "2026-10-24T17:52:27.445503+00:00"
-    },
-    {
-      "match_id": 559650,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-25T14:00:00Z",
-      "domicile": "AS Monaco FC",
-      "exterieur": "Lille OSC",
-      "marche": "Moins de 3,5 buts",
-      "probabilite": 87.53,
-      "cote_estimee": 1.14,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "1-0",
-      "buts_attendus_domicile": 1.21,
-      "buts_attendus_exterieur": 0.69,
-      "date_creation": "2026-10-24T17:52:27.445558+00:00"
-    },
-    {
-      "match_id": 559649,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-25T16:15:00Z",
-      "domicile": "Olympique de Marseille",
-      "exterieur": "Le Havre AC",
-      "marche": "Plus de 1,5 but",
-      "probabilite": 83.26,
-      "cote_estimee": 1.2,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "1-1",
-      "buts_attendus_domicile": 1.51,
-      "buts_attendus_exterieur": 1.72,
-      "date_creation": "2026-10-24T17:52:27.445595+00:00"
-    },
-    {
-      "match_id": 559651,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-25T16:15:00Z",
-      "domicile": "Stade Rennais FC 1901",
-      "exterieur": "RC Strasbourg Alsace",
-      "marche": "Plus de 1,5 but",
-      "probabilite": 95.96,
-      "cote_estimee": 1.04,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "3-1",
-      "buts_attendus_domicile": 3.22,
-      "buts_attendus_exterieur": 1.83,
-      "date_creation": "2026-10-24T17:52:27.445630+00:00"
-    },
-    {
-      "match_id": 559653,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-25T16:15:00Z",
-      "domicile": "Angers SCO",
-      "exterieur": "FC Lorient",
-      "marche": "X2",
-      "probabilite": 76.22,
-      "cote_estimee": 1.31,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "1-1",
-      "buts_attendus_domicile": 1.01,
-      "buts_attendus_exterieur": 1.6,
-      "date_creation": "2026-10-24T17:52:27.445663+00:00"
-    },
-    {
-      "match_id": 559655,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-25T16:15:00Z",
-      "domicile": "Toulouse FC",
-      "exterieur": "ES Troyes AC",
-      "marche": "1X",
-      "probabilite": 83.08,
-      "cote_estimee": 1.2,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "1-0",
-      "buts_attendus_domicile": 1.51,
-      "buts_attendus_exterieur": 0.69,
-      "date_creation": "2026-10-24T22:40:12.341726+00:00"
-    },
-    {
-      "match_id": 559656,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-25T16:15:00Z",
-      "domicile": "AJ Auxerre",
-      "exterieur": "Le Mans FC",
-      "marche": "Plus de 1,5 but",
-      "probabilite": 81.56,
-      "cote_estimee": 1.23,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "1-1",
-      "buts_attendus_domicile": 1.88,
-      "buts_attendus_exterieur": 1.22,
-      "date_creation": "2026-10-24T22:40:12.341808+00:00"
-    },
-    {
-      "match_id": 559648,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-26T19:30:00Z",
-      "domicile": "Paris Saint-Germain FC",
-      "exterieur": "Olympique Lyonnais",
-      "marche": "Moins de 3,5 buts",
-      "probabilite": 90.31,
-      "cote_estimee": 1.11,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "1-0",
-      "buts_attendus_domicile": 1.21,
-      "buts_attendus_exterieur": 0.52,
-      "date_creation": "2026-10-24T22:40:12.341877+00:00"
-    },
-    {
-      "match_id": 559644,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-30T18:00:00Z",
-      "domicile": "Le Havre AC",
-      "exterieur": "Paris Saint-Germain FC",
-      "marche": "X2",
-      "probabilite": 94.97,
-      "cote_estimee": 1.05,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "0-2",
-      "buts_attendus_domicile": 0.4,
-      "buts_attendus_exterieur": 2.29,
-      "date_creation": "2026-10-24T22:40:12.341941+00:00"
-    },
-    {
-      "match_id": 559639,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-30T20:05:00Z",
-      "domicile": "Lille OSC",
-      "exterieur": "Racing Club de Lens",
-      "marche": "1X",
-      "probabilite": 78.6,
-      "cote_estimee": 1.27,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "1-0",
-      "buts_attendus_domicile": 1.59,
-      "buts_attendus_exterieur": 0.9,
-      "date_creation": "2026-10-24T22:40:12.342004+00:00"
-    },
-    {
-      "match_id": 559646,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-31T16:15:00Z",
-      "domicile": "OGC Nice",
-      "exterieur": "Stade Rennais FC 1901",
-      "marche": "Plus de 1,5 but",
-      "probabilite": 91.97,
-      "cote_estimee": 1.09,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "3-1",
-      "buts_attendus_domicile": 3.02,
-      "buts_attendus_exterieur": 1.15,
-      "date_creation": "2026-10-24T23:00:40.679249+00:00"
-    },
-    {
-      "match_id": 559640,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-31T19:45:00Z",
-      "domicile": "Olympique Lyonnais",
-      "exterieur": "Angers SCO",
-      "marche": "1X",
-      "probabilite": 94.49,
-      "cote_estimee": 1.06,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "3-0",
-      "buts_attendus_domicile": 3.02,
-      "buts_attendus_exterieur": 0.69,
-      "date_creation": "2026-10-24T23:00:40.679346+00:00"
-    },
-    {
-      "match_id": 559641,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-31T19:45:00Z",
-      "domicile": "FC Lorient",
-      "exterieur": "Stade Brestois 29",
-      "marche": "Moins de 3,5 buts",
-      "probabilite": 87.06,
-      "cote_estimee": 1.15,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "1-0",
-      "buts_attendus_domicile": 1.01,
-      "buts_attendus_exterieur": 0.92,
-      "date_creation": "2026-10-24T23:00:40.679424+00:00"
-    },
-    {
-      "match_id": 559643,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-31T19:45:00Z",
-      "domicile": "ES Troyes AC",
-      "exterieur": "Le Mans FC",
-      "marche": "Plus de 1,5 but",
-      "probabilite": 95.04,
-      "cote_estimee": 1.05,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "1-3",
-      "buts_attendus_domicile": 1.41,
-      "buts_attendus_exterieur": 3.36,
-      "date_creation": "2026-10-24T23:00:40.679496+00:00"
-    },
-    {
-      "match_id": 560612,
-      "competition": "Premier League",
-      "date_match": "2026-10-25T14:00:00Z",
-      "domicile": "Liverpool FC",
-      "exterieur": "Brighton & Hove Albion FC",
-      "marche": "X2",
-      "probabilite": 98.05,
-      "cote_estimee": 1.02,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "0-4",
-      "buts_attendus_domicile": 0.59,
-      "buts_attendus_exterieur": 4.08,
-      "date_creation": "2026-10-24T23:00:40.679741+00:00"
-    },
-    {
-      "match_id": 560613,
-      "competition": "Premier League",
-      "date_match": "2026-10-25T14:00:00Z",
-      "domicile": "Crystal Palace FC",
-      "exterieur": "Newcastle United FC",
-      "marche": "Plus de 1,5 but",
-      "probabilite": 72.28,
-      "cote_estimee": 1.38,
-      "score_prevu": "1-1",
-      "buts_attendus_domicile": 1.45,
-      "buts_attendus_exterieur": 1.1,
-      "date_creation": "2026-10-24T23:13:30.335722+00:00",
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0
-    },
-    {
-      "match_id": 560615,
-      "competition": "Premier League",
-      "date_match": "2026-10-25T14:00:00Z",
-      "domicile": "Manchester United FC",
-      "exterieur": "AFC Bournemouth",
-      "marche": "Plus de 1,5 but",
-      "probabilite": 72.28,
-      "cote_estimee": 1.38,
-      "score_prevu": "1-1",
-      "buts_attendus_domicile": 1.45,
-      "buts_attendus_exterieur": 1.1,
-      "date_creation": "2026-10-24T23:13:30.335779+00:00",
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0
-    },
-    {
-      "match_id": 560619,
-      "competition": "Premier League",
-      "date_match": "2026-10-25T14:00:00Z",
-      "domicile": "Hull City AFC",
-      "exterieur": "Brentford FC",
-      "marche": "Plus de 1,5 but",
-      "probabilite": 72.28,
-      "cote_estimee": 1.38,
-      "score_prevu": "1-1",
-      "buts_attendus_domicile": 1.45,
-      "buts_attendus_exterieur": 1.1,
-      "date_creation": "2026-10-24T23:13:30.335826+00:00",
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0
-    },
-    {
-      "match_id": 560621,
-      "competition": "Premier League",
-      "date_match": "2026-10-25T16:30:00Z",
-      "domicile": "Sunderland AFC",
-      "exterieur": "Leeds United FC",
-      "marche": "Plus de 1,5 but",
-      "probabilite": 72.28,
-      "cote_estimee": 1.38,
-      "score_prevu": "1-1",
-      "buts_attendus_domicile": 1.45,
-      "buts_attendus_exterieur": 1.1,
-      "date_creation": "2026-10-24T23:13:30.335872+00:00",
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0
-    },
-    {
-      "match_id": 564720,
-      "competition": "Liga",
-      "date_match": "2026-10-25T13:00:00Z",
-      "domicile": "Athletic Club",
-      "exterieur": "Getafe CF",
-      "marche": "Plus de 1,5 but",
-      "probabilite": 72.28,
-      "cote_estimee": 1.38,
-      "score_prevu": "1-1",
-      "buts_attendus_domicile": 1.45,
-      "buts_attendus_exterieur": 1.1,
-      "date_creation": "2026-10-24T23:13:30.873526+00:00",
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0
+import json
+import shutil
+from pathlib import Path
+from datetime import datetime, date, timezone
+
+# ============================================================
+# NETTOYAGE DE LA BANKROLL VIRTUELLE FOOT AI PRO
+# Conserve les matchs jusqu'au 25 octobre 2026 inclus.
+# Sauvegarde le fichier original avant toute modification.
+# ============================================================
+
+FICHIER = Path("data/bankroll.json")
+DATE_LIMITE = date(2026, 10, 25)
+
+
+def date_du_match(pari):
+    valeur = (
+        pari.get("date_match")
+        or pari.get("match_date")
+        or pari.get("date")
+    )
+
+    if not valeur:
+        raise ValueError(
+            f"Date manquante pour le pari : {pari.get('match_id')}"
+        )
+
+    return datetime.fromisoformat(
+        valeur.replace("Z", "+00:00")
+    ).date()
+
+
+def est_en_attente(pari):
+    statut = str(
+        pari.get("statut", pari.get("status", ""))
+    ).strip().lower()
+
+    return statut in {
+        "en_attente",
+        "en attente",
+        "pending",
     }
-  ],
-  "historique": [],
-  "statistiques": {
-    "total_paris": 20,
-    "paris_gagnes": 0,
-    "paris_perdus": 0,
-    "paris_en_attente": 20,
-    "taux_reussite": 0.0
-  },
-  "derniere_mise_a_jour": "2026-10-24T23:13:32.848528+00:00",
-  "starting_bankroll": 20.0,
-  "bankroll": 0.0,
-  "bets": [
-    {
-      "match_id": 559652,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-24T18:45:00Z",
-      "domicile": "Racing Club de Lens",
-      "exterieur": "Paris FC",
-      "marche": "Moins de 3,5 buts",
-      "probabilite": 86.82,
-      "cote_estimee": 1.15,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "0-1",
-      "buts_attendus_domicile": 0.91,
-      "buts_attendus_exterieur": 1.03,
-      "date_creation": "2026-10-24T17:52:27.445503+00:00",
-      "date": "2026-10-24T18:45:00Z",
-      "match_date": "2026-10-24T18:45:00Z",
-      "league": "Ligue 1",
-      "home": "Racing Club de Lens",
-      "home_team": "Racing Club de Lens",
-      "away": "Paris FC",
-      "away_team": "Paris FC",
-      "pick": "Moins de 3,5 buts",
-      "market": "Moins de 3,5 buts",
-      "pronostic": "Moins de 3,5 buts",
-      "probability": 86.82,
-      "probability_pct": 86.82,
-      "odds": 1.15,
-      "stake": 1.0,
-      "status": "En attente",
-      "result": "En attente",
-      "score": "0-1",
-      "actual_score": "",
-      "settled": false,
-      "profit": 0.0
-    },
-    {
-      "match_id": 559650,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-25T14:00:00Z",
-      "domicile": "AS Monaco FC",
-      "exterieur": "Lille OSC",
-      "marche": "Moins de 3,5 buts",
-      "probabilite": 87.53,
-      "cote_estimee": 1.14,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "1-0",
-      "buts_attendus_domicile": 1.21,
-      "buts_attendus_exterieur": 0.69,
-      "date_creation": "2026-10-24T17:52:27.445558+00:00",
-      "date": "2026-10-25T14:00:00Z",
-      "match_date": "2026-10-25T14:00:00Z",
-      "league": "Ligue 1",
-      "home": "AS Monaco FC",
-      "home_team": "AS Monaco FC",
-      "away": "Lille OSC",
-      "away_team": "Lille OSC",
-      "pick": "Moins de 3,5 buts",
-      "market": "Moins de 3,5 buts",
-      "pronostic": "Moins de 3,5 buts",
-      "probability": 87.53,
-      "probability_pct": 87.53,
-      "odds": 1.14,
-      "stake": 1.0,
-      "status": "En attente",
-      "result": "En attente",
-      "score": "1-0",
-      "actual_score": "",
-      "settled": false,
-      "profit": 0.0
-    },
-    {
-      "match_id": 559649,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-25T16:15:00Z",
-      "domicile": "Olympique de Marseille",
-      "exterieur": "Le Havre AC",
-      "marche": "Plus de 1,5 but",
-      "probabilite": 83.26,
-      "cote_estimee": 1.2,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "1-1",
-      "buts_attendus_domicile": 1.51,
-      "buts_attendus_exterieur": 1.72,
-      "date_creation": "2026-10-24T17:52:27.445595+00:00",
-      "date": "2026-10-25T16:15:00Z",
-      "match_date": "2026-10-25T16:15:00Z",
-      "league": "Ligue 1",
-      "home": "Olympique de Marseille",
-      "home_team": "Olympique de Marseille",
-      "away": "Le Havre AC",
-      "away_team": "Le Havre AC",
-      "pick": "Plus de 1,5 but",
-      "market": "Plus de 1,5 but",
-      "pronostic": "Plus de 1,5 but",
-      "probability": 83.26,
-      "probability_pct": 83.26,
-      "odds": 1.2,
-      "stake": 1.0,
-      "status": "En attente",
-      "result": "En attente",
-      "score": "1-1",
-      "actual_score": "",
-      "settled": false,
-      "profit": 0.0
-    },
-    {
-      "match_id": 559651,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-25T16:15:00Z",
-      "domicile": "Stade Rennais FC 1901",
-      "exterieur": "RC Strasbourg Alsace",
-      "marche": "Plus de 1,5 but",
-      "probabilite": 95.96,
-      "cote_estimee": 1.04,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "3-1",
-      "buts_attendus_domicile": 3.22,
-      "buts_attendus_exterieur": 1.83,
-      "date_creation": "2026-10-24T17:52:27.445630+00:00",
-      "date": "2026-10-25T16:15:00Z",
-      "match_date": "2026-10-25T16:15:00Z",
-      "league": "Ligue 1",
-      "home": "Stade Rennais FC 1901",
-      "home_team": "Stade Rennais FC 1901",
-      "away": "RC Strasbourg Alsace",
-      "away_team": "RC Strasbourg Alsace",
-      "pick": "Plus de 1,5 but",
-      "market": "Plus de 1,5 but",
-      "pronostic": "Plus de 1,5 but",
-      "probability": 95.96,
-      "probability_pct": 95.96,
-      "odds": 1.04,
-      "stake": 1.0,
-      "status": "En attente",
-      "result": "En attente",
-      "score": "3-1",
-      "actual_score": "",
-      "settled": false,
-      "profit": 0.0
-    },
-    {
-      "match_id": 559653,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-25T16:15:00Z",
-      "domicile": "Angers SCO",
-      "exterieur": "FC Lorient",
-      "marche": "X2",
-      "probabilite": 76.22,
-      "cote_estimee": 1.31,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "1-1",
-      "buts_attendus_domicile": 1.01,
-      "buts_attendus_exterieur": 1.6,
-      "date_creation": "2026-10-24T17:52:27.445663+00:00",
-      "date": "2026-10-25T16:15:00Z",
-      "match_date": "2026-10-25T16:15:00Z",
-      "league": "Ligue 1",
-      "home": "Angers SCO",
-      "home_team": "Angers SCO",
-      "away": "FC Lorient",
-      "away_team": "FC Lorient",
-      "pick": "X2",
-      "market": "X2",
-      "pronostic": "X2",
-      "probability": 76.22,
-      "probability_pct": 76.22,
-      "odds": 1.31,
-      "stake": 1.0,
-      "status": "En attente",
-      "result": "En attente",
-      "score": "1-1",
-      "actual_score": "",
-      "settled": false,
-      "profit": 0.0
-    },
-    {
-      "match_id": 559655,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-25T16:15:00Z",
-      "domicile": "Toulouse FC",
-      "exterieur": "ES Troyes AC",
-      "marche": "1X",
-      "probabilite": 83.08,
-      "cote_estimee": 1.2,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "1-0",
-      "buts_attendus_domicile": 1.51,
-      "buts_attendus_exterieur": 0.69,
-      "date_creation": "2026-10-24T22:40:12.341726+00:00",
-      "date": "2026-10-25T16:15:00Z",
-      "match_date": "2026-10-25T16:15:00Z",
-      "league": "Ligue 1",
-      "home": "Toulouse FC",
-      "home_team": "Toulouse FC",
-      "away": "ES Troyes AC",
-      "away_team": "ES Troyes AC",
-      "pick": "1X",
-      "market": "1X",
-      "pronostic": "1X",
-      "probability": 83.08,
-      "probability_pct": 83.08,
-      "odds": 1.2,
-      "stake": 1.0,
-      "status": "En attente",
-      "result": "En attente",
-      "score": "1-0",
-      "actual_score": "",
-      "settled": false,
-      "profit": 0.0
-    },
-    {
-      "match_id": 559656,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-25T16:15:00Z",
-      "domicile": "AJ Auxerre",
-      "exterieur": "Le Mans FC",
-      "marche": "Plus de 1,5 but",
-      "probabilite": 81.56,
-      "cote_estimee": 1.23,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "1-1",
-      "buts_attendus_domicile": 1.88,
-      "buts_attendus_exterieur": 1.22,
-      "date_creation": "2026-10-24T22:40:12.341808+00:00",
-      "date": "2026-10-25T16:15:00Z",
-      "match_date": "2026-10-25T16:15:00Z",
-      "league": "Ligue 1",
-      "home": "AJ Auxerre",
-      "home_team": "AJ Auxerre",
-      "away": "Le Mans FC",
-      "away_team": "Le Mans FC",
-      "pick": "Plus de 1,5 but",
-      "market": "Plus de 1,5 but",
-      "pronostic": "Plus de 1,5 but",
-      "probability": 81.56,
-      "probability_pct": 81.56,
-      "odds": 1.23,
-      "stake": 1.0,
-      "status": "En attente",
-      "result": "En attente",
-      "score": "1-1",
-      "actual_score": "",
-      "settled": false,
-      "profit": 0.0
-    },
-    {
-      "match_id": 559648,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-26T19:30:00Z",
-      "domicile": "Paris Saint-Germain FC",
-      "exterieur": "Olympique Lyonnais",
-      "marche": "Moins de 3,5 buts",
-      "probabilite": 90.31,
-      "cote_estimee": 1.11,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "1-0",
-      "buts_attendus_domicile": 1.21,
-      "buts_attendus_exterieur": 0.52,
-      "date_creation": "2026-10-24T22:40:12.341877+00:00",
-      "date": "2026-10-26T19:30:00Z",
-      "match_date": "2026-10-26T19:30:00Z",
-      "league": "Ligue 1",
-      "home": "Paris Saint-Germain FC",
-      "home_team": "Paris Saint-Germain FC",
-      "away": "Olympique Lyonnais",
-      "away_team": "Olympique Lyonnais",
-      "pick": "Moins de 3,5 buts",
-      "market": "Moins de 3,5 buts",
-      "pronostic": "Moins de 3,5 buts",
-      "probability": 90.31,
-      "probability_pct": 90.31,
-      "odds": 1.11,
-      "stake": 1.0,
-      "status": "En attente",
-      "result": "En attente",
-      "score": "1-0",
-      "actual_score": "",
-      "settled": false,
-      "profit": 0.0
-    },
-    {
-      "match_id": 559644,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-30T18:00:00Z",
-      "domicile": "Le Havre AC",
-      "exterieur": "Paris Saint-Germain FC",
-      "marche": "X2",
-      "probabilite": 94.97,
-      "cote_estimee": 1.05,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "0-2",
-      "buts_attendus_domicile": 0.4,
-      "buts_attendus_exterieur": 2.29,
-      "date_creation": "2026-10-24T22:40:12.341941+00:00",
-      "date": "2026-10-30T18:00:00Z",
-      "match_date": "2026-10-30T18:00:00Z",
-      "league": "Ligue 1",
-      "home": "Le Havre AC",
-      "home_team": "Le Havre AC",
-      "away": "Paris Saint-Germain FC",
-      "away_team": "Paris Saint-Germain FC",
-      "pick": "X2",
-      "market": "X2",
-      "pronostic": "X2",
-      "probability": 94.97,
-      "probability_pct": 94.97,
-      "odds": 1.05,
-      "stake": 1.0,
-      "status": "En attente",
-      "result": "En attente",
-      "score": "0-2",
-      "actual_score": "",
-      "settled": false,
-      "profit": 0.0
-    },
-    {
-      "match_id": 559639,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-30T20:05:00Z",
-      "domicile": "Lille OSC",
-      "exterieur": "Racing Club de Lens",
-      "marche": "1X",
-      "probabilite": 78.6,
-      "cote_estimee": 1.27,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "1-0",
-      "buts_attendus_domicile": 1.59,
-      "buts_attendus_exterieur": 0.9,
-      "date_creation": "2026-10-24T22:40:12.342004+00:00",
-      "date": "2026-10-30T20:05:00Z",
-      "match_date": "2026-10-30T20:05:00Z",
-      "league": "Ligue 1",
-      "home": "Lille OSC",
-      "home_team": "Lille OSC",
-      "away": "Racing Club de Lens",
-      "away_team": "Racing Club de Lens",
-      "pick": "1X",
-      "market": "1X",
-      "pronostic": "1X",
-      "probability": 78.6,
-      "probability_pct": 78.6,
-      "odds": 1.27,
-      "stake": 1.0,
-      "status": "En attente",
-      "result": "En attente",
-      "score": "1-0",
-      "actual_score": "",
-      "settled": false,
-      "profit": 0.0
-    },
-    {
-      "match_id": 559646,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-31T16:15:00Z",
-      "domicile": "OGC Nice",
-      "exterieur": "Stade Rennais FC 1901",
-      "marche": "Plus de 1,5 but",
-      "probabilite": 91.97,
-      "cote_estimee": 1.09,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "3-1",
-      "buts_attendus_domicile": 3.02,
-      "buts_attendus_exterieur": 1.15,
-      "date_creation": "2026-10-24T23:00:40.679249+00:00",
-      "date": "2026-10-31T16:15:00Z",
-      "match_date": "2026-10-31T16:15:00Z",
-      "league": "Ligue 1",
-      "home": "OGC Nice",
-      "home_team": "OGC Nice",
-      "away": "Stade Rennais FC 1901",
-      "away_team": "Stade Rennais FC 1901",
-      "pick": "Plus de 1,5 but",
-      "market": "Plus de 1,5 but",
-      "pronostic": "Plus de 1,5 but",
-      "probability": 91.97,
-      "probability_pct": 91.97,
-      "odds": 1.09,
-      "stake": 1.0,
-      "status": "En attente",
-      "result": "En attente",
-      "score": "3-1",
-      "actual_score": "",
-      "settled": false,
-      "profit": 0.0
-    },
-    {
-      "match_id": 559640,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-31T19:45:00Z",
-      "domicile": "Olympique Lyonnais",
-      "exterieur": "Angers SCO",
-      "marche": "1X",
-      "probabilite": 94.49,
-      "cote_estimee": 1.06,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "3-0",
-      "buts_attendus_domicile": 3.02,
-      "buts_attendus_exterieur": 0.69,
-      "date_creation": "2026-10-24T23:00:40.679346+00:00",
-      "date": "2026-10-31T19:45:00Z",
-      "match_date": "2026-10-31T19:45:00Z",
-      "league": "Ligue 1",
-      "home": "Olympique Lyonnais",
-      "home_team": "Olympique Lyonnais",
-      "away": "Angers SCO",
-      "away_team": "Angers SCO",
-      "pick": "1X",
-      "market": "1X",
-      "pronostic": "1X",
-      "probability": 94.49,
-      "probability_pct": 94.49,
-      "odds": 1.06,
-      "stake": 1.0,
-      "status": "En attente",
-      "result": "En attente",
-      "score": "3-0",
-      "actual_score": "",
-      "settled": false,
-      "profit": 0.0
-    },
-    {
-      "match_id": 559641,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-31T19:45:00Z",
-      "domicile": "FC Lorient",
-      "exterieur": "Stade Brestois 29",
-      "marche": "Moins de 3,5 buts",
-      "probabilite": 87.06,
-      "cote_estimee": 1.15,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "1-0",
-      "buts_attendus_domicile": 1.01,
-      "buts_attendus_exterieur": 0.92,
-      "date_creation": "2026-10-24T23:00:40.679424+00:00",
-      "date": "2026-10-31T19:45:00Z",
-      "match_date": "2026-10-31T19:45:00Z",
-      "league": "Ligue 1",
-      "home": "FC Lorient",
-      "home_team": "FC Lorient",
-      "away": "Stade Brestois 29",
-      "away_team": "Stade Brestois 29",
-      "pick": "Moins de 3,5 buts",
-      "market": "Moins de 3,5 buts",
-      "pronostic": "Moins de 3,5 buts",
-      "probability": 87.06,
-      "probability_pct": 87.06,
-      "odds": 1.15,
-      "stake": 1.0,
-      "status": "En attente",
-      "result": "En attente",
-      "score": "1-0",
-      "actual_score": "",
-      "settled": false,
-      "profit": 0.0
-    },
-    {
-      "match_id": 559643,
-      "competition": "Ligue 1",
-      "date_match": "2026-10-31T19:45:00Z",
-      "domicile": "ES Troyes AC",
-      "exterieur": "Le Mans FC",
-      "marche": "Plus de 1,5 but",
-      "probabilite": 95.04,
-      "cote_estimee": 1.05,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "1-3",
-      "buts_attendus_domicile": 1.41,
-      "buts_attendus_exterieur": 3.36,
-      "date_creation": "2026-10-24T23:00:40.679496+00:00",
-      "date": "2026-10-31T19:45:00Z",
-      "match_date": "2026-10-31T19:45:00Z",
-      "league": "Ligue 1",
-      "home": "ES Troyes AC",
-      "home_team": "ES Troyes AC",
-      "away": "Le Mans FC",
-      "away_team": "Le Mans FC",
-      "pick": "Plus de 1,5 but",
-      "market": "Plus de 1,5 but",
-      "pronostic": "Plus de 1,5 but",
-      "probability": 95.04,
-      "probability_pct": 95.04,
-      "odds": 1.05,
-      "stake": 1.0,
-      "status": "En attente",
-      "result": "En attente",
-      "score": "1-3",
-      "actual_score": "",
-      "settled": false,
-      "profit": 0.0
-    },
-    {
-      "match_id": 560612,
-      "competition": "Premier League",
-      "date_match": "2026-10-25T14:00:00Z",
-      "domicile": "Liverpool FC",
-      "exterieur": "Brighton & Hove Albion FC",
-      "marche": "X2",
-      "probabilite": 98.05,
-      "cote_estimee": 1.02,
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "score_prevu": "0-4",
-      "buts_attendus_domicile": 0.59,
-      "buts_attendus_exterieur": 4.08,
-      "date_creation": "2026-10-24T23:00:40.679741+00:00",
-      "date": "2026-10-25T14:00:00Z",
-      "match_date": "2026-10-25T14:00:00Z",
-      "league": "Premier League",
-      "home": "Liverpool FC",
-      "home_team": "Liverpool FC",
-      "away": "Brighton & Hove Albion FC",
-      "away_team": "Brighton & Hove Albion FC",
-      "pick": "X2",
-      "market": "X2",
-      "pronostic": "X2",
-      "probability": 98.05,
-      "probability_pct": 98.05,
-      "odds": 1.02,
-      "stake": 1.0,
-      "status": "En attente",
-      "result": "En attente",
-      "score": "0-4",
-      "actual_score": "",
-      "settled": false,
-      "profit": 0.0
-    },
-    {
-      "match_id": 560613,
-      "competition": "Premier League",
-      "date_match": "2026-10-25T14:00:00Z",
-      "domicile": "Crystal Palace FC",
-      "exterieur": "Newcastle United FC",
-      "marche": "Plus de 1,5 but",
-      "probabilite": 72.28,
-      "cote_estimee": 1.38,
-      "score_prevu": "1-1",
-      "buts_attendus_domicile": 1.45,
-      "buts_attendus_exterieur": 1.1,
-      "date_creation": "2026-10-24T23:13:30.335722+00:00",
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "date": "2026-10-25T14:00:00Z",
-      "match_date": "2026-10-25T14:00:00Z",
-      "league": "Premier League",
-      "home": "Crystal Palace FC",
-      "home_team": "Crystal Palace FC",
-      "away": "Newcastle United FC",
-      "away_team": "Newcastle United FC",
-      "pick": "Plus de 1,5 but",
-      "market": "Plus de 1,5 but",
-      "pronostic": "Plus de 1,5 but",
-      "probability": 72.28,
-      "probability_pct": 72.28,
-      "odds": 1.38,
-      "stake": 1.0,
-      "status": "En attente",
-      "result": "En attente",
-      "score": "1-1",
-      "actual_score": "",
-      "settled": false,
-      "profit": 0.0
-    },
-    {
-      "match_id": 560615,
-      "competition": "Premier League",
-      "date_match": "2026-10-25T14:00:00Z",
-      "domicile": "Manchester United FC",
-      "exterieur": "AFC Bournemouth",
-      "marche": "Plus de 1,5 but",
-      "probabilite": 72.28,
-      "cote_estimee": 1.38,
-      "score_prevu": "1-1",
-      "buts_attendus_domicile": 1.45,
-      "buts_attendus_exterieur": 1.1,
-      "date_creation": "2026-10-24T23:13:30.335779+00:00",
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "date": "2026-10-25T14:00:00Z",
-      "match_date": "2026-10-25T14:00:00Z",
-      "league": "Premier League",
-      "home": "Manchester United FC",
-      "home_team": "Manchester United FC",
-      "away": "AFC Bournemouth",
-      "away_team": "AFC Bournemouth",
-      "pick": "Plus de 1,5 but",
-      "market": "Plus de 1,5 but",
-      "pronostic": "Plus de 1,5 but",
-      "probability": 72.28,
-      "probability_pct": 72.28,
-      "odds": 1.38,
-      "stake": 1.0,
-      "status": "En attente",
-      "result": "En attente",
-      "score": "1-1",
-      "actual_score": "",
-      "settled": false,
-      "profit": 0.0
-    },
-    {
-      "match_id": 560619,
-      "competition": "Premier League",
-      "date_match": "2026-10-25T14:00:00Z",
-      "domicile": "Hull City AFC",
-      "exterieur": "Brentford FC",
-      "marche": "Plus de 1,5 but",
-      "probabilite": 72.28,
-      "cote_estimee": 1.38,
-      "score_prevu": "1-1",
-      "buts_attendus_domicile": 1.45,
-      "buts_attendus_exterieur": 1.1,
-      "date_creation": "2026-10-24T23:13:30.335826+00:00",
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "date": "2026-10-25T14:00:00Z",
-      "match_date": "2026-10-25T14:00:00Z",
-      "league": "Premier League",
-      "home": "Hull City AFC",
-      "home_team": "Hull City AFC",
-      "away": "Brentford FC",
-      "away_team": "Brentford FC",
-      "pick": "Plus de 1,5 but",
-      "market": "Plus de 1,5 but",
-      "pronostic": "Plus de 1,5 but",
-      "probability": 72.28,
-      "probability_pct": 72.28,
-      "odds": 1.38,
-      "stake": 1.0,
-      "status": "En attente",
-      "result": "En attente",
-      "score": "1-1",
-      "actual_score": "",
-      "settled": false,
-      "profit": 0.0
-    },
-    {
-      "match_id": 560621,
-      "competition": "Premier League",
-      "date_match": "2026-10-25T16:30:00Z",
-      "domicile": "Sunderland AFC",
-      "exterieur": "Leeds United FC",
-      "marche": "Plus de 1,5 but",
-      "probabilite": 72.28,
-      "cote_estimee": 1.38,
-      "score_prevu": "1-1",
-      "buts_attendus_domicile": 1.45,
-      "buts_attendus_exterieur": 1.1,
-      "date_creation": "2026-10-24T23:13:30.335872+00:00",
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "date": "2026-10-25T16:30:00Z",
-      "match_date": "2026-10-25T16:30:00Z",
-      "league": "Premier League",
-      "home": "Sunderland AFC",
-      "home_team": "Sunderland AFC",
-      "away": "Leeds United FC",
-      "away_team": "Leeds United FC",
-      "pick": "Plus de 1,5 but",
-      "market": "Plus de 1,5 but",
-      "pronostic": "Plus de 1,5 but",
-      "probability": 72.28,
-      "probability_pct": 72.28,
-      "odds": 1.38,
-      "stake": 1.0,
-      "status": "En attente",
-      "result": "En attente",
-      "score": "1-1",
-      "actual_score": "",
-      "settled": false,
-      "profit": 0.0
-    },
-    {
-      "match_id": 564720,
-      "competition": "Liga",
-      "date_match": "2026-10-25T13:00:00Z",
-      "domicile": "Athletic Club",
-      "exterieur": "Getafe CF",
-      "marche": "Plus de 1,5 but",
-      "probabilite": 72.28,
-      "cote_estimee": 1.38,
-      "score_prevu": "1-1",
-      "buts_attendus_domicile": 1.45,
-      "buts_attendus_exterieur": 1.1,
-      "date_creation": "2026-10-24T23:13:30.873526+00:00",
-      "mise": 1.0,
-      "statut": "EN_ATTENTE",
-      "gain": 0.0,
-      "date": "2026-10-25T13:00:00Z",
-      "match_date": "2026-10-25T13:00:00Z",
-      "league": "Liga",
-      "home": "Athletic Club",
-      "home_team": "Athletic Club",
-      "away": "Getafe CF",
-      "away_team": "Getafe CF",
-      "pick": "Plus de 1,5 but",
-      "market": "Plus de 1,5 but",
-      "pronostic": "Plus de 1,5 but",
-      "probability": 72.28,
-      "probability_pct": 72.28,
-      "odds": 1.38,
-      "stake": 1.0,
-      "status": "En attente",
-      "result": "En attente",
-      "score": "1-1",
-      "actual_score": "",
-      "settled": false,
-      "profit": 0.0
+
+
+def main():
+    if not FICHIER.exists():
+        print(f"ERREUR : fichier introuvable : {FICHIER}")
+        return
+
+    # Lecture et vérification avant modification.
+    with FICHIER.open("r", encoding="utf-8") as fichier:
+        donnees = json.load(fichier)
+
+    paris = donnees.get("paris")
+
+    if not isinstance(paris, list):
+        print("ERREUR : la liste 'paris' est absente ou invalide.")
+        return
+
+    # Vérifier les dates avant de modifier quoi que ce soit.
+    for pari in paris:
+        date_du_match(pari)
+
+    paris_conserves = []
+    paris_supprimes = []
+
+    for pari in paris:
+        if date_du_match(pari) <= DATE_LIMITE:
+            paris_conserves.append(pari)
+        else:
+            paris_supprimes.append(pari)
+
+    # Calculer l'argent à restituer pour les paris supprimés
+    # uniquement s'ils sont encore en attente.
+    remboursement = sum(
+        float(pari.get("mise", pari.get("stake", 0.0)))
+        for pari in paris_supprimes
+        if est_en_attente(pari)
+    )
+
+    # Ne pas écraser le fichier si aucun pari ne doit être supprimé.
+    if not paris_supprimes:
+        print("Aucun pari après le 25 octobre 2026.")
+        print("Aucune modification effectuée.")
+        return
+
+    # Créer une sauvegarde.
+    sauvegarde = FICHIER.with_name("bankroll.json.backup")
+    shutil.copy2(FICHIER, sauvegarde)
+
+    # Mettre à jour la liste principale.
+    donnees["paris"] = paris_conserves
+
+    # Synchroniser la liste utilisée par le tableau de bord.
+    nouveaux_bets = []
+
+    for pari in paris_conserves:
+        bet = dict(pari)
+
+        bet.setdefault("date", pari.get("date_match", ""))
+        bet.setdefault("match_date", pari.get("date_match", ""))
+        bet.setdefault("league", pari.get("competition", ""))
+        bet.setdefault("home", pari.get("domicile", ""))
+        bet.setdefault("home_team", pari.get("domicile", ""))
+        bet.setdefault("away", pari.get("exterieur", ""))
+        bet.setdefault("away_team", pari.get("exterieur", ""))
+        bet.setdefault("pick", pari.get("marche", ""))
+        bet.setdefault("market", pari.get("marche", ""))
+        bet.setdefault("pronostic", pari.get("marche", ""))
+        bet.setdefault("probability", pari.get("probabilite", 0.0))
+        bet.setdefault("probability_pct", pari.get("probabilite", 0.0))
+        bet.setdefault("odds", pari.get("cote_estimee", 0.0))
+        bet.setdefault("stake", pari.get("mise", 0.0))
+        bet.setdefault("status", "En attente")
+        bet.setdefault("result", "En attente")
+        bet.setdefault("score", pari.get("score_prevu", ""))
+        bet.setdefault("actual_score", "")
+        bet.setdefault("settled", False)
+        bet.setdefault("profit", 0.0)
+
+        nouveaux_bets.append(bet)
+
+    donnees["bets"] = nouveaux_bets
+
+    # Calculer les statistiques à partir des paris conservés.
+    gagnes = sum(
+        1 for pari in paris_conserves
+        if str(pari.get("statut", "")).upper() == "GAGNE"
+    )
+
+    perdus = sum(
+        1 for pari in paris_conserves
+        if str(pari.get("statut", "")).upper() == "PERDU"
+    )
+
+    en_attente = sum(
+        1 for pari in paris_conserves
+        if est_en_attente(pari)
+    )
+
+    regles = gagnes + perdus
+    taux = round((gagnes / regles) * 100, 2) if regles else 0.0
+
+    donnees["statistiques"] = {
+        "total_paris": len(paris_conserves),
+        "paris_gagnes": gagnes,
+        "paris_perdus": perdus,
+        "paris_en_attente": en_attente,
+        "taux_reussite": taux,
     }
-  ],
-  "history": [
-    {
-      "date": "2026-10-24",
-      "bankroll": 20.0,
-      "bets_total": 2,
-      "open_bets": 2,
-      "wins": 0,
-      "losses": 0,
-      "profit": 0
-    }
-  ],
-  "message": "Aucun nouveau pari ne correspond aux critères. Les paris existants ont été mis à jour.",
-  "day": "2026-10-24T17:47:58.113187+00:00",
-  "stats": {
-    "wins": 0,
-    "losses": 0,
-    "settled": 0,
-    "win_rate": 0.0,
-    "profit": 0,
-    "bankroll": 20.0
-  },
-  "profit": 0.0
-}
+
+    # Recalculer les sommes et restituer les mises supprimées.
+    bankroll_initiale = float(
+        donnees.get("bankroll_initiale", 20.0)
+    )
+
+    bankroll_actuelle = float(
+        donnees.get(
+            "bankroll_actuelle",
+            donnees.get("bankroll", bankroll_initiale),
+        )
+    )
+
+    donnees["bankroll_actuelle"] = round(
+        bankroll_actuelle + remboursement, 2
+    )
+    donnees["bankroll"] = donnees["bankroll_actuelle"]
+    donnees["starting_bankroll"] = bankroll_initiale
+
+    donnees["mises_totales"] = round(
+        sum(float(p.get("mise", 0.0)) for p in paris_conserves),
+        2,
+    )
+
+    donnees["gains_totaux"] = round(
+        sum(float(p.get("gain", 0.0)) for p in paris_conserves),
+        2,
+    )
+
+    donnees["benefice_total"] = round(
+        donnees["gains_totaux"]
+        - sum(
+            float(p.get("mise", 0.0))
+            for p in paris_conserves
+            if str(p.get("statut", "")).upper() == "PERDU"
+        ),
+        2,
+    )
+
+    donnees["profit"] = donnees["benefice_total"]
+    donnees["derniere_mise_a_jour"] = (
+        datetime.now(timezone.utc).isoformat()
+    )
+    donnees["day"] = donnees["derniere_mise_a_jour"]
+
+    # Conserver les anciennes clés historiques sans les effacer.
+    donnees["history"] = donnees.get("history", [])
+    donnees["historique"] = donnees.get("historique", [])
+
+    # Écriture atomique : le fichier temporaire est remplacé
+    # seulement après la génération du nouveau JSON.
+    temporaire = FICHIER.with_suffix(".json.tmp")
+
+    with temporaire.open("w", encoding="utf-8") as fichier:
+        json.dump(donnees, fichier, ensure_ascii=False, indent=2)
+        fichier.write("\n")
+
+    temporaire.replace(FICHIER)
+
+    print("NETTOYAGE TERMINÉ")
+    print("-----------------")
+    print(f"Paris conservés : {len(paris_conserves)}")
+    print(f"Paris supprimés : {len(paris_supprimes)}")
+    print(f"Remboursement virtuel : {remboursement:.2f} €")
+    print(
+        "Capital disponible : "
+        f"{donnees['bankroll_actuelle']:.2f} €"
+    )
+    print(f"Sauvegarde : {sauvegarde}")
+
+
+if __name__ == "__main__":
+    main()
