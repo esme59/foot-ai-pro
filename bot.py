@@ -37,7 +37,6 @@ PROBA_RISQUEE = 0.50
 FRACTION_PRUDENTE = 0.02
 FRACTION_RISQUEE = 0.015
 
-
 # ============================================================
 # ÉTAT ET SAUVEGARDE
 # ============================================================
@@ -83,7 +82,6 @@ def load_state():
 
     return state
 
-
 def save_state(state):
     os.makedirs("data", exist_ok=True)
     temp = STATE_FILE + ".tmp"
@@ -92,7 +90,6 @@ def save_state(state):
         json.dump(state, f, ensure_ascii=False, indent=2)
 
     os.replace(temp, STATE_FILE)
-
 
 # ============================================================
 # API FOOTBALL-DATA.ORG
@@ -127,7 +124,6 @@ def get_matches(competition, date_from, date_to, api_key):
 
     return response.json().get("matches", [])
 
-
 # ============================================================
 # MODÈLE DE POISSON
 # ============================================================
@@ -137,7 +133,6 @@ def poisson(mean, goals):
         return 1.0 if goals == 0 else 0.0
 
     return math.exp(-mean) * mean ** goals / math.factorial(goals)
-
 
 # ============================================================
 # ANALYSE DES MATCHS
@@ -282,7 +277,6 @@ def predict_match(matches, home_team, away_team):
         "sample": sample,
     }
 
-
 # ============================================================
 # SÉLECTION DES MARCHÉS
 # ============================================================
@@ -310,7 +304,6 @@ def select_pick(prediction, used_markets):
 
     return allowed[0]
 
-
 def choose_strategy(probability, sample):
     if probability >= PROBA_PRUDENTE and sample >= 4:
         return "Prudent"
@@ -319,7 +312,6 @@ def choose_strategy(probability, sample):
         return "Risqué"
 
     return None
-
 
 def calculate_stake(bankroll, strategy):
     if bankroll <= 0:
@@ -332,7 +324,6 @@ def calculate_stake(bankroll, strategy):
     )
 
     return round(min(MISE_MAXIMUM, bankroll * fraction), 2)
-
 
 # ============================================================
 # ÉVALUATION DES PARIS
@@ -356,7 +347,6 @@ def evaluate_pick(pick, home, away):
     }
 
     return rules.get(pick)
-
 
 # ============================================================
 # RÈGLEMENT ET BÉNÉFICES
@@ -435,7 +425,6 @@ def settle_bets(state, matches_by_id):
 
     return changed
 
-
 # ============================================================
 # HISTORIQUE ET STATISTIQUES
 # ============================================================
@@ -489,7 +478,6 @@ def update_daily_history(state, today):
 
     state["history"] = history[-180:]
 
-
 # ============================================================
 # COMPTER LES PARIS CRÉÉS AUJOURD'HUI
 # ============================================================
@@ -505,7 +493,6 @@ def count_bets_today(bets, today):
         1 for bet in bets
         if str(bet.get("created_day", ""))[:10] == today
     )
-
 
 # ============================================================
 # EXÉCUTION PRINCIPALE
@@ -765,7 +752,6 @@ def main():
         "Statistiques :",
         json.dumps(state["stats"], ensure_ascii=False),
     )
-
 
 if __name__ == "__main__":
     main()
