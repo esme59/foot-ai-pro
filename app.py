@@ -495,3 +495,4 @@ st.divider()
 st.caption(
     "FOOT AI PRO — les probabilités sont des estimations, pas des garanties. "
     "Les résultats sont récupérés depuis football-data.org selon les compétitions accessibles à ta clé API."
+    )
