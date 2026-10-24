@@ -1,7 +1,7 @@
 {
   "starting_bankroll": 20.0,
   "bankroll": 20.0,
-  "day": "2026-10-24T00:12:46.515245+00:00",
+  "day": "2026-10-24T00:13:06.560405+00:00",
   "bets": [
     {
       "home": "RB Leipzig",
@@ -104,6 +104,40 @@
       "result": "En attente",
       "virtual_odds": null,
       "settled_at": null
+    },
+    {
+      "home": "Como 1907",
+      "away": "US Sassuolo Calcio",
+      "pick": "Plus de 1,5 but",
+      "probability": 0.8493,
+      "sample": 6,
+      "score": "1-1",
+      "match_id": "558561",
+      "league": "Serie A",
+      "date": "2026-10-24",
+      "utcDate": "2026-10-24T13:00:00Z",
+      "stake": 0.4,
+      "settled": false,
+      "result": "En attente",
+      "virtual_odds": null,
+      "settled_at": null
+    },
+    {
+      "home": "Chelsea FC",
+      "away": "Tottenham Hotspur FC",
+      "pick": "Plus de 1,5 but",
+      "probability": 0.8266,
+      "sample": 6,
+      "score": "1-1",
+      "match_id": "560617",
+      "league": "Premier League",
+      "date": "2026-10-24",
+      "utcDate": "2026-10-24T16:30:00Z",
+      "stake": 0.4,
+      "settled": false,
+      "result": "En attente",
+      "virtual_odds": null,
+      "settled_at": null
     }
   ],
   "history": [
@@ -142,7 +176,13 @@
       "bankroll": 20.0,
       "bets_total": 6,
       "open_bets": 6
+    },
+    {
+      "date": "2026-10-24",
+      "bankroll": 20.0,
+      "bets_total": 8,
+      "open_bets": 8
     }
   ],
-  "message": "Nouveaux paris virtuels : Rayo Vallecano de Madrid - Elche CF: Plus de 1,5 but (86.0 %) | Borussia Dortmund - Eintracht Frankfurt: Plus de 1,5 but (85.6 %)"
+  "message": "Nouveaux paris virtuels : Como 1907 - US Sassuolo Calcio: Plus de 1,5 but (84.9 %) | Chelsea FC - Tottenham Hotspur FC: Plus de 1,5 but (82.7 %)"
 }
