@@ -13,5 +13,74 @@
     "paris_en_attente": 0,
     "taux_reussite": 0.0
   },
-  "derniere_mise_a_jour": null
+  "derniere_mise_a_jour": null,
+  "starting_bankroll": 20.0,
+  "bankroll": 20.0,
+  "bets": [
+    {
+      "home": "Stade Rennais FC 1901",
+      "away": "RC Strasbourg Alsace",
+      "pick": "Plus de 1,5 but",
+      "probability": 0.9096,
+      "sample": 6,
+      "score": "2-1",
+      "lambda_home": 2.017,
+      "lambda_away": 2.0,
+      "match_id": "559651",
+      "league": "Ligue 1",
+      "date": "2026-10-25",
+      "utcDate": "2026-10-25T16:15:00Z",
+      "strategy": "Prudent",
+      "stake": 0.4,
+      "settled": false,
+      "result": "En attente",
+      "virtual_odds": null,
+      "profit": null,
+      "created_day": "2026-10-24",
+      "settled_at": null
+    },
+    {
+      "home": "FC Internazionale Milano",
+      "away": "ACF Fiorentina",
+      "pick": "Plus de 1,5 but",
+      "probability": 0.898,
+      "sample": 6,
+      "score": "2-1",
+      "lambda_home": 2.533,
+      "lambda_away": 1.333,
+      "match_id": "558563",
+      "league": "Serie A",
+      "date": "2026-10-25",
+      "utcDate": "2026-10-25T11:30:00Z",
+      "strategy": "Prudent",
+      "stake": 0.4,
+      "settled": false,
+      "result": "En attente",
+      "virtual_odds": null,
+      "profit": null,
+      "created_day": "2026-10-24",
+      "settled_at": null
+    }
+  ],
+  "history": [
+    {
+      "date": "2026-10-24",
+      "bankroll": 20.0,
+      "bets_total": 2,
+      "open_bets": 2,
+      "wins": 0,
+      "losses": 0,
+      "profit": 0
+    }
+  ],
+  "message": "Nouveaux paris virtuels : Stade Rennais FC 1901 - RC Strasbourg Alsace: Plus de 1,5 but (91.0 %, Prudent, mise 0.40 €) | FC Internazionale Milano - ACF Fiorentina: Plus de 1,5 but (89.8 %, Prudent, mise 0.40 €)",
+  "day": "2026-10-24T17:44:10.226423+00:00",
+  "stats": {
+    "wins": 0,
+    "losses": 0,
+    "settled": 0,
+    "win_rate": 0.0,
+    "profit": 0,
+    "bankroll": 20.0
+  }
 }
