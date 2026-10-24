@@ -1,7 +1,7 @@
 {
   "starting_bankroll": 20.0,
   "bankroll": 20.0,
-  "day": "2026-10-24T00:13:06.560405+00:00",
+  "day": "2026-10-24T00:18:04.195380+00:00",
   "bets": [
     {
       "home": "RB Leipzig",
@@ -138,6 +138,40 @@
       "result": "En attente",
       "virtual_odds": null,
       "settled_at": null
+    },
+    {
+      "home": "Aston Villa FC",
+      "away": "Manchester City FC",
+      "pick": "Plus de 1,5 but",
+      "probability": 0.8255,
+      "sample": 6,
+      "score": "1-2",
+      "match_id": "560614",
+      "league": "Premier League",
+      "date": "2026-10-24",
+      "utcDate": "2026-10-24T11:30:00Z",
+      "stake": 0.4,
+      "settled": false,
+      "result": "En attente",
+      "virtual_odds": null,
+      "settled_at": null
+    },
+    {
+      "home": "Racing Club de Lens",
+      "away": "Paris FC",
+      "pick": "Plus de 1,5 but",
+      "probability": 0.8187,
+      "sample": 6,
+      "score": "1-1",
+      "match_id": "559652",
+      "league": "Ligue 1",
+      "date": "2026-10-24",
+      "utcDate": "2026-10-24T18:45:00Z",
+      "stake": 0.4,
+      "settled": false,
+      "result": "En attente",
+      "virtual_odds": null,
+      "settled_at": null
     }
   ],
   "history": [
@@ -182,7 +216,13 @@
       "bankroll": 20.0,
       "bets_total": 8,
       "open_bets": 8
+    },
+    {
+      "date": "2026-10-24",
+      "bankroll": 20.0,
+      "bets_total": 10,
+      "open_bets": 10
     }
   ],
-  "message": "Nouveaux paris virtuels : Como 1907 - US Sassuolo Calcio: Plus de 1,5 but (84.9 %) | Chelsea FC - Tottenham Hotspur FC: Plus de 1,5 but (82.7 %)"
+  "message": "Nouveaux paris virtuels : Aston Villa FC - Manchester City FC: Plus de 1,5 but (82.5 %) | Racing Club de Lens - Paris FC: Plus de 1,5 but (81.9 %)"
 }
