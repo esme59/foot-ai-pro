@@ -1,0 +1,182 @@
+import json
+import shutil
+from pathlib import Path
+from datetime import datetime, date, timezone
+
+FICHIER = Path("data/bankroll.json")
+DATE_LIMITE = date(2026, 10, 25)
+
+
+def lire_date(pari):
+    valeur = (
+        pari.get("date_match")
+        or pari.get("match_date")
+        or pari.get("date")
+    )
+
+    if not valeur:
+        raise ValueError(
+            f"Date manquante pour le match {pari.get('match_id')}"
+        )
+
+    return datetime.fromisoformat(
+        valeur.replace("Z", "+00:00")
+    ).date()
+
+
+def est_en_attente(pari):
+    statut = str(
+        pari.get("statut", pari.get("status", ""))
+    ).strip().lower()
+
+    return statut in ("en_attente", "en attente", "pending")
+
+
+def main():
+    if not FICHIER.exists():
+        raise FileNotFoundError(
+            f"Fichier introuvable : {FICHIER}"
+        )
+
+    with FICHIER.open("r", encoding="utf-8") as f:
+        donnees = json.load(f)
+
+    paris = donnees.get("paris", [])
+
+    if not isinstance(paris, list):
+        raise ValueError("La liste paris est invalide.")
+
+    # Vérifier toutes les dates avant toute modification.
+    for pari in paris:
+        lire_date(pari)
+
+    conserves = []
+    supprimes = []
+
+    for pari in paris:
+        if lire_date(pari) <= DATE_LIMITE:
+            conserves.append(pari)
+        else:
+            supprimes.append(pari)
+
+    if not supprimes:
+        print("Aucun pari futur à supprimer.")
+        print("Aucune modification effectuée.")
+        return
+
+    # Protection : le script ne doit être exécuté qu'une fois.
+    sauvegarde = FICHIER.with_name("bankroll.json.backup")
+
+    if sauvegarde.exists():
+        raise FileExistsError(
+            "Une sauvegarde existe déjà. "
+            "Arrêt pour éviter un double remboursement."
+        )
+
+    remboursement = sum(
+        float(p.get("mise", p.get("stake", 0)))
+        for p in supprimes
+        if est_en_attente(p)
+    )
+
+    # Sauvegarde du fichier original.
+    shutil.copy2(FICHIER, sauvegarde)
+
+    # Mettre à jour les deux listes.
+    donnees["paris"] = conserves
+
+    anciens_bets = donnees.get("bets", [])
+    ids_conserves = {
+        p.get("match_id") for p in conserves
+    }
+
+    donnees["bets"] = [
+        b for b in anciens_bets
+        if b.get("match_id") in ids_conserves
+    ]
+
+    # Recalculer les statistiques.
+    gagnes = sum(
+        1 for p in conserves
+        if str(p.get("statut", "")).upper() == "GAGNE"
+    )
+
+    perdus = sum(
+        1 for p in conserves
+        if str(p.get("statut", "")).upper() == "PERDU"
+    )
+
+    attente = sum(
+        1 for p in conserves
+        if est_en_attente(p)
+    )
+
+    termines = gagnes + perdus
+    taux = round(gagnes / termines * 100, 2) if termines else 0.0
+
+    donnees["statistiques"] = {
+        "total_paris": len(conserves),
+        "paris_gagnes": gagnes,
+        "paris_perdus": perdus,
+        "paris_en_attente": attente,
+        "taux_reussite": taux,
+    }
+
+    # Rembourser uniquement les mises des paris supprimés
+    # encore en attente.
+    capital = float(
+        donnees.get(
+            "bankroll_actuelle",
+            donnees.get("bankroll", 0)
+        )
+    )
+
+    capital = round(capital + remboursement, 2)
+
+    donnees["bankroll_actuelle"] = capital
+    donnees["bankroll"] = capital
+
+    donnees["mises_totales"] = round(
+        sum(float(p.get("mise", 0)) for p in conserves),
+        2
+    )
+
+    donnees["gains_totaux"] = round(
+        sum(float(p.get("gain", 0)) for p in conserves),
+        2
+    )
+
+    donnees["benefice_total"] = round(
+        sum(
+            float(p.get("gain", 0)) - float(p.get("mise", 0))
+            for p in conserves
+            if str(p.get("statut", "")).upper()
+            in ("GAGNE", "PERDU")
+        ),
+        2
+    )
+
+    donnees["profit"] = donnees["benefice_total"]
+    donnees["derniere_mise_a_jour"] = (
+        datetime.now(timezone.utc).isoformat()
+    )
+
+    # Écriture temporaire puis remplacement du fichier.
+    temporaire = FICHIER.with_suffix(".json.tmp")
+
+    with temporaire.open("w", encoding="utf-8") as f:
+        json.dump(donnees, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+
+    temporaire.replace(FICHIER)
+
+    print("NETTOYAGE TERMINE")
+    print(f"Paris conserves : {len(conserves)}")
+    print(f"Paris supprimes : {len(supprimes)}")
+    print(f"Capital rembourse : {remboursement:.2f} euros")
+    print(f"Capital disponible : {capital:.2f} euros")
+    print(f"Sauvegarde : {sauvegarde}")
+
+
+if __name__ == "__main__":
+    main()
