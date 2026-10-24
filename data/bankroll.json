@@ -1,7 +1,7 @@
 {
   "starting_bankroll": 20.0,
   "bankroll": 20.0,
-  "day": "2026-10-24T00:29:25.766751+00:00",
+  "day": "2026-10-24T10:19:46.839283+00:00",
   "bets": [
     {
       "home": "RB Leipzig",
@@ -229,7 +229,7 @@
       "profit": 0
     }
   ],
-  "message": "Nouveaux paris virtuels : FC Internazionale Milano - ACF Fiorentina: Plus de 1,5 but (89.8 %, Prudent, mise 0.40 €) | Athletic Club - Getafe CF: Moins de 3,5 buts (89.7 %, Prudent, mise 0.40 €)",
+  "message": "Aucun nouveau pari ne correspond aux critères. Les paris existants ont été mis à jour.",
   "stats": {
     "wins": 0,
     "losses": 0,
