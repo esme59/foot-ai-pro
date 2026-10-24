@@ -1,7 +1,7 @@
 {
   "starting_bankroll": 20.0,
   "bankroll": 20.0,
-  "day": "2026-10-24T00:12:19.531733+00:00",
+  "day": "2026-10-24T00:12:46.515245+00:00",
   "bets": [
     {
       "home": "RB Leipzig",
@@ -70,6 +70,40 @@
       "result": "En attente",
       "virtual_odds": null,
       "settled_at": null
+    },
+    {
+      "home": "Rayo Vallecano de Madrid",
+      "away": "Elche CF",
+      "pick": "Plus de 1,5 but",
+      "probability": 0.8597,
+      "sample": 6,
+      "score": "1-1",
+      "match_id": "564718",
+      "league": "Liga",
+      "date": "2026-10-24",
+      "utcDate": "2026-10-24T12:00:00Z",
+      "stake": 0.4,
+      "settled": false,
+      "result": "En attente",
+      "virtual_odds": null,
+      "settled_at": null
+    },
+    {
+      "home": "Borussia Dortmund",
+      "away": "Eintracht Frankfurt",
+      "pick": "Plus de 1,5 but",
+      "probability": 0.8559,
+      "sample": 6,
+      "score": "2-1",
+      "match_id": "565837",
+      "league": "Bundesliga",
+      "date": "2026-10-24",
+      "utcDate": "2026-10-24T16:30:00Z",
+      "stake": 0.4,
+      "settled": false,
+      "result": "En attente",
+      "virtual_odds": null,
+      "settled_at": null
     }
   ],
   "history": [
@@ -102,7 +136,13 @@
       "bankroll": 20.0,
       "bets_total": 4,
       "open_bets": 4
+    },
+    {
+      "date": "2026-10-24",
+      "bankroll": 20.0,
+      "bets_total": 6,
+      "open_bets": 6
     }
   ],
-  "message": "Aucun nouveau pari virtuel. Erreurs API : Ligue 1: Limite API atteinte. Réessaie lors du prochain passage. ; Premier League: Limite API atteinte. Réessaie lors du prochain passage. ; Liga: Limite API atteinte. Réessaie lors du prochain passage. ; Bundesliga: Limite API atteinte. Réessaie lors du prochain passage. ; Serie A: Limite API atteinte. Réessaie lors du prochain passage. ; Ligue des Champions: Limite API atteinte. Réessaie lors du prochain passage."
+  "message": "Nouveaux paris virtuels : Rayo Vallecano de Madrid - Elche CF: Plus de 1,5 but (86.0 %) | Borussia Dortmund - Eintracht Frankfurt: Plus de 1,5 but (85.6 %)"
 }
