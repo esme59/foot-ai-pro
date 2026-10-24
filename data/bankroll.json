@@ -1,7 +1,7 @@
 {
   "starting_bankroll": 20.0,
   "bankroll": 20.0,
-  "day": "2026-10-24T16:48:13.733302+00:00",
+  "day": "2026-10-24T16:49:04.277011+00:00",
   "bets": [
     {
       "home": "RB Leipzig",
@@ -295,7 +295,7 @@
       "profit": 0
     }
   ],
-  "message": "3 nouveau(x) pari(s) virtuel(s) : SS Lazio - Parma Calcio 1913: Double chance 1X (89.3 %, Prudent, mise 0.40 €) | FC Barcelona - Real Madrid CF: Plus de 2,5 buts (85.1 %, Prudent, mise 0.40 €) | AS Roma - Cagliari Calcio: Double chance 1X (84.5 %, Prudent, mise 0.40 €)",
+  "message": "Limite quotidienne atteinte : 5 pari(s) créé(s) aujourd'hui. Aucun nouveau pari ajouté.",
   "stats": {
     "wins": 0,
     "losses": 0,
