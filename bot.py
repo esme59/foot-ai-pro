@@ -1,12 +1,13 @@
 import os
 import json
 import math
+import time
 from datetime import datetime, timedelta, timezone
 
 import requests
 
 # ============================================================
-# FOOT AI PRO BOT V3
+# FOOT AI PRO BOT V3 CORRIGE
 # Simulation virtuelle uniquement - aucun pari réel
 # ============================================================
 
@@ -33,6 +34,10 @@ PROBA_RISQUEE = 0.50
 FRACTION_PRUDENTE = 0.02
 FRACTION_RISQUEE = 0.015
 
+SESSION = requests.Session()
+SESSION.headers.update({"User-Agent": "FOOT-AI-PRO/3.1"})
+
+
 # ============================================================
 # ÉTAT ET SAUVEGARDE
 # ============================================================
@@ -53,20 +58,32 @@ def load_state():
     try:
         with open(STATE_FILE, "r", encoding="utf-8") as f:
             state = json.load(f)
-    except (json.JSONDecodeError, OSError) as exc:
+
+        if not isinstance(state, dict):
+            raise ValueError("Le fichier ne contient pas un objet JSON.")
+
+        state.setdefault("starting_bankroll", CAPITAL_INITIAL)
+        state.setdefault("bankroll", CAPITAL_INITIAL)
+        state.setdefault("bets", [])
+        state.setdefault("history", [])
+        state.setdefault("message", "")
+        state.setdefault("day", "")
+
+        if not isinstance(state["bets"], list):
+            state["bets"] = []
+
+        if not isinstance(state["history"], list):
+            state["history"] = []
+
+        return state
+
+    except (json.JSONDecodeError, OSError, ValueError) as exc:
         raise RuntimeError(
-            "Impossible de lire bankroll.json. "
-            "Ne supprime pas ce fichier : sauvegarde-le avant réparation."
+            "Impossible de lire data/bankroll.json. "
+            "Le fichier n'a pas été modifié. "
+            "Vérifie son contenu avant de continuer."
         ) from exc
 
-    state.setdefault("starting_bankroll", CAPITAL_INITIAL)
-    state.setdefault("bankroll", CAPITAL_INITIAL)
-    state.setdefault("bets", [])
-    state.setdefault("history", [])
-    state.setdefault("message", "")
-    state.setdefault("day", "")
-
-    return state
 
 def save_state(state):
     os.makedirs("data", exist_ok=True)
@@ -77,34 +94,66 @@ def save_state(state):
 
     os.replace(temp, STATE_FILE)
 
+
 # ============================================================
-# API : UNE REQUÊTE PAR COMPÉTITION
+# API FOOTBALL-DATA.ORG
 # ============================================================
 
 def get_matches(competition, date_from, date_to, api_key):
     url = f"{API_BASE}/competitions/{competition}/matches"
 
-    response = requests.get(
-        url,
-        headers={"X-Auth-Token": api_key},
-        params={"dateFrom": date_from, "dateTo": date_to},
-        timeout=25,
-    )
+    try:
+        response = SESSION.get(
+            url,
+            headers={"X-Auth-Token": api_key},
+            params={
+                "dateFrom": date_from,
+                "dateTo": date_to,
+            },
+            timeout=25,
+        )
+    except requests.RequestException as exc:
+        raise RuntimeError(
+            f"Erreur de connexion pour {competition}: {exc}"
+        ) from exc
 
     if response.status_code == 429:
-        raise RuntimeError("Limite de requêtes API atteinte (429).")
+        raise RuntimeError(
+            "Limite API atteinte (429). Réessaie plus tard."
+        )
 
     if response.status_code == 403:
         raise RuntimeError(
             f"Accès refusé à {competition} (403). "
-            "Cette compétition n'est peut-être pas comprise dans ton abonnement."
+            "Vérifie les compétitions autorisées par ton abonnement."
+        )
+
+    if response.status_code == 401:
+        raise RuntimeError(
+            "Clé API refusée (401). Vérifie le secret "
+            "FOOTBALL_DATA_API_KEY dans GitHub."
+        )
+
+    if response.status_code >= 500:
+        raise RuntimeError(
+            f"Serveur football-data.org indisponible "
+            f"({response.status_code})."
         )
 
     response.raise_for_status()
-    return response.json().get("matches", [])
+
+    try:
+        data = response.json()
+    except ValueError as exc:
+        raise RuntimeError(
+            f"Réponse API invalide pour {competition}."
+        ) from exc
+
+    return data.get("matches", [])
+
 
 # ============================================================
-# POISSON
+# PROBABILITE DE POISSON
 # ============================================================
 
 def poisson(mean, goals):
@@ -113,6 +162,7 @@ def poisson(mean, goals):
 
     return math.exp(-mean) * mean ** goals / math.factorial(goals)
 
+
 # ============================================================
 # ANALYSE DES MATCHS
 # ============================================================
@@ -120,6 +170,7 @@ def poisson(mean, goals):
 def predict_match(matches, home_team, away_team):
     league_home = []
     league_away = []
+
     home_scored = []
     home_conceded = []
     away_scored = []
@@ -162,8 +213,6 @@ def predict_match(matches, home_team, away_team):
     avg_home = sum(league_home) / len(league_home)
     avg_away = sum(league_away) / len(league_away)
 
-    # Pondération prudente entre statistiques des équipes
-    # et moyennes de leur compétition.
     def average(values, fallback):
         return sum(values) / len(values) if values else fallback
 
@@ -177,6 +226,7 @@ def predict_match(matches, home_team, away_team):
             home_attack * len(home_scored) + avg_home * 5
         ) / (len(home_scored) + 5)
 
+    if len(home_conceded) < 5:
         home_defense = (
             home_defense * len(home_conceded) + avg_away * 5
         ) / (len(home_conceded) + 5)
@@ -186,6 +236,7 @@ def predict_match(matches, home_team, away_team):
             away_attack * len(away_scored) + avg_away * 5
         ) / (len(away_scored) + 5)
 
+    if len(away_conceded) < 5:
         away_defense = (
             away_defense * len(away_conceded) + avg_home * 5
         ) / (len(away_conceded) + 5)
@@ -238,7 +289,6 @@ def predict_match(matches, home_team, away_team):
         "Double chance X2": probability(lambda h, a: a >= h),
     }
 
-    # Le meilleur score exact est calculé séparément.
     exact_score = max(scores, key=scores.get)
 
     sample = min(len(home_scored), len(away_scored))
@@ -256,26 +306,22 @@ def predict_match(matches, home_team, away_team):
         "sample": sample,
     }
 
+
 # ============================================================
-# CHOIX DES MARCHÉS ET STRATÉGIE
+# SELECTION DES MARCHES
 # ============================================================
 
 def select_pick(prediction, used_markets):
-    markets = prediction["markets"]
-
-    # Les doubles chances très proches de 100 % sont écartées :
-    # elles ne doivent pas être confondues avec une certitude.
     allowed = []
 
-    for name, probability in markets.items():
+    for name, probability in prediction["markets"].items():
         if name in used_markets:
             continue
 
-        if probability < PROBA_RISQUEE or probability >= 0.96:
+        if probability < PROBA_RISQUEE:
             continue
 
-        # Éviter qu'une cote théorique soit trop faible.
-        if probability > 0.90:
+        if probability >= 0.91:
             continue
 
         allowed.append((name, probability))
@@ -283,10 +329,9 @@ def select_pick(prediction, used_markets):
     if not allowed:
         return None
 
-    # Un marché moins courant peut être choisi si sa probabilité
-    # reste correcte, au lieu de prendre toujours le même marché.
     allowed.sort(key=lambda item: item[1], reverse=True)
     return allowed[0]
+
 
 def choose_strategy(probability, sample):
     if probability >= PROBA_PRUDENTE and sample >= 4:
@@ -296,6 +341,7 @@ def choose_strategy(probability, sample):
         return "Risqué"
 
     return None
+
 
 def calculate_stake(bankroll, strategy):
     if bankroll <= 0:
@@ -309,8 +355,9 @@ def calculate_stake(bankroll, strategy):
 
     return round(min(MISE_MAXIMUM, bankroll * fraction), 2)
 
+
 # ============================================================
-# RÉSULTATS DES PARIS
+# REGLEMENT DES PARIS VIRTUELS
 # ============================================================
 
 def evaluate_pick(pick, home, away):
@@ -332,6 +379,7 @@ def evaluate_pick(pick, home, away):
 
     return rules.get(pick)
 
+
 def settle_bets(state, matches_by_id):
     for bet in state["bets"]:
         if bet.get("settled"):
@@ -339,7 +387,7 @@ def settle_bets(state, matches_by_id):
 
         match = matches_by_id.get(str(bet.get("match_id")))
 
-        if not match or match.get("status") != "FINISHED":
+        if not match or match.get("status") not in ("FINISHED", "AWARDED"):
             continue
 
         score = match.get("score", {}).get("fullTime", {})
@@ -349,11 +397,7 @@ def settle_bets(state, matches_by_id):
         if home_goals is None or away_goals is None:
             continue
 
-        won = evaluate_pick(
-            bet.get("pick", ""),
-            home_goals,
-            away_goals,
-        )
+        won = evaluate_pick(bet.get("pick", ""), home_goals, away_goals)
 
         if won is None:
             continue
@@ -364,18 +408,14 @@ def settle_bets(state, matches_by_id):
             min(0.95, float(bet.get("probability", 0.5))),
         )
 
-        # Cote simulée, uniquement pour la simulation.
         virtual_odds = round(0.92 / probability, 2)
-
         profit = (
             round(stake * (virtual_odds - 1), 2)
-            if won
-            else round(-stake, 2)
+            if won else round(-stake, 2)
         )
 
         state["bankroll"] = round(
-            max(0.0, float(state["bankroll"]) + profit),
-            2,
+            max(0.0, float(state["bankroll"]) + profit), 2
         )
 
         bet.update({
@@ -387,21 +427,18 @@ def settle_bets(state, matches_by_id):
             "settled_at": datetime.now(timezone.utc).isoformat(),
         })
 
+
 # ============================================================
-# HISTORIQUE QUOTIDIEN SANS DOUBLONS
+# HISTORIQUE QUOTIDIEN
 # ============================================================
 
 def update_daily_history(state, today):
-    settled = [
-        bet for bet in state["bets"]
-        if bet.get("settled")
-    ]
+    settled = [bet for bet in state["bets"] if bet.get("settled")]
 
     wins = sum(1 for bet in settled if bet.get("result") == "Gagné")
     losses = sum(1 for bet in settled if bet.get("result") == "Perdu")
     profit = round(
-        sum(float(bet.get("profit") or 0) for bet in settled),
-        2,
+        sum(float(bet.get("profit") or 0) for bet in settled), 2
     )
 
     state["stats"] = {
@@ -414,7 +451,6 @@ def update_daily_history(state, today):
         "bankroll": round(float(state["bankroll"]), 2),
     }
 
-    # Remplacer la ligne de la journée plutôt que la dupliquer.
     entry = {
         "date": today,
         "bankroll": round(float(state["bankroll"]), 2),
@@ -431,13 +467,13 @@ def update_daily_history(state, today):
         item for item in state["history"]
         if item.get("date") != today
     ]
-
     history.append(entry)
     history.sort(key=lambda item: item.get("date", ""))
     state["history"] = history[-180:]
 
+
 # ============================================================
-# EXÉCUTION
+# EXECUTION PRINCIPALE
 # ============================================================
 
 def main():
@@ -459,8 +495,11 @@ def main():
     all_matches = []
     errors = []
 
-    # Une requête par compétition ; aucun appel supplémentaire par match.
-    for league, code in COMPETITIONS.items():
+    # Limiter les appels et respecter les quotas de l'API.
+    for index, (league, code) in enumerate(COMPETITIONS.items()):
+        if index:
+            time.sleep(6)
+
         try:
             matches = get_matches(code, date_from, date_to, api_key)
 
@@ -479,12 +518,10 @@ def main():
         if match.get("id") is not None
     }
 
-    # Régler les paris existants avant de créer de nouveaux paris.
     settle_bets(state, matches_by_id)
 
     existing_match_ids = {
-        str(bet.get("match_id"))
-        for bet in state["bets"]
+        str(bet.get("match_id")) for bet in state["bets"]
     }
 
     today_string = today.isoformat()
@@ -495,16 +532,10 @@ def main():
     ]
 
     remaining_slots = max(
-        0,
-        MAX_PARIS_PAR_JOUR - len(bets_today),
+        0, MAX_PARIS_PAR_JOUR - len(bets_today)
     )
 
-    # Diversifier les marchés au cours de la journée.
-    used_markets = {
-        bet.get("pick")
-        for bet in bets_today
-    }
-
+    used_markets = {bet.get("pick") for bet in bets_today}
     candidates = []
 
     for match in matches_by_id.values():
@@ -549,8 +580,6 @@ def main():
 
         selected = select_pick(prediction, used_markets)
 
-        # Si tous les marchés ont déjà été utilisés, on réessaie
-        # sans la restriction de diversité.
         if selected is None:
             selected = select_pick(prediction, set())
 
@@ -575,8 +604,6 @@ def main():
 
         candidates.append(prediction)
 
-    # Équilibrer la sélection : qualité, historique disponible,
-    # et préférence pour les matchs mieux documentés.
     candidates.sort(
         key=lambda item: (
             item["strategy"] == "Prudent",
@@ -633,7 +660,9 @@ def main():
     state["day"] = now.isoformat()
 
     if new_bets:
-        state["message"] = "Nouveaux paris virtuels : " + " | ".join(new_bets)
+        state["message"] = (
+            "Nouveaux paris virtuels : " + " | ".join(new_bets)
+        )
     elif errors:
         state["message"] = "Erreurs API : " + " ; ".join(errors)
     else:
@@ -649,6 +678,7 @@ def main():
     print("Capital virtuel :", state["bankroll"], "€")
     print("Paris enregistrés :", len(state["bets"]))
     print("Statistiques :", json.dumps(state["stats"], ensure_ascii=False))
+
 
 if __name__ == "__main__":
     main()
