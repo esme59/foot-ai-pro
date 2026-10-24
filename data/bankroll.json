@@ -1,7 +1,7 @@
 {
   "starting_bankroll": 20.0,
   "bankroll": 20.0,
-  "day": "2026-10-24T00:18:04.195380+00:00",
+  "day": "2026-10-24T00:29:25.766751+00:00",
   "bets": [
     {
       "home": "RB Leipzig",
@@ -172,57 +172,70 @@
       "result": "En attente",
       "virtual_odds": null,
       "settled_at": null
+    },
+    {
+      "home": "FC Internazionale Milano",
+      "away": "ACF Fiorentina",
+      "pick": "Plus de 1,5 but",
+      "probability": 0.898,
+      "sample": 6,
+      "score": "2-1",
+      "lambda_home": 2.533,
+      "lambda_away": 1.333,
+      "match_id": "558563",
+      "league": "Serie A",
+      "date": "2026-10-25",
+      "utcDate": "2026-10-25T11:30:00Z",
+      "strategy": "Prudent",
+      "stake": 0.4,
+      "settled": false,
+      "result": "En attente",
+      "virtual_odds": null,
+      "profit": null,
+      "created_day": "2026-10-24",
+      "settled_at": null
+    },
+    {
+      "home": "Athletic Club",
+      "away": "Getafe CF",
+      "pick": "Moins de 3,5 buts",
+      "probability": 0.897,
+      "sample": 7,
+      "score": "1-0",
+      "lambda_home": 1.064,
+      "lambda_away": 0.7,
+      "match_id": "564720",
+      "league": "Liga",
+      "date": "2026-10-25",
+      "utcDate": "2026-10-25T13:00:00Z",
+      "strategy": "Prudent",
+      "stake": 0.4,
+      "settled": false,
+      "result": "En attente",
+      "virtual_odds": null,
+      "profit": null,
+      "created_day": "2026-10-24",
+      "settled_at": null
     }
   ],
   "history": [
     {
       "date": "2026-10-24",
       "bankroll": 20.0,
-      "bets_total": 2,
-      "open_bets": 2
-    },
-    {
-      "date": "2026-10-24",
-      "bankroll": 20.0,
-      "bets_total": 2,
-      "open_bets": 2
-    },
-    {
-      "date": "2026-10-24",
-      "bankroll": 20.0,
-      "bets_total": 4,
-      "open_bets": 4
-    },
-    {
-      "date": "2026-10-24",
-      "bankroll": 20.0,
-      "bets_total": 4,
-      "open_bets": 4
-    },
-    {
-      "date": "2026-10-24",
-      "bankroll": 20.0,
-      "bets_total": 4,
-      "open_bets": 4
-    },
-    {
-      "date": "2026-10-24",
-      "bankroll": 20.0,
-      "bets_total": 6,
-      "open_bets": 6
-    },
-    {
-      "date": "2026-10-24",
-      "bankroll": 20.0,
-      "bets_total": 8,
-      "open_bets": 8
-    },
-    {
-      "date": "2026-10-24",
-      "bankroll": 20.0,
-      "bets_total": 10,
-      "open_bets": 10
+      "bets_total": 12,
+      "open_bets": 12,
+      "wins": 0,
+      "losses": 0,
+      "profit": 0
     }
   ],
-  "message": "Nouveaux paris virtuels : Aston Villa FC - Manchester City FC: Plus de 1,5 but (82.5 %) | Racing Club de Lens - Paris FC: Plus de 1,5 but (81.9 %)"
+  "message": "Nouveaux paris virtuels : FC Internazionale Milano - ACF Fiorentina: Plus de 1,5 but (89.8 %, Prudent, mise 0.40 €) | Athletic Club - Getafe CF: Moins de 3,5 buts (89.7 %, Prudent, mise 0.40 €)",
+  "stats": {
+    "wins": 0,
+    "losses": 0,
+    "settled": 0,
+    "win_rate": 0.0,
+    "profit": 0,
+    "bankroll": 20.0
+  }
 }
