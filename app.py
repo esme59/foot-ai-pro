@@ -6,13 +6,6 @@ from datetime import date, timedelta
 import requests
 import streamlit as st
 
-# ============================================================
-# FOOT AI PRO — ANALYSE IA ET SIMULATION
-# API : football-data.org v4
-# Compétitions : FL1, PL, PD, BL1, SA, CL
-# Capital virtuel de départ : 20 €
-# ============================================================
-
 st.set_page_config(
     page_title="FOOT AI PRO",
     page_icon="⚽",
@@ -37,8 +30,175 @@ DATA_FILE = os.path.join(
     "bankroll.json",
 )
 
+
 # ============================================================
-# CLÉ API
+# CHARGEMENT DES DONNEES
+# ============================================================
+
+def load_state():
+    default = {
+        "starting_bankroll": 20.0,
+        "bankroll": 20.0,
+        "day": "",
+        "bets": [],
+        "history": [],
+        "stats": {},
+        "message": "Le bot automatique n'a pas encore été lancé.",
+    }
+
+    try:
+        with open(DATA_FILE, "r", encoding="utf-8") as file:
+            state = json.load(file)
+
+        if not isinstance(state, dict):
+            return default
+
+        for key, value in default.items():
+            state.setdefault(key, value)
+
+        if not isinstance(state.get("bets"), list):
+            state["bets"] = []
+
+        if not isinstance(state.get("history"), list):
+            state["history"] = []
+
+        return state
+
+    except FileNotFoundError:
+        return default
+
+    except (json.JSONDecodeError, OSError):
+        return default
+
+
+def number(value, default=0.0):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def euro(value):
+    return f"{number(value):+.2f} €"
+
+
+def normalise_status(bet):
+    status = str(bet.get("status", "")).upper()
+
+    if status in ("WON", "WIN", "GAGNE", "GAGNÉ"):
+        return "Gagné"
+
+    if status in ("LOST", "LOSS", "PERDU"):
+        return "Perdu"
+
+    if status in ("VOID", "CANCELLED", "ANNULÉ", "ANNULE"):
+        return "Annulé"
+
+    if status in ("FINISHED", "SETTLED", "RESOLVED"):
+        result = str(bet.get("result", "")).upper()
+
+        if result in ("WON", "WIN", "GAGNE", "GAGNÉ"):
+            return "Gagné"
+
+        if result in ("LOST", "LOSS", "PERDU"):
+            return "Perdu"
+
+    return "En attente"
+
+
+def get_stake(bet):
+    return max(0.0, number(bet.get("stake", 0.0)))
+
+
+def get_profit(bet):
+    status = normalise_status(bet)
+
+    if status == "Annulé":
+        return 0.0
+
+    if "profit" in bet:
+        return number(bet.get("profit"))
+
+    if status == "Gagné":
+        return number(bet.get("return_amount")) - get_stake(bet)
+
+    if status == "Perdu":
+        return -get_stake(bet)
+
+    return 0.0
+
+
+def get_market(bet):
+    return (
+        bet.get("pick")
+        or bet.get("market")
+        or bet.get("prediction")
+        or "Marché inconnu"
+    )
+
+
+def get_team_names(bet):
+    home = (
+        bet.get("home")
+        or bet.get("home_team")
+        or bet.get("homeTeam")
+        or "Équipe domicile"
+    )
+
+    away = (
+        bet.get("away")
+        or bet.get("away_team")
+        or bet.get("awayTeam")
+        or "Équipe extérieure"
+    )
+
+    return str(home), str(away)
+
+
+def prepare_bets(bets):
+    prepared = []
+
+    for original in bets:
+        if not isinstance(original, dict):
+            continue
+
+        bet = dict(original)
+
+        bet["_status"] = normalise_status(bet)
+        bet["_stake"] = get_stake(bet)
+        bet["_profit"] = get_profit(bet)
+        bet["_market"] = get_market(bet)
+
+        home, away = get_team_names(bet)
+
+        bet["_match"] = f"{home} - {away}"
+        bet["_league"] = (
+            bet.get("league")
+            or bet.get("competition")
+            or "Non renseigné"
+        )
+
+        bet["_date"] = (
+            bet.get("date")
+            or bet.get("match_date")
+            or bet.get("created_day")
+            or "Non renseignée"
+        )
+
+        bet["_probability"] = number(
+            bet.get("probability", bet.get("probability_pct", 0))
+        )
+
+        if 0 < bet["_probability"] <= 1:
+            bet["_probability"] *= 100
+
+        prepared.append(bet)
+
+    return prepared
+
+
+# ============================================================
+# API FOOTBALL-DATA
 # ============================================================
 
 def get_api_key():
@@ -52,58 +212,29 @@ def get_api_key():
     return os.getenv("FOOTBALL_DATA_API_KEY", "")
 
 
-# ============================================================
-# CAPITAL ET HISTORIQUE VIRTUELS
-# ============================================================
-
-def load_state():
-    try:
-        with open(DATA_FILE, "r", encoding="utf-8") as file:
-            return json.load(file)
-    except Exception:
-        return {
-            "starting_bankroll": 20.0,
-            "bankroll": 20.0,
-            "day": "",
-            "bets": [],
-            "history": [],
-            "message": "Le bot automatique n'a pas encore été lancé.",
-        }
-
-
-# ============================================================
-# RÉCUPÉRATION DES MATCHS
-# ============================================================
-
+@st.cache_data(ttl=900, show_spinner=False)
 def get_matches(competition, start_date, end_date, api_key):
     url = f"{API_BASE}/competitions/{competition}/matches"
 
-    headers = {
-        "X-Auth-Token": api_key,
-    }
-
-    params = {
-        "dateFrom": start_date,
-        "dateTo": end_date,
-    }
-
     response = requests.get(
         url,
-        headers=headers,
-        params=params,
+        headers={"X-Auth-Token": api_key},
+        params={
+            "dateFrom": start_date,
+            "dateTo": end_date,
+        },
         timeout=20,
     )
 
     if response.status_code == 429:
         raise RuntimeError(
-            "Limite de requêtes API atteinte. "
-            "Réessaie plus tard."
+            "Limite de requêtes atteinte. Réessaie plus tard."
         )
 
     if response.status_code == 403:
         raise RuntimeError(
-            f"Accès refusé pour la compétition {competition}. "
-            "Vérifie les droits de ton abonnement."
+            f"Accès refusé pour {competition}. "
+            "Cette compétition n'est peut-être pas comprise dans ton abonnement."
         )
 
     response.raise_for_status()
@@ -112,26 +243,17 @@ def get_matches(competition, start_date, end_date, api_key):
 
 
 # ============================================================
-# MODÈLE DE POISSON
+# MODELE DE POISSON
 # ============================================================
 
 def poisson(lam, goals):
     if lam <= 0:
         return 1.0 if goals == 0 else 0.0
 
-    return (
-        math.exp(-lam)
-        * (lam ** goals)
-        / math.factorial(goals)
-    )
+    return math.exp(-lam) * (lam ** goals) / math.factorial(goals)
 
-
-# ============================================================
-# ANALYSE D'UN MATCH
-# ============================================================
 
 def predict_match(matches, home_team, away_team):
-
     league_home_goals = []
     league_away_goals = []
 
@@ -142,81 +264,66 @@ def predict_match(matches, home_team, away_team):
     away_conceded = []
 
     for match in matches:
-
         if match.get("status") != "FINISHED":
             continue
 
         score = match.get("score", {}).get("fullTime", {})
+        hg = score.get("home")
+        ag = score.get("away")
 
-        home_goals = score.get("home")
-        away_goals = score.get("away")
-
-        if home_goals is None or away_goals is None:
+        if hg is None or ag is None:
             continue
 
-        home_name = match.get("homeTeam", {}).get("name", "")
-        away_name = match.get("awayTeam", {}).get("name", "")
+        hn = match.get("homeTeam", {}).get("name", "")
+        an = match.get("awayTeam", {}).get("name", "")
 
-        league_home_goals.append(home_goals)
-        league_away_goals.append(away_goals)
+        league_home_goals.append(hg)
+        league_away_goals.append(ag)
 
-        # Historique de l'équipe qui reçoit
-        if home_name == home_team:
-            home_scored.append(home_goals)
-            home_conceded.append(away_goals)
+        if hn == home_team:
+            home_scored.append(hg)
+            home_conceded.append(ag)
+        elif an == home_team:
+            home_scored.append(ag)
+            home_conceded.append(hg)
 
-        elif away_name == home_team:
-            home_scored.append(away_goals)
-            home_conceded.append(home_goals)
+        if hn == away_team:
+            away_scored.append(hg)
+            away_conceded.append(ag)
+        elif an == away_team:
+            away_scored.append(ag)
+            away_conceded.append(hg)
 
-        # Historique de l'équipe qui se déplace
-        if home_name == away_team:
-            away_scored.append(home_goals)
-            away_conceded.append(away_goals)
-
-        elif away_name == away_team:
-            away_scored.append(away_goals)
-            away_conceded.append(home_goals)
-
-    # Moyennes de la compétition
     avg_home = (
         sum(league_home_goals) / len(league_home_goals)
-        if league_home_goals
-        else 1.45
+        if league_home_goals else 1.45
     )
 
     avg_away = (
         sum(league_away_goals) / len(league_away_goals)
-        if league_away_goals
-        else 1.15
+        if league_away_goals else 1.15
     )
 
-    # Moyennes propres aux équipes
     home_attack = (
         sum(home_scored) / len(home_scored)
-        if home_scored
-        else avg_home
+        if home_scored else avg_home
     )
 
     home_defence = (
         sum(home_conceded) / len(home_conceded)
-        if home_conceded
-        else avg_away
+        if home_conceded else avg_away
     )
 
     away_attack = (
         sum(away_scored) / len(away_scored)
-        if away_scored
-        else avg_away
+        if away_scored else avg_away
     )
 
     away_defence = (
         sum(away_conceded) / len(away_conceded)
-        if away_conceded
-        else avg_home
+        if away_conceded else avg_home
     )
 
-    # Réduire l'influence des échantillons trop petits
     if len(home_scored) < 3:
         home_attack = (home_attack + avg_home) / 2
         home_defence = (home_defence + avg_away) / 2
@@ -225,7 +332,6 @@ def predict_match(matches, home_team, away_team):
         away_attack = (away_attack + avg_away) / 2
         away_defence = (away_defence + avg_home) / 2
 
-    # Nombre de buts attendus
     lambda_home = max(
         0.15,
         min(3.5, 0.55 * home_attack + 0.45 * away_defence),
@@ -236,73 +342,38 @@ def predict_match(matches, home_team, away_team):
         min(3.5, 0.55 * away_attack + 0.45 * home_defence),
     )
 
-    # Probabilités des scores
     scores = {}
 
-    for home_goals in range(9):
-        for away_goals in range(9):
-
-            probability = (
-                poisson(lambda_home, home_goals)
-                * poisson(lambda_away, away_goals)
+    for hg in range(9):
+        for ag in range(9):
+            scores[(hg, ag)] = (
+                poisson(lambda_home, hg)
+                * poisson(lambda_away, ag)
             )
 
-            scores[(home_goals, away_goals)] = probability
+    total = sum(scores.values()) or 1.0
 
-    total = sum(scores.values()) or 1
+    def probability(condition):
+        return sum(
+            p for (hg, ag), p in scores.items()
+            if condition(hg, ag)
+        ) / total
 
-    # Victoire, nul et défaite
-    p_home = sum(
-        p for (h, a), p in scores.items() if h > a
-    ) / total
+    p_home = probability(lambda hg, ag: hg > ag)
+    p_draw = probability(lambda hg, ag: hg == ag)
+    p_away = probability(lambda hg, ag: hg < ag)
 
-    p_draw = sum(
-        p for (h, a), p in scores.items() if h == a
-    ) / total
+    over05 = probability(lambda hg, ag: hg + ag >= 1)
+    over15 = probability(lambda hg, ag: hg + ag >= 2)
+    over25 = probability(lambda hg, ag: hg + ag >= 3)
+    over35 = probability(lambda hg, ag: hg + ag >= 4)
 
-    p_away = sum(
-        p for (h, a), p in scores.items() if h < a
-    ) / total
+    under25 = probability(lambda hg, ag: hg + ag <= 2)
+    under35 = probability(lambda hg, ag: hg + ag <= 3)
 
-    # Marchés de buts
-    over05 = sum(
-        p for (h, a), p in scores.items() if h + a >= 1
-    ) / total
-
-    over15 = sum(
-        p for (h, a), p in scores.items() if h + a >= 2
-    ) / total
-
-    over25 = sum(
-        p for (h, a), p in scores.items() if h + a >= 3
-    ) / total
-
-    over35 = sum(
-        p for (h, a), p in scores.items() if h + a >= 4
-    ) / total
-
-    under25 = sum(
-        p for (h, a), p in scores.items() if h + a <= 2
-    ) / total
-
-    under35 = sum(
-        p for (h, a), p in scores.items() if h + a <= 3
-    ) / total
-
-    btts_yes = sum(
-        p for (h, a), p in scores.items() if h > 0 and a > 0
-    ) / total
-
+    btts_yes = probability(lambda hg, ag: hg > 0 and ag > 0)
     btts_no = 1 - btts_yes
 
-    # Double chance
-    double_home_draw = p_home + p_draw
-    double_draw_away = p_draw + p_away
-
-    # Score le plus probable
-    best_score = max(scores, key=scores.get)
-
-    # Sélection statistique du marché le plus probable
     markets = {
         "Plus de 0,5 but": over05,
         "Plus de 1,5 but": over15,
@@ -315,16 +386,14 @@ def predict_match(matches, home_team, away_team):
         "Victoire domicile": p_home,
         "Match nul": p_draw,
         "Victoire extérieur": p_away,
-        "Double chance 1X": double_home_draw,
-        "Double chance X2": double_draw_away,
+        "Double chance 1X": p_home + p_draw,
+        "Double chance X2": p_draw + p_away,
     }
 
+    best_score = max(scores, key=scores.get)
     best_market = max(markets, key=markets.get)
 
-    sample = min(
-        len(home_scored),
-        len(away_scored),
-    )
+    sample = min(len(home_scored), len(away_scored))
 
     return {
         "home": home_team,
@@ -340,51 +409,73 @@ def predict_match(matches, home_team, away_team):
         "under35": round(under35 * 100, 1),
         "btts_yes": round(btts_yes * 100, 1),
         "btts_no": round(btts_no * 100, 1),
-        "double_1x": round(double_home_draw * 100, 1),
-        "double_x2": round(double_draw_away * 100, 1),
+        "double_1x": round((p_home + p_draw) * 100, 1),
+        "double_x2": round((p_draw + p_away) * 100, 1),
         "score": f"{best_score[0]}-{best_score[1]}",
         "best_market": best_market,
         "best_probability": round(markets[best_market] * 100, 1),
         "sample": sample,
         "quality": (
             "Données limitées"
-            if sample < 3
-            else "Échantillon statistique"
+            if sample < 3 else "Échantillon statistique"
         ),
+        "lambda_home": round(lambda_home, 2),
+        "lambda_away": round(lambda_away, 2),
     }
 
 
 # ============================================================
-# INTERFACE
+# TABLEAU DE BORD
 # ============================================================
 
 st.title("⚽ FOOT AI PRO")
-st.caption(
-    "Analyse statistique des matchs et suivi de paris virtuels."
-)
+st.caption("Tableau de bord des analyses et de la simulation virtuelle.")
 
 state = load_state()
+bets = prepare_bets(state.get("bets", []))
 
-capital = float(state.get("bankroll", 20.0))
-starting_capital = float(state.get("starting_bankroll", 20.0))
-bets = state.get("bets", [])
+capital = number(state.get("bankroll", 20.0))
+starting_capital = number(state.get("starting_bankroll", 20.0))
 
-col1, col2, col3 = st.columns(3)
+open_bets = [b for b in bets if b["_status"] == "En attente"]
+won_bets = [b for b in bets if b["_status"] == "Gagné"]
+lost_bets = [b for b in bets if b["_status"] == "Perdu"]
+cancelled_bets = [b for b in bets if b["_status"] == "Annulé"]
 
-col1.metric(
-    "Capital virtuel",
-    f"{capital:.2f} €",
+settled_bets = won_bets + lost_bets
+total_staked_open = sum(b["_stake"] for b in open_bets)
+total_profit_settled = sum(b["_profit"] for b in settled_bets)
+
+win_rate = (
+    len(won_bets) / len(settled_bets) * 100
+    if settled_bets else 0.0
 )
 
-col2.metric(
-    "Paris virtuels enregistrés",
-    len(bets),
-)
+# La bankroll du bot est utilisée comme référence principale.
+# Les mises en attente sont affichées séparément et ne sont pas déduites
+# une seconde fois du capital.
+net_change = capital - starting_capital
 
-col3.metric(
-    "Résultat virtuel",
-    f"{capital - starting_capital:+.2f} €",
-)
+st.subheader("💰 Vue d'ensemble")
+
+c1, c2, c3 = st.columns(3)
+
+c1.metric("Capital virtuel", f"{capital:.2f} €")
+c2.metric("Résultat depuis le départ", euro(net_change))
+c3.metric("Mises en attente", f"{total_staked_open:.2f} €")
+
+c4, c5, c6, c7 = st.columns(4)
+
+c4.metric("Paris enregistrés", len(bets))
+c5.metric("Gagnés", len(won_bets))
+c6.metric("Perdus", len(lost_bets))
+c7.metric("Taux de réussite", f"{win_rate:.1f} %")
+
+c8, c9, c10 = st.columns(3)
+
+c8.metric("Bénéfices/pertes réglés", euro(total_profit_settled))
+c9.metric("Paris en attente", len(open_bets))
+c10.metric("Paris annulés", len(cancelled_bets))
 
 st.info(
     state.get(
@@ -393,66 +484,194 @@ st.info(
     )
 )
 
+st.caption(
+    "Les mises en attente sont affichées séparément. "
+    "Elles ne sont pas retranchées une deuxième fois du capital."
+)
+
 # ============================================================
-# PARAMÈTRES
+# BARRE LATERALE
 # ============================================================
 
 with st.sidebar:
-
     st.header("⚙️ Paramètres")
 
     selected_competitions = st.multiselect(
-        "Compétitions",
+        "Compétitions à analyser",
         list(COMPETITIONS.keys()),
         default=list(COMPETITIONS.keys()),
     )
 
     days_ahead = st.slider(
-        "Nombre de jours à analyser",
+        "Jours à analyser",
         min_value=1,
         max_value=7,
         value=3,
     )
 
-    st.caption(
-        "Les compétitions disponibles dépendent des droits de ta clé API."
+    st.divider()
+    st.subheader("Filtres du tableau de bord")
+
+    league_options = sorted({
+        b["_league"] for b in bets
+    })
+
+    selected_leagues = st.multiselect(
+        "Championnats des paris",
+        league_options,
+        default=league_options,
     )
+
+    status_options = ["En attente", "Gagné", "Perdu", "Annulé"]
+
+    selected_statuses = st.multiselect(
+        "Statut des paris",
+        status_options,
+        default=status_options,
+    )
+
+    market_options = sorted({
+        b["_market"] for b in bets
+    })
+
+    selected_markets = st.multiselect(
+        "Marchés",
+        market_options,
+        default=market_options,
+    )
+
+filtered_bets = [
+    b for b in bets
+    if b["_league"] in selected_leagues
+    and b["_status"] in selected_statuses
+    and b["_market"] in selected_markets
+]
 
 # ============================================================
 # ONGLETS
 # ============================================================
 
-tab_matches, tab_ai, tab_history = st.tabs(
-    [
-        "📅 Matchs",
-        "🤖 Analyse IA",
-        "📊 Historique",
-    ]
-)
+tab_dashboard, tab_matches, tab_ai, tab_history = st.tabs([
+    "📊 Tableau de bord",
+    "📅 Matchs",
+    "🤖 Analyse IA",
+    "📚 Historique",
+])
 
 # ============================================================
-# MATCHS
+# TABLEAU DE BORD DETAILLE
+# ============================================================
+
+with tab_dashboard:
+    st.subheader("📋 Paris virtuels")
+
+    if filtered_bets:
+        table_rows = []
+
+        for b in filtered_bets:
+            table_rows.append({
+                "Date": b["_date"],
+                "Championnat": b["_league"],
+                "Match": b["_match"],
+                "Marché": b["_market"],
+                "Probabilité estimée (%)": round(b["_probability"], 1),
+                "Mise virtuelle (€)": round(b["_stake"], 2),
+                "Statut": b["_status"],
+                "Profit/perte (€)": round(b["_profit"], 2),
+                "Score prédit": b.get("score", "—"),
+                "Stratégie": b.get("strategy", "—"),
+            })
+
+        st.dataframe(
+            table_rows,
+            use_container_width=True,
+            hide_index=True,
+        )
+    else:
+        st.info("Aucun pari ne correspond aux filtres sélectionnés.")
+
+    st.subheader("🏆 Performance par marché")
+
+    market_stats = {}
+
+    for b in bets:
+        market = b["_market"]
+
+        if market not in market_stats:
+            market_stats[market] = {
+                "Paris réglés": 0,
+                "Gagnés": 0,
+                "Perdus": 0,
+                "Profit/perte (€)": 0.0,
+            }
+
+        if b["_status"] in ("Gagné", "Perdu"):
+            market_stats[market]["Paris réglés"] += 1
+            market_stats[market]["Profit/perte (€)"] += b["_profit"]
+
+            if b["_status"] == "Gagné":
+                market_stats[market]["Gagnés"] += 1
+            else:
+                market_stats[market]["Perdus"] += 1
+
+    market_rows = []
+
+    for market, stats in market_stats.items():
+        settled = stats["Paris réglés"]
+
+        rate = (
+            stats["Gagnés"] / settled * 100
+            if settled else 0.0
+        )
+
+        market_rows.append({
+            "Marché": market,
+            "Paris réglés": settled,
+            "Gagnés": stats["Gagnés"],
+            "Perdus": stats["Perdus"],
+            "Taux de réussite (%)": round(rate, 1),
+            "Profit/perte (€)": round(stats["Profit/perte (€)"], 2),
+        })
+
+    market_rows.sort(
+        key=lambda row: (
+            row["Paris réglés"] > 0,
+            row["Taux de réussite (%)"],
+            row["Profit/perte (€)"],
+        ),
+        reverse=True,
+    )
+
+    if market_rows:
+        st.dataframe(
+            market_rows,
+            use_container_width=True,
+            hide_index=True,
+        )
+    else:
+        st.info("Les statistiques des marchés apparaîtront après les premiers résultats.")
+
+    st.caption(
+        "Un marché avec peu de paris réglés ne permet pas de conclure "
+        "qu'il est réellement meilleur. Attends un échantillon plus large."
+    )
+
+# ============================================================
+# MATCHS A ANALYSER
 # ============================================================
 
 with tab_matches:
-
     key = get_api_key()
 
     if not key:
-
-        st.error(
-            "Clé API manquante. Dans les Secrets Streamlit, ajoute :"
+        st.error("Clé API manquante.")
+        st.code('FOOTBALL_DATA_API_KEY = "TA_CLE_API"')
+        st.caption(
+            "Ajoute cette clé dans les Secrets Streamlit. "
+            "Ne publie jamais ta véritable clé dans le code."
         )
 
-        st.code(
-            'FOOTBALL_DATA_API_KEY = "TA_CLE_API"'
-        )
-
-    elif st.button(
-        "🔎 Analyser les matchs",
-        type="primary",
-    ):
-
+    elif st.button("🔎 Analyser les matchs", type="primary"):
         start_date = date.today()
         end_date = start_date + timedelta(days=days_ahead)
 
@@ -460,22 +679,18 @@ with tab_matches:
         errors = []
 
         with st.spinner("Analyse des rencontres en cours..."):
-
             for league in selected_competitions:
-
-                competition_code = COMPETITIONS[league]
+                code = COMPETITIONS[league]
 
                 try:
-
                     matches = get_matches(
-                        competition_code,
+                        code,
                         start_date.isoformat(),
                         end_date.isoformat(),
                         key,
                     )
 
                     for match in matches:
-
                         if match.get("status") not in (
                             "SCHEDULED",
                             "TIMED",
@@ -484,47 +699,30 @@ with tab_matches:
                         ):
                             continue
 
-                        home = match.get(
-                            "homeTeam", {}
-                        ).get("name", "Domicile")
+                        home = match.get("homeTeam", {}).get("name", "Domicile")
+                        away = match.get("awayTeam", {}).get("name", "Extérieur")
 
-                        away = match.get(
-                            "awayTeam", {}
-                        ).get("name", "Extérieur")
-
-                        prediction = predict_match(
-                            matches,
-                            home,
-                            away,
-                        )
-
+                        prediction = predict_match(matches, home, away)
                         prediction["league"] = league
-
                         prediction["date"] = (
                             match.get("utcDate", "")
-                            .replace("T", " ")[:16]
-                            + " UTC"
+                            .replace("T", " ")[:16] + " UTC"
                         )
 
                         all_predictions.append(prediction)
 
                 except Exception as error:
-                    errors.append(
-                        f"{league} : {error}"
-                    )
+                    errors.append(f"{league} : {error}")
 
         for error in errors:
             st.warning(error)
 
         if not all_predictions:
-
             st.info(
                 "Aucun match disponible pour cette période. "
-                "Vérifie aussi les droits de ta clé API."
+                "Vérifie les droits de ta clé API et les dates."
             )
-
         else:
-
             all_predictions.sort(
                 key=lambda item: item["best_probability"],
                 reverse=True,
@@ -535,85 +733,43 @@ with tab_matches:
             )
 
             for prediction in all_predictions:
-
                 with st.container(border=True):
-
                     st.subheader(
                         f'{prediction["home"]} - {prediction["away"]}'
                     )
 
                     st.caption(
-                        f'{prediction["league"]} · '
-                        f'{prediction["date"]}'
+                        f'{prediction["league"]} · {prediction["date"]}'
                     )
 
-                    c1, c2, c3 = st.columns(3)
+                    a, b, c = st.columns(3)
 
-                    c1.metric(
-                        "Victoire domicile",
-                        f'{prediction["home_win"]} %',
-                    )
-
-                    c2.metric(
-                        "Match nul",
-                        f'{prediction["draw"]} %',
-                    )
-
-                    c3.metric(
-                        "Victoire extérieur",
-                        f'{prediction["away_win"]} %',
-                    )
+                    a.metric("Victoire domicile", f'{prediction["home_win"]} %')
+                    b.metric("Match nul", f'{prediction["draw"]} %')
+                    c.metric("Victoire extérieur", f'{prediction["away_win"]} %')
 
                     st.markdown("#### ⚽ Marchés de buts")
 
                     a, b, c = st.columns(3)
 
-                    a.metric(
-                        "+ 1,5 but",
-                        f'{prediction["over15"]} %',
-                    )
-
-                    b.metric(
-                        "+ 2,5 buts",
-                        f'{prediction["over25"]} %',
-                    )
-
-                    c.metric(
-                        "+ 3,5 buts",
-                        f'{prediction["over35"]} %',
-                    )
+                    a.metric("+ 1,5 but", f'{prediction["over15"]} %')
+                    b.metric("+ 2,5 buts", f'{prediction["over25"]} %')
+                    c.metric("+ 3,5 buts", f'{prediction["over35"]} %')
 
                     a, b, c = st.columns(3)
 
-                    a.metric(
-                        "BTTS oui",
-                        f'{prediction["btts_yes"]} %',
-                    )
-
-                    b.metric(
-                        "BTTS non",
-                        f'{prediction["btts_no"]} %',
-                    )
-
-                    c.metric(
-                        "Double chance 1X",
-                        f'{prediction["double_1x"]} %',
-                    )
+                    a.metric("BTTS oui", f'{prediction["btts_yes"]} %')
+                    b.metric("BTTS non", f'{prediction["btts_no"]} %')
+                    c.metric("Double chance 1X", f'{prediction["double_1x"]} %')
 
                     st.markdown("#### 🤖 Sélection statistique")
 
-                    st.write(
-                        f'**Marché :** {prediction["best_market"]}'
-                    )
-
+                    st.write(f'**Marché :** {prediction["best_market"]}')
                     st.write(
                         f'**Probabilité estimée :** '
                         f'{prediction["best_probability"]} %'
                     )
-
-                    st.write(
-                        f'**Score indicatif :** {prediction["score"]}'
-                    )
+                    st.write(f'**Score indicatif :** {prediction["score"]}')
 
                     st.caption(
                         f'{prediction["quality"]} · '
@@ -622,74 +778,93 @@ with tab_matches:
                     )
 
 # ============================================================
-# ANALYSE IA ET SIMULATION
+# ANALYSE IA
 # ============================================================
 
 with tab_ai:
+    st.subheader("🤖 Simulation automatique")
 
-    st.subheader("🤖 Gestion de la simulation")
+    st.write(f"Capital de départ : {starting_capital:.2f} €")
+    st.write(f"Capital virtuel actuel : {capital:.2f} €")
+    st.write(f"Date de dernière exécution : {state.get('day') or 'Aucune'}")
 
-    st.write(
-        "Capital de départ : 20 € virtuels."
-    )
-
-    st.write(
-        "Le bot automatique sera lancé par GitHub Actions "
-        "après installation des fichiers complémentaires."
-    )
-
-    st.write(
-        f'Dernière exécution enregistrée : '
-        f'{state.get("day") or "Aucune"}'
-    )
+    st.write(f"Paris enregistrés : {len(bets)}")
+    st.write(f"Paris encore en attente : {len(open_bets)}")
+    st.write(f"Taux de réussite des paris réglés : {win_rate:.1f} %")
 
     st.warning(
-        "Cette version n'effectue aucun pari réel. "
-        "Les vraies cotes Unibet ne sont pas encore intégrées. "
-        "Les probabilités sont des estimations, pas des garanties."
+        "Cette application effectue uniquement une simulation virtuelle. "
+        "Les probabilités ne sont pas des garanties et les cotes affichées "
+        "par le bot sont simulées, pas des cotes réelles de bookmaker."
     )
 
-    st.markdown("#### Principes de gestion")
-
+    st.markdown("#### Règles de gestion")
+    st.write("- Capital virtuel de départ : 20 €.")
     st.write("- Mises virtuelles limitées.")
-    st.write("- Maximum de deux nouvelles sélections virtuelles par jour.")
     st.write("- Pas de martingale.")
-    st.write("- Historique des résultats.")
-    st.write("- Capital fictif suivi au fil du temps.")
+    st.write("- Résultats calculés lorsque le bot règle les paris.")
+    st.write("- Historique conservé dans data/bankroll.json.")
 
 # ============================================================
 # HISTORIQUE
 # ============================================================
 
 with tab_history:
-
-    st.subheader("📊 Historique des simulations")
+    st.subheader("📚 Historique des paris")
 
     if bets:
+        history_rows = []
+
+        for b in bets:
+            history_rows.append({
+                "Date": b["_date"],
+                "Championnat": b["_league"],
+                "Match": b["_match"],
+                "Marché": b["_market"],
+                "Probabilité (%)": round(b["_probability"], 1),
+                "Mise (€)": round(b["_stake"], 2),
+                "Statut": b["_status"],
+                "Profit/perte (€)": round(b["_profit"], 2),
+            })
 
         st.dataframe(
-            bets,
+            history_rows,
             use_container_width=True,
             hide_index=True,
         )
-
     else:
+        st.info("Aucun pari virtuel enregistré.")
 
-        st.info(
-            "Aucun pari virtuel enregistré pour le moment."
-        )
+    st.subheader("📈 Historique quotidien du capital")
 
     history = state.get("history", [])
 
     if history:
-
-        st.subheader("Évolution du capital virtuel")
-
         st.dataframe(
             history,
             use_container_width=True,
             hide_index=True,
         )
+
+        chart_rows = []
+
+        for row in history:
+            if isinstance(row, dict) and "bankroll" in row:
+                chart_rows.append({
+                    "Date": row.get("date", ""),
+                    "Capital (€)": number(row.get("bankroll")),
+                })
+
+        if chart_rows:
+            st.line_chart(
+                {
+                    row["Date"]: row["Capital (€)"]
+                    for row in chart_rows
+                    if row["Date"]
+                }
+            )
+    else:
+        st.info("L'évolution du capital apparaîtra après les premières simulations.")
 
 # ============================================================
 # AVERTISSEMENT
@@ -698,7 +873,7 @@ with tab_history:
 st.divider()
 
 st.caption(
-    "FOOT AI PRO est un outil expérimental. "
+    "FOOT AI PRO est un outil expérimental de simulation. "
     "Il ne garantit aucun gain. Les blessures, compositions officielles, "
     "suspensions et cotes réelles ne sont pas intégrées."
 )
