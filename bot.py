@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 import requests
 
 # ============================================================
-# FOOT AI PRO BOT V3
+# FOOT AI PRO BOT V4
 # Simulation virtuelle uniquement - aucun pari réel
 # ============================================================
 
@@ -24,14 +24,19 @@ COMPETITIONS = {
 
 CAPITAL_INITIAL = 20.00
 MISE_MAXIMUM = 1.00
-MAX_PARIS_PAR_JOUR = 2
+
+# Maximum de nouveaux paris par jour.
+MAX_PARIS_PAR_JOUR = 5
+
 JOURS_A_VENIR = 3
 JOURS_HISTORIQUE = 60
 
 PROBA_PRUDENTE = 0.72
 PROBA_RISQUEE = 0.50
+
 FRACTION_PRUDENTE = 0.02
 FRACTION_RISQUEE = 0.015
+
 
 # ============================================================
 # ÉTAT ET SAUVEGARDE
@@ -56,8 +61,11 @@ def load_state():
     except (json.JSONDecodeError, OSError) as exc:
         raise RuntimeError(
             "Impossible de lire bankroll.json. "
-            "Ne supprime pas ce fichier : sauvegarde-le avant réparation."
+            "Sauvegarde ce fichier avant toute réparation."
         ) from exc
+
+    if not isinstance(state, dict):
+        raise RuntimeError("Le contenu de bankroll.json est invalide.")
 
     state.setdefault("starting_bankroll", CAPITAL_INITIAL)
     state.setdefault("bankroll", CAPITAL_INITIAL)
@@ -65,6 +73,13 @@ def load_state():
     state.setdefault("history", [])
     state.setdefault("message", "")
     state.setdefault("day", "")
+    state.setdefault("stats", {})
+
+    if not isinstance(state["bets"], list):
+        state["bets"] = []
+
+    if not isinstance(state["history"], list):
+        state["history"] = []
 
     return state
 
@@ -80,7 +95,7 @@ def save_state(state):
 
 
 # ============================================================
-# API : UNE REQUÊTE PAR COMPÉTITION
+# API FOOTBALL-DATA.ORG
 # ============================================================
 
 def get_matches(competition, date_from, date_to, api_key):
@@ -89,25 +104,32 @@ def get_matches(competition, date_from, date_to, api_key):
     response = requests.get(
         url,
         headers={"X-Auth-Token": api_key},
-        params={"dateFrom": date_from, "dateTo": date_to},
+        params={
+            "dateFrom": date_from,
+            "dateTo": date_to,
+        },
         timeout=25,
     )
 
     if response.status_code == 429:
-        raise RuntimeError("Limite de requêtes API atteinte (429).")
+        raise RuntimeError(
+            "Limite de requêtes API atteinte (429). "
+            "Réessaie plus tard."
+        )
 
     if response.status_code == 403:
         raise RuntimeError(
             f"Accès refusé à {competition} (403). "
-            "Cette compétition n'est peut-être pas comprise dans ton abonnement."
+            "Vérifie les compétitions incluses dans ton abonnement."
         )
 
     response.raise_for_status()
+
     return response.json().get("matches", [])
 
 
 # ============================================================
-# POISSON
+# MODÈLE DE POISSON
 # ============================================================
 
 def poisson(mean, goals):
@@ -124,8 +146,10 @@ def poisson(mean, goals):
 def predict_match(matches, home_team, away_team):
     league_home = []
     league_away = []
+
     home_scored = []
     home_conceded = []
+
     away_scored = []
     away_conceded = []
 
@@ -166,13 +190,12 @@ def predict_match(matches, home_team, away_team):
     avg_home = sum(league_home) / len(league_home)
     avg_away = sum(league_away) / len(league_away)
 
-    # Pondération prudente entre statistiques des équipes
-    # et moyennes de leur compétition.
     def average(values, fallback):
         return sum(values) / len(values) if values else fallback
 
     home_attack = average(home_scored, avg_home)
     home_defense = average(home_conceded, avg_away)
+
     away_attack = average(away_scored, avg_away)
     away_defense = average(away_conceded, avg_home)
 
@@ -242,7 +265,6 @@ def predict_match(matches, home_team, away_team):
         "Double chance X2": probability(lambda h, a: a >= h),
     }
 
-    # Le meilleur score exact est calculé séparément.
     exact_score = max(scores, key=scores.get)
 
     sample = min(len(home_scored), len(away_scored))
@@ -262,14 +284,11 @@ def predict_match(matches, home_team, away_team):
 
 
 # ============================================================
-# CHOIX DES MARCHÉS ET STRATÉGIE
+# SÉLECTION DES MARCHÉS
 # ============================================================
 
 def select_pick(prediction, used_markets):
     markets = prediction["markets"]
-
-    # Les doubles chances très proches de 100 % sont écartées :
-    # elles ne doivent pas être confondues avec une certitude.
     allowed = []
 
     for name, probability in markets.items():
@@ -279,7 +298,6 @@ def select_pick(prediction, used_markets):
         if probability < PROBA_RISQUEE or probability >= 0.96:
             continue
 
-        # Éviter qu'une cote théorique soit trop faible.
         if probability > 0.90:
             continue
 
@@ -288,9 +306,8 @@ def select_pick(prediction, used_markets):
     if not allowed:
         return None
 
-    # Un marché moins courant peut être choisi si sa probabilité
-    # reste correcte, au lieu de prendre toujours le même marché.
     allowed.sort(key=lambda item: item[1], reverse=True)
+
     return allowed[0]
 
 
@@ -318,7 +335,7 @@ def calculate_stake(bankroll, strategy):
 
 
 # ============================================================
-# RÉSULTATS DES PARIS
+# ÉVALUATION DES PARIS
 # ============================================================
 
 def evaluate_pick(pick, home, away):
@@ -341,14 +358,28 @@ def evaluate_pick(pick, home, away):
     return rules.get(pick)
 
 
+# ============================================================
+# RÈGLEMENT ET BÉNÉFICES
+# ============================================================
+
 def settle_bets(state, matches_by_id):
+    """
+    Chaque pari est réglé une seule fois.
+    La cote est simulée à partir de sa probabilité.
+    Le capital est ajusté uniquement au premier règlement.
+    """
+    changed = 0
+
     for bet in state["bets"]:
         if bet.get("settled"):
             continue
 
-        match = matches_by_id.get(str(bet.get("match_id")))
+        match = matches_by_id.get(str(bet.get("match_id", "")))
 
-        if not match or match.get("status") != "FINISHED":
+        if not match:
+            continue
+
+        if match.get("status") not in ("FINISHED", "AWARDED"):
             continue
 
         score = match.get("score", {}).get("fullTime", {})
@@ -360,20 +391,21 @@ def settle_bets(state, matches_by_id):
 
         won = evaluate_pick(
             bet.get("pick", ""),
-            home_goals,
-            away_goals,
+            int(home_goals),
+            int(away_goals),
         )
 
         if won is None:
+            bet["result"] = "Marché à vérifier"
             continue
 
-        stake = float(bet.get("stake", 0))
+        stake = max(0.0, float(bet.get("stake", 0) or 0))
+
         probability = max(
             0.05,
-            min(0.95, float(bet.get("probability", 0.5))),
+            min(0.95, float(bet.get("probability", 0.5) or 0.5)),
         )
 
-        # Cote simulée, uniquement pour la simulation.
         virtual_odds = round(0.92 / probability, 2)
 
         profit = (
@@ -382,34 +414,45 @@ def settle_bets(state, matches_by_id):
             else round(-stake, 2)
         )
 
-        state["bankroll"] = round(
-            max(0.0, float(state["bankroll"]) + profit),
-            2,
-        )
-
         bet.update({
             "settled": True,
             "result": "Gagné" if won else "Perdu",
+            "actual_score": f"{home_goals}-{away_goals}",
             "score_final": f"{home_goals}-{away_goals}",
+            "match_status": match.get("status"),
             "virtual_odds": virtual_odds,
             "profit": profit,
             "settled_at": datetime.now(timezone.utc).isoformat(),
         })
 
+        # Le profit n'est appliqué qu'une seule fois.
+        state["bankroll"] = round(
+            float(state.get("bankroll", CAPITAL_INITIAL)) + profit,
+            2,
+        )
+
+        changed += 1
+
+    return changed
+
 
 # ============================================================
-# HISTORIQUE QUOTIDIEN SANS DOUBLONS
+# HISTORIQUE ET STATISTIQUES
 # ============================================================
 
 def update_daily_history(state, today):
+    bets = state.get("bets", [])
+
     settled = [
-        bet for bet in state["bets"]
+        bet for bet in bets
         if bet.get("settled")
+        and bet.get("result") in ("Gagné", "Perdu")
     ]
 
-    wins = sum(1 for bet in settled if bet.get("result") == "Gagné")
-    losses = sum(1 for bet in settled if bet.get("result") == "Perdu")
-    profit = round(
+    wins = sum(bet.get("result") == "Gagné" for bet in settled)
+    losses = sum(bet.get("result") == "Perdu" for bet in settled)
+
+    cumulative_profit = round(
         sum(float(bet.get("profit") or 0) for bet in settled),
         2,
     )
@@ -420,35 +463,52 @@ def update_daily_history(state, today):
         "settled": len(settled),
         "win_rate": round(100 * wins / len(settled), 2)
         if settled else 0.0,
-        "profit": profit,
-        "bankroll": round(float(state["bankroll"]), 2),
+        "profit": cumulative_profit,
+        "bankroll": round(float(state.get("bankroll", CAPITAL_INITIAL)), 2),
     }
 
-    # Remplacer la ligne de la journée plutôt que la dupliquer.
     entry = {
         "date": today,
-        "bankroll": round(float(state["bankroll"]), 2),
-        "bets_total": len(state["bets"]),
+        "bankroll": round(float(state.get("bankroll", CAPITAL_INITIAL)), 2),
+        "bets_total": len(bets),
         "open_bets": sum(
-            1 for bet in state["bets"] if not bet.get("settled")
+            not bet.get("settled") for bet in bets
         ),
         "wins": wins,
         "losses": losses,
-        "profit": profit,
+        "profit": cumulative_profit,
     }
 
     history = [
-        item for item in state["history"]
+        item for item in state.get("history", [])
         if item.get("date") != today
     ]
 
     history.append(entry)
     history.sort(key=lambda item: item.get("date", ""))
+
     state["history"] = history[-180:]
 
 
 # ============================================================
-# EXÉCUTION
+# COMPTER LES PARIS CRÉÉS AUJOURD'HUI
+# ============================================================
+
+def count_bets_today(bets, today):
+    """
+    Utilise created_day, qui représente le jour de création
+    et non la date du match.
+    Les anciennes entrées sans created_day ne sont pas
+    attribuées arbitrairement à aujourd'hui.
+    """
+    return sum(
+        1 for bet in bets
+        if str(bet.get("created_day", ""))[:10] == today
+    )
+
+
+# ============================================================
+# EXÉCUTION PRINCIPALE
 # ============================================================
 
 def main():
@@ -461,19 +521,32 @@ def main():
         )
 
     state = load_state()
+
     now = datetime.now(timezone.utc)
     today = now.date()
 
-    date_from = (today - timedelta(days=JOURS_HISTORIQUE)).isoformat()
-    date_to = (today + timedelta(days=JOURS_A_VENIR)).isoformat()
+    today_string = today.isoformat()
+
+    date_from = (
+        today - timedelta(days=JOURS_HISTORIQUE)
+    ).isoformat()
+
+    date_to = (
+        today + timedelta(days=JOURS_A_VENIR)
+    ).isoformat()
 
     all_matches = []
     errors = []
 
-    # Une requête par compétition ; aucun appel supplémentaire par match.
+    # Une requête par compétition.
     for league, code in COMPETITIONS.items():
         try:
-            matches = get_matches(code, date_from, date_to, api_key)
+            matches = get_matches(
+                code,
+                date_from,
+                date_to,
+                api_key,
+            )
 
             for match in matches:
                 match["_league_name"] = league
@@ -490,30 +563,31 @@ def main():
         if match.get("id") is not None
     }
 
-    # Régler les paris existants avant de créer de nouveaux paris.
-    settle_bets(state, matches_by_id)
+    # Régler les paris existants.
+    settled_count = settle_bets(state, matches_by_id)
 
     existing_match_ids = {
         str(bet.get("match_id"))
         for bet in state["bets"]
+        if bet.get("match_id") is not None
     }
 
-    today_string = today.isoformat()
-
-    bets_today = [
-        bet for bet in state["bets"]
-        if bet.get("created_day") == today_string
-    ]
+    # Compter les paris créés aujourd'hui, qu'ils soient
+    # encore en attente ou déjà terminés.
+    bets_today = count_bets_today(
+        state["bets"],
+        today_string,
+    )
 
     remaining_slots = max(
         0,
-        MAX_PARIS_PAR_JOUR - len(bets_today),
+        MAX_PARIS_PAR_JOUR - bets_today,
     )
 
-    # Diversifier les marchés au cours de la journée.
     used_markets = {
         bet.get("pick")
-        for bet in bets_today
+        for bet in state["bets"]
+        if str(bet.get("created_day", ""))[:10] == today_string
     }
 
     candidates = []
@@ -533,7 +607,9 @@ def main():
 
         match_day = match_datetime.date()
 
-        if not (today <= match_day <= today + timedelta(days=JOURS_A_VENIR)):
+        if not (
+            today <= match_day <= today + timedelta(days=JOURS_A_VENIR)
+        ):
             continue
 
         match_id = str(match.get("id", ""))
@@ -548,20 +624,23 @@ def main():
             continue
 
         league = match.get("_league_name", "")
+
         league_matches = [
             item for item in all_matches
             if item.get("_league_name") == league
         ]
 
-        prediction = predict_match(league_matches, home, away)
+        prediction = predict_match(
+            league_matches,
+            home,
+            away,
+        )
 
         if not prediction:
             continue
 
         selected = select_pick(prediction, used_markets)
 
-        # Si tous les marchés ont déjà été utilisés, on réessaie
-        # sans la restriction de diversité.
         if selected is None:
             selected = select_pick(prediction, set())
 
@@ -569,7 +648,11 @@ def main():
             continue
 
         pick, probability = selected
-        strategy = choose_strategy(probability, prediction["sample"])
+
+        strategy = choose_strategy(
+            probability,
+            prediction["sample"],
+        )
 
         if strategy is None:
             continue
@@ -586,8 +669,6 @@ def main():
 
         candidates.append(prediction)
 
-    # Équilibrer la sélection : qualité, historique disponible,
-    # et préférence pour les matchs mieux documentés.
     candidates.sort(
         key=lambda item: (
             item["strategy"] == "Prudent",
@@ -599,9 +680,10 @@ def main():
 
     new_bets = []
 
+    # La limite est calculée une seule fois avant la création.
     for prediction in candidates[:remaining_slots]:
         stake = calculate_stake(
-            float(state["bankroll"]),
+            float(state.get("bankroll", CAPITAL_INITIAL)),
             prediction["strategy"],
         )
 
@@ -632,11 +714,13 @@ def main():
         }
 
         state["bets"].append(bet)
+
         existing_match_ids.add(str(bet["match_id"]))
         used_markets.add(bet["pick"])
 
         new_bets.append(
-            f'{bet["home"]} - {bet["away"]}: {bet["pick"]} '
+            f'{bet["home"]} - {bet["away"]}: '
+            f'{bet["pick"]} '
             f'({bet["probability"] * 100:.1f} %, '
             f'{bet["strategy"]}, mise {stake:.2f} €)'
         )
@@ -644,22 +728,43 @@ def main():
     state["day"] = now.isoformat()
 
     if new_bets:
-        state["message"] = "Nouveaux paris virtuels : " + " | ".join(new_bets)
+        state["message"] = (
+            f"{len(new_bets)} nouveau(x) pari(s) virtuel(s) : "
+            + " | ".join(new_bets)
+        )
+    elif remaining_slots == 0:
+        state["message"] = (
+            f"Limite quotidienne atteinte : "
+            f"{bets_today} pari(s) créé(s) aujourd'hui. "
+            "Aucun nouveau pari ajouté."
+        )
     elif errors:
-        state["message"] = "Erreurs API : " + " ; ".join(errors)
+        state["message"] = (
+            "Erreurs API : " + " ; ".join(errors)
+        )
     else:
         state["message"] = (
             "Aucun nouveau pari ne correspond aux critères. "
-            "Les paris existants ont été mis à jour."
+            "Les paris existants ont été vérifiés."
         )
 
     update_daily_history(state, today_string)
     save_state(state)
 
     print(state["message"])
+    print("Paris réglés lors de cette exécution :", settled_count)
     print("Capital virtuel :", state["bankroll"], "€")
     print("Paris enregistrés :", len(state["bets"]))
-    print("Statistiques :", json.dumps(state["stats"], ensure_ascii=False))
+    print(
+        "Paris créés aujourd'hui :",
+        count_bets_today(state["bets"], today_string),
+        "/",
+        MAX_PARIS_PAR_JOUR,
+    )
+    print(
+        "Statistiques :",
+        json.dumps(state["stats"], ensure_ascii=False),
+    )
 
 
 if __name__ == "__main__":
