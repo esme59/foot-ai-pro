@@ -1,0 +1,37 @@
+name: Nettoyage bankroll
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  nettoyage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Nettoyer les paris apres le 25 octobre 2026
+        run: python clean_bankroll.py
+
+      - name: Enregistrer la bankroll nettoyee
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/bankroll.json data/bankroll.json.backup
+          if git diff --cached --quiet; then
+            echo "Aucune modification a enregistrer."
+          else
+            git commit -m "Nettoyage de la bankroll virtuelle"
+            git push
+          fi
