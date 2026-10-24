@@ -1,30 +1,44 @@
-steps:
-  - name: Recuperer le depot
-    uses: actions/checkout@v4
+name: FOOT AI PRO - simulation quotidienne
 
-  - name: Installer Python
-    uses: actions/setup-python@v5
-    with:
-      python-version: "3.11"
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 10 * * *"
 
-  - name: Installer les dependances
-    run: pip install requests
+permissions:
+  contents: write
 
-  - name: Lancer la simulation
-    env:
-      FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
-    run: python bot.py
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
 
-  - name: Enregistrer les resultats
-    env:
-      GH_TOKEN: ${{ github.token }}
-    run: |
-      git config user.name "github-actions[bot]"
-      git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      git add data/bankroll.json
-      if ! git diff --cached --quiet; then
-        git commit -m "Mise a jour simulation"
-        git push origin HEAD:${GITHUB_REF_NAME}
-      else
-        echo "Aucun changement a enregistrer."
-      fi
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Installer les dependances
+        run: pip install requests
+
+      - name: Lancer la simulation
+        env:
+          FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
+        run: python bot.py
+
+      - name: Enregistrer les resultats
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/bankroll.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Mise a jour simulation quotidienne"
+            git push origin HEAD:${GITHUB_REF_NAME}
+          else
+            echo "Aucun changement a enregistrer."
+          fi
