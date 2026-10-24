@@ -1,7 +1,7 @@
 {
   "starting_bankroll": 20.0,
   "bankroll": 20.0,
-  "day": "2026-10-24T00:09:34.809147+00:00",
+  "day": "2026-10-24T00:09:51.332116+00:00",
   "bets": [
     {
       "home": "RB Leipzig",
@@ -44,7 +44,13 @@
       "bankroll": 20.0,
       "bets_total": 2,
       "open_bets": 2
+    },
+    {
+      "date": "2026-10-24",
+      "bankroll": 20.0,
+      "bets_total": 2,
+      "open_bets": 2
     }
   ],
-  "message": "Nouveaux paris virtuels : RB Leipzig - SV 07 Elversberg: Plus de 1,5 but (92.3 %) | FC Augsburg - 1. FC Union Berlin: Plus de 1,5 but (91.5 %)"
+  "message": "Aucun nouveau pari virtuel. Erreurs API : Ligue 1: Limite API atteinte. Réessaie lors du prochain passage. ; Premier League: Limite API atteinte. Réessaie lors du prochain passage. ; Liga: Limite API atteinte. Réessaie lors du prochain passage. ; Bundesliga: Limite API atteinte. Réessaie lors du prochain passage. ; Serie A: Limite API atteinte. Réessaie lors du prochain passage. ; Ligue des Champions: Limite API atteinte. Réessaie lors du prochain passage."
 }
