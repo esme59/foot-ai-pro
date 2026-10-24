@@ -30,9 +30,15 @@ jobs:
         run: python bot.py
 
       - name: Enregistrer les resultats
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/bankroll.json
-          git diff --cached --quiet || git commit -m "Mise a jour simulation quotidienne"
-          git push
+          if ! git diff --cached --quiet; then
+            git commit -m "Mise a jour simulation quotidienne"
+            git push origin HEAD:${GITHUB_REF_NAME}
+          else
+            echo "Aucun changement a enregistrer."
+          fi
