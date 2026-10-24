@@ -1,8 +1,50 @@
 {
   "starting_bankroll": 20.0,
   "bankroll": 20.0,
-  "day": "",
-  "bets": [],
-  "history": [],
-  "message": "Le bot automatique n'a pas encore été lancé."
+  "day": "2026-10-24T00:09:34.809147+00:00",
+  "bets": [
+    {
+      "home": "RB Leipzig",
+      "away": "SV 07 Elversberg",
+      "pick": "Plus de 1,5 but",
+      "probability": 0.923,
+      "sample": 6,
+      "score": "2-1",
+      "match_id": "565832",
+      "league": "Bundesliga",
+      "date": "2026-10-24",
+      "utcDate": "2026-10-24T13:30:00Z",
+      "stake": 0.4,
+      "settled": false,
+      "result": "En attente",
+      "virtual_odds": null,
+      "settled_at": null
+    },
+    {
+      "home": "FC Augsburg",
+      "away": "1. FC Union Berlin",
+      "pick": "Plus de 1,5 but",
+      "probability": 0.9153,
+      "sample": 6,
+      "score": "2-1",
+      "match_id": "565838",
+      "league": "Bundesliga",
+      "date": "2026-10-24",
+      "utcDate": "2026-10-24T13:30:00Z",
+      "stake": 0.4,
+      "settled": false,
+      "result": "En attente",
+      "virtual_odds": null,
+      "settled_at": null
+    }
+  ],
+  "history": [
+    {
+      "date": "2026-10-24",
+      "bankroll": 20.0,
+      "bets_total": 2,
+      "open_bets": 2
+    }
+  ],
+  "message": "Nouveaux paris virtuels : RB Leipzig - SV 07 Elversberg: Plus de 1,5 but (92.3 %) | FC Augsburg - 1. FC Union Berlin: Plus de 1,5 but (91.5 %)"
 }
