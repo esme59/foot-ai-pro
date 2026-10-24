@@ -1,7 +1,7 @@
 {
   "starting_bankroll": 20.0,
   "bankroll": 20.0,
-  "day": "2026-10-24T00:11:43.048440+00:00",
+  "day": "2026-10-24T00:12:00.074682+00:00",
   "bets": [
     {
       "home": "RB Leipzig",
@@ -90,7 +90,13 @@
       "bankroll": 20.0,
       "bets_total": 4,
       "open_bets": 4
+    },
+    {
+      "date": "2026-10-24",
+      "bankroll": 20.0,
+      "bets_total": 4,
+      "open_bets": 4
     }
   ],
-  "message": "Nouveaux paris virtuels : 1. FSV Mainz 05 - SV Werder Bremen: Plus de 1,5 but (91.1 %) | Real Racing Club de Santander - RCD Espanyol de Barcelona: Plus de 1,5 but (86.1 %)"
+  "message": "Aucun nouveau pari virtuel. Erreurs API : Ligue 1: Limite API atteinte. Réessaie lors du prochain passage. ; Premier League: Limite API atteinte. Réessaie lors du prochain passage. ; Liga: Limite API atteinte. Réessaie lors du prochain passage. ; Bundesliga: Limite API atteinte. Réessaie lors du prochain passage. ; Serie A: Limite API atteinte. Réessaie lors du prochain passage. ; Ligue des Champions: Limite API atteinte. Réessaie lors du prochain passage."
 }
