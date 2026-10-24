@@ -1,7 +1,7 @@
 {
   "starting_bankroll": 20.0,
   "bankroll": 20.0,
-  "day": "2026-10-24T00:12:00.074682+00:00",
+  "day": "2026-10-24T00:12:19.531733+00:00",
   "bets": [
     {
       "home": "RB Leipzig",
@@ -84,6 +84,12 @@
       "bankroll": 20.0,
       "bets_total": 2,
       "open_bets": 2
+    },
+    {
+      "date": "2026-10-24",
+      "bankroll": 20.0,
+      "bets_total": 4,
+      "open_bets": 4
     },
     {
       "date": "2026-10-24",
