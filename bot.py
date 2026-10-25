@@ -59,6 +59,8 @@ SHRINK = 3.0
 DC_RHO = -0.06
 
 REPORT_DAYS = 21
+ANALYSIS_DAYS_AHEAD = 2
+ANALYSIS_KEEP_DAYS = 10
 CALIBRATION_PRIOR = 30
 MAX_CALIBRATION_SHIFT = 0.10
 
@@ -259,6 +261,7 @@ def default_state():
         "backtests": [],
         "backtest_report": {},
         "analyses": {},
+        "analyses_par_jour": {},
         "created_at": now,
         "updated_at": now,
     }
@@ -286,6 +289,7 @@ def load_state():
         state.setdefault("backtests", [])
         state.setdefault("backtest_report", {})
         state.setdefault("analyses", {})
+        state.setdefault("analyses_par_jour", {})
         state.setdefault("created_at", utc_now().isoformat())
 
         for key in ("bets", "history", "backtests"):
@@ -866,7 +870,7 @@ def fetch_competition_matches(competition_code):
     today = local_now().date()
 
     date_from = today - timedelta(days=LOOKBACK_DAYS)
-    date_to = today + timedelta(days=1)
+    date_to = today + timedelta(days=ANALYSIS_DAYS_AHEAD)
 
     payload = api_get(
         f"competitions/{competition_code}/matches",
@@ -1627,6 +1631,32 @@ def recent_form_string(results, team_id):
     return " ".join(letters) if letters else "-"
 
 
+def recent_goal_averages(results, team_id):
+    """Moyenne de buts marqués / encaissés sur les derniers matchs."""
+    games = [
+        item for item in results
+        if item["home"] == team_id or item["away"] == team_id
+    ][-FORM_MATCHES:]
+
+    if not games:
+        return {"scored": None, "conceded": None}
+
+    scored = conceded = 0
+
+    for item in games:
+        if item["home"] == team_id:
+            scored += item["hg"]
+            conceded += item["ag"]
+        else:
+            scored += item["ag"]
+            conceded += item["hg"]
+
+    return {
+        "scored": round(scored / len(games), 2),
+        "conceded": round(conceded / len(games), 2),
+    }
+
+
 def build_match_analysis(
     match, competition_code, model, rates,
     results, calibration, bets_by_match,
@@ -1731,6 +1761,14 @@ def build_match_analysis(
                 "Under 2.5", "BTTS Oui", "BTTS Non",
             )
         },
+        "all_markets": {
+            market: round(markets[market], 3)
+            for market in MARKETS
+        },
+        "goal_averages": {
+            "home": recent_goal_averages(results, home_id),
+            "away": recent_goal_averages(results, away_id),
+        },
         "form": {
             "home": recent_form_string(results, home_id),
             "away": recent_form_string(results, away_id),
@@ -1816,12 +1854,115 @@ def write_analyses_markdown(analyses):
         log(f"Impossible d'écrire {ANALYSES_FILE} : {exc}")
 
 
+def update_analyses_history(state, items, all_results):
+    """
+    Conserve les analyses jour par jour (ANALYSIS_KEEP_DAYS jours) et
+    ajoute le résultat réel et le statut du pari quand le match est fini.
+    """
+    history = {}
+
+    raw = state.get("analyses_par_jour")
+
+    if isinstance(raw, dict):
+        for day, entries in raw.items():
+            if isinstance(entries, list):
+                history[day] = {
+                    str(entry.get("match_id")): entry
+                    for entry in entries
+                    if isinstance(entry, dict)
+                }
+
+    # Reprise de l'ancienne section "analyses" (sans rien écraser).
+    old = (state.get("analyses") or {}).get("matches") or []
+
+    for item in old:
+        if isinstance(item, dict) and item.get("date"):
+            history.setdefault(item["date"], {}).setdefault(
+                str(item.get("match_id")), item
+            )
+
+    # Analyses fraîches (matchs pas encore commencés).
+    for item in items:
+        history.setdefault(item["date"], {})[
+            str(item["match_id"])
+        ] = item
+
+    finished = {}
+
+    for results in all_results.values():
+        for result in results:
+            finished[str(result["id"])] = result
+
+    bets_by_match = {
+        str(bet.get("match_id")): bet
+        for bet in state["bets"]
+        if bet.get("match_id") is not None
+    }
+
+    oldest_day = (
+        local_now().date() - timedelta(days=ANALYSIS_KEEP_DAYS)
+    ).isoformat()
+
+    cleaned = {}
+
+    for day in sorted(history):
+        if day < oldest_day:
+            continue
+
+        entries = []
+
+        for key, entry in history[day].items():
+            result = finished.get(key)
+
+            if result and not entry.get("result"):
+                entry["result"] = f"{result['hg']}-{result['ag']}"
+                entry["market_results"] = {
+                    market: bool(won)
+                    for market, won in market_outcomes(
+                        result["hg"], result["ag"]
+                    ).items()
+                }
+
+            bet = bets_by_match.get(key)
+
+            if bet:
+                entry["bet_placed"] = True
+                entry["bet"] = {
+                    "market": bet.get("market"),
+                    "status": bet.get("status"),
+                    "profit": bet.get("profit"),
+                    "probability": bet.get("probability"),
+                }
+                entry["decision"] = (
+                    f"Pari virtuel placé : {bet.get('market')} "
+                    f"({safe_float(bet.get('probability')):.0%})"
+                )
+            else:
+                entry["bet_placed"] = False
+                entry.pop("bet", None)
+
+                if str(entry.get("decision", "")).startswith(
+                    "Pari virtuel placé"
+                ):
+                    entry["decision"] = "Aucun pari actif sur ce match"
+
+            entries.append(entry)
+
+        entries.sort(key=lambda entry: entry.get("kickoff_utc", ""))
+        cleaned[day] = entries
+
+    state["analyses_par_jour"] = cleaned
+
+
 def generate_analyses(state, all_matches, all_results, calibration):
     """Analyse tous les matchs d'aujourd'hui et de demain."""
     now = utc_now()
     today = local_now().date()
     tomorrow = today + timedelta(days=1)
-    wanted_days = {today.isoformat(), tomorrow.isoformat()}
+    wanted_days = {
+        (today + timedelta(days=offset)).isoformat()
+        for offset in range(ANALYSIS_DAYS_AHEAD + 1)
+    }
 
     bets_by_match = {
         str(bet.get("match_id")): bet
@@ -1866,6 +2007,10 @@ def generate_analyses(state, all_matches, all_results, calibration):
         "count": len(items),
         "matches": items,
     }
+
+    # L'historique doit lire l'ancienne section "analyses" AVANT
+    # qu'elle soit remplacée.
+    update_analyses_history(state, items, all_results)
 
     state["analyses"] = analyses
 
