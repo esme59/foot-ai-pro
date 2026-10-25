@@ -1,8 +1,8 @@
 {
   "bankroll_initiale": 20.0,
-  "bankroll_actuelle": 20.0,
+  "bankroll_actuelle": 15.48,
   "benefice_total": 0.0,
-  "mises_totales": 0.0,
+  "mises_totales": 4.52,
   "gains_totaux": 0.0,
   "paris": [
     {
@@ -142,6 +142,81 @@
       "profit": 0.0,
       "status": "PENDING",
       "result": null
+    },
+    {
+      "match_id": 565839,
+      "date_match": "2026-10-31",
+      "heure_match": "15:30",
+      "competition": "Bundesliga",
+      "domicile": "Borussia Mönchengladbach",
+      "exterieur": "SC Paderborn 07",
+      "market": "Over 1.5",
+      "probabilite_estimee": 0.84128,
+      "cote_virtuelle": 1.189,
+      "mise": 1.0,
+      "statut": "EN_COURS",
+      "date_placement": "2026-10-25",
+      "gain": null
+    },
+    {
+      "match_id": 564723,
+      "date_match": "2026-10-25",
+      "heure_match": "21:00",
+      "competition": "La Liga",
+      "domicile": "FC Barcelona",
+      "exterieur": "Real Madrid CF",
+      "market": "12",
+      "probabilite_estimee": 0.83796,
+      "cote_virtuelle": 1.193,
+      "mise": 0.95,
+      "statut": "EN_COURS",
+      "date_placement": "2026-10-25",
+      "gain": null
+    },
+    {
+      "match_id": 564723,
+      "date_match": "2026-10-25",
+      "heure_match": "21:00",
+      "competition": "La Liga",
+      "domicile": "FC Barcelona",
+      "exterieur": "Real Madrid CF",
+      "market": "BTTS Oui",
+      "probabilite_estimee": 0.831,
+      "cote_virtuelle": 1.203,
+      "mise": 0.9,
+      "statut": "EN_COURS",
+      "date_placement": "2026-10-25",
+      "gain": null
+    },
+    {
+      "match_id": 564737,
+      "date_match": "2026-10-30",
+      "heure_match": "21:00",
+      "competition": "La Liga",
+      "domicile": "Villarreal CF",
+      "exterieur": "RCD Espanyol de Barcelona",
+      "market": "Over 1.5",
+      "probabilite_estimee": 0.82196,
+      "cote_virtuelle": 1.217,
+      "mise": 0.86,
+      "statut": "EN_COURS",
+      "date_placement": "2026-10-25",
+      "gain": null
+    },
+    {
+      "match_id": 565836,
+      "date_match": "2026-10-25",
+      "heure_match": "17:30",
+      "competition": "Bundesliga",
+      "domicile": "SC Freiburg",
+      "exterieur": "FC Bayern München",
+      "market": "Over 2.5",
+      "probabilite_estimee": 0.8168,
+      "cote_virtuelle": 1.224,
+      "mise": 0.81,
+      "statut": "EN_COURS",
+      "date_placement": "2026-10-25",
+      "gain": null
     }
   ],
   "historique": [],
@@ -4315,5 +4390,6 @@
         "summary": "Match équilibré ; nombre de buts incertain (Over 2.5 : 47%)."
       }
     ]
-  }
+  },
+  "last_updated": "2026-10-25T16:34:42.780856+00:00"
 }
