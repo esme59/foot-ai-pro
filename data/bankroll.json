@@ -16,8 +16,51 @@
   "starting_bankroll": 20.0,
   "bankroll": 20.0,
   "profit": 0.0,
-  "bets": [],
+  "bets": [
+    {
+      "bet_id": "559650:Over 1.5",
+      "match_id": 559650,
+      "competition": "FL1",
+      "competition_name": "Ligue 1",
+      "home_team": "AS Monaco FC",
+      "away_team": "Lille OSC",
+      "match_date": "2026-10-25T14:00:00+00:00",
+      "created_date": "2026-10-25",
+      "market": "Over 1.5",
+      "probability": 0.7195,
+      "odds": 1.25,
+      "exact_score_prediction": "1-1",
+      "stake": 1.0,
+      "potential_return": 1.25,
+      "profit": 0.0,
+      "status": "PENDING",
+      "result": null
+    },
+    {
+      "bet_id": "559649:Over 1.5",
+      "match_id": 559649,
+      "competition": "FL1",
+      "competition_name": "Ligue 1",
+      "home_team": "Olympique de Marseille",
+      "away_team": "Le Havre AC",
+      "match_date": "2026-10-25T16:15:00+00:00",
+      "created_date": "2026-10-25",
+      "market": "Over 1.5",
+      "probability": 0.8044,
+      "odds": 1.12,
+      "exact_score_prediction": "1-1",
+      "stake": 1.0,
+      "potential_return": 1.12,
+      "profit": 0.0,
+      "status": "PENDING",
+      "result": null
+    }
+  ],
   "message": "",
   "derniere_mise_a_jour": null,
-  "history": []
+  "history": [],
+  "version": 7,
+  "initial_bankroll": 20.0,
+  "created_at": "2026-10-25T00:23:09.765674+00:00",
+  "updated_at": "2026-10-25T00:23:16.509338+00:00"
 }
