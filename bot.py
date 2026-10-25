@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import math
 import time
@@ -33,6 +34,7 @@ import requests
 API_BASE = "https://api.football-data.org/v4"
 STATE_FILE = Path(os.environ.get("BOT_STATE_FILE", "data/bankroll.json"))
 ANALYSES_FILE = Path(os.environ.get("BOT_ANALYSES_FILE", "data/analyses.md"))
+RESET_FLAG_FILE = Path(os.environ.get("BOT_RESET_FLAG", "data/reset_today.txt"))
 
 INITIAL_BANKROLL = 20.0
 MAX_STAKE = 1.0
@@ -905,6 +907,60 @@ def count_bets_today(state):
         1 for bet in state["bets"]
         if bet.get("created_date") == today
     )
+
+
+# ============================================================
+# REINITIALISATION DES PARIS DU JOUR
+# ============================================================
+
+def reset_today_bets(state):
+    """
+    Supprime les paris d'aujourd'hui encore EN ATTENTE.
+    Les paris déjà réglés (gagnés/perdus) et les anciens jours
+    ne sont pas touchés. Le capital ne change pas, car un pari
+    en attente n'a encore rien débité.
+    """
+    today = local_date()
+
+    kept = []
+    removed = 0
+
+    for bet in state["bets"]:
+        if (
+            bet.get("created_date") == today
+            and bet.get("status") == "PENDING"
+        ):
+            removed += 1
+        else:
+            kept.append(bet)
+
+    state["bets"] = kept
+    state["last_reset"] = today
+
+    log(f"Paris du jour supprimés : {removed}.")
+
+    return removed
+
+
+def reset_requested(state):
+    """
+    Deux façons de demander la remise à zéro :
+    - lancer le bot avec l'option --reset-today ;
+    - créer data/reset_today.txt contenant la date du jour
+      (AAAA-MM-JJ). Ignoré le lendemain et jamais appliqué
+      deux fois le même jour.
+    """
+    if "--reset-today" in sys.argv:
+        return True
+
+    try:
+        content = RESET_FLAG_FILE.read_text(encoding="utf-8").strip()
+    except OSError:
+        return False
+
+    today = local_date()
+
+    return content == today and state.get("last_reset") != today
 
 
 # ============================================================
@@ -1884,6 +1940,12 @@ def main():
         )
 
     state = load_state()
+
+    if reset_requested(state):
+        log("Remise à zéro des paris du jour demandée.")
+        reset_today_bets(state)
+        save_state(state)
+
     all_matches = {}
     all_results = {}
 
