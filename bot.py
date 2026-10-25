@@ -86,9 +86,9 @@ MARKETS = [
 # toujours, il n'apporte aucune information.
 EXCLUDED_MARKETS = {"Over 0.5"}
 
-# Marchés ciblés : plus de 2,5 buts et les deux équipes marquent.
-# Mets FOCUS_MARKETS = set() pour réautoriser tous les marchés.
-FOCUS_MARKETS = {"Over 2.5", "BTTS Oui"}
+# Marchés ciblés : plus de 2,5 buts, moins de 2,5 buts et les deux
+# équipes marquent. Mets FOCUS_MARKETS = set() pour tout réautoriser.
+FOCUS_MARKETS = {"Over 2.5", "Under 2.5", "BTTS Oui"}
 
 HEADERS = {
     "User-Agent": "FOOT-AI-PRO-V12-Virtual-Simulation"
@@ -961,6 +961,43 @@ def reset_requested(state):
     today = local_date()
 
     return content == today and state.get("last_reset") != today
+
+
+def purge_non_focus_pending(state):
+    """
+    Supprime automatiquement les paris d'aujourd'hui encore en attente
+    dont le marché n'est PAS dans FOCUS_MARKETS (ex. anciens paris
+    Over 0.5 / Over 1.5 créés par la V10). Rien à faire à la main.
+    Les paris réglés et ceux des jours précédents sont conservés.
+    """
+    if not FOCUS_MARKETS:
+        return 0
+
+    today = local_date()
+
+    kept = []
+    removed = 0
+
+    for bet in state["bets"]:
+        if (
+            bet.get("created_date") == today
+            and bet.get("status") == "PENDING"
+            and bet.get("market") not in FOCUS_MARKETS
+        ):
+            removed += 1
+            log(
+                f"Ancien pari supprimé : {bet.get('home_team')} - "
+                f"{bet.get('away_team')} | {bet.get('market')}"
+            )
+        else:
+            kept.append(bet)
+
+    state["bets"] = kept
+
+    if removed:
+        log(f"Anciens paris hors stratégie supprimés : {removed}.")
+
+    return removed
 
 
 # ============================================================
@@ -1944,6 +1981,9 @@ def main():
     if reset_requested(state):
         log("Remise à zéro des paris du jour demandée.")
         reset_today_bets(state)
+        save_state(state)
+
+    if purge_non_focus_pending(state):
         save_state(state)
 
     all_matches = {}
