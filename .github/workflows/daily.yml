@@ -27,7 +27,7 @@ jobs:
       - name: Lancer la simulation
         env:
           FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
-        run: python bot_v12_complet.py
+        run: python bot.py
 
       - name: Enregistrer les resultats
         env:
