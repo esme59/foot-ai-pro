@@ -1,0 +1,18 @@
+[2026-10-25 18:19:40] Démarrage FOOT AI PRO BOT V12.
+[2026-10-25 18:19:41] Ligue 1 : 16 matchs reçus.
+[2026-10-25 18:20:13] Analyse ignorée pour le match 559639: Limite de requêtes API atteinte (HTTP 429). Réessaie plus tard.
+[2026-10-25 18:20:13] Analyse ignorée pour le match 559646: Limite de requêtes API atteinte (HTTP 429). Réessaie plus tard.
+[2026-10-25 18:20:13] Analyse ignorée pour le match 559640: Limite de requêtes API atteinte (HTTP 429). Réessaie plus tard.
+[2026-10-25 18:20:13] Analyse ignorée pour le match 559641: Limite de requêtes API atteinte (HTTP 429). Réessaie plus tard.
+[2026-10-25 18:20:13] Analyse ignorée pour le match 559643: Limite de requêtes API atteinte (HTTP 429). Réessaie plus tard.
+[2026-10-25 18:20:13] Analyse ignorée pour le match 559647: Limite de requêtes API atteinte (HTTP 429). Réessaie plus tard.
+[2026-10-25 18:20:13] Analyse ignorée pour le match 559642: Limite de requêtes API atteinte (HTTP 429). Réessaie plus tard.
+[2026-10-25 18:20:14] Analyse ignorée pour le match 559645: Limite de requêtes API atteinte (HTTP 429). Réessaie plus tard.
+[2026-10-25 18:20:20] Compétition PL non récupérée : Limite de requêtes API atteinte (HTTP 429). Réessaie plus tard.
+[2026-10-25 18:20:26] Compétition PD non récupérée : Limite de requêtes API atteinte (HTTP 429). Réessaie plus tard.
+[2026-10-25 18:20:32] Compétition BL1 non récupérée : Limite de requêtes API atteinte (HTTP 429). Réessaie plus tard.
+[2026-10-25 18:20:38] Compétition SA non récupérée : Limite de requêtes API atteinte (HTTP 429). Réessaie plus tard.
+[2026-10-25 18:20:44] Ligue des champions : 0 matchs reçus.
+[2026-10-25 18:20:50] Rapport détaillé enregistré : /home/runner/work/foot-ai-pro/foot-ai-pro/data/analyses.md
+[2026-10-25 18:20:50] Limite de nouveaux paris virtuels atteinte pour aujourd'hui.
+[2026-10-25 18:20:50] Terminé. Matchs analysés : 2. Capital virtuel : 15.48 €.
