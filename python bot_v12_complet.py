@@ -683,6 +683,7 @@ def main():
     all_analyses.sort(key=lambda item: (item.get("date", ""), item.get("kickoff_local", "")))
     report = {"count": len(all_analyses), "matches": all_analyses}
     write_analyses_markdown(report)
+    write_json(DATA_DIR / "analyses.json", report)
     place_virtual_bets(report, state)
     save_state(state)
 
