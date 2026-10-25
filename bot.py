@@ -9,7 +9,7 @@ import requests
 
 ============================================================
 
-FOOT AI PRO BOT V7
+# FOOT AI PRO BOT V7 - SIMULATION VIRTUELLE
 
 Simulation virtuelle uniquement — aucun pari réel
 
