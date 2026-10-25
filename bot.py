@@ -2,6 +2,7 @@ import os
 import json
 import math
 import time
+from collections import Counter, defaultdict
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
@@ -9,24 +10,53 @@ from zoneinfo import ZoneInfo
 import requests
 
 # ============================================================
-# FOOT AI PRO BOT V10
+# FOOT AI PRO BOT V12
 # Simulation virtuelle uniquement — aucun pari réel.
 # API : football-data.org v4
-# Compatible avec GitHub Actions.
+# Compatible avec GitHub Actions. Aucune dépendance en plus
+# de "requests".
+#
+# NOUVEAUTES V12 (par rapport à la V10) :
+#  1. Poisson avec forces d'attaque / défense (pondérées par
+#     la récence), avantage du terrain et correction
+#     Dixon-Coles sur les petits scores.
+#  2. Analyse de la forme (5 derniers matchs).
+#  3. Apprentissage automatique léger : calibration
+#     adaptative de chaque marché d'après les résultats
+#     réels récents (sans bibliothèque externe).
+#  4. Sélection multi-marchés : avantage vs fréquence réelle
+#     de la ligue, pénalité de répétition, plafond par marché.
+#  5. Tests historiques walk-forward (rapport enregistré
+#     dans le JSON) + backtests d'hier comme en V10.
 # ============================================================
 
 API_BASE = "https://api.football-data.org/v4"
-STATE_FILE = Path("data/bankroll.json")
+STATE_FILE = Path(os.environ.get("BOT_STATE_FILE", "data/bankroll.json"))
 
 INITIAL_BANKROLL = 20.0
 MAX_STAKE = 1.0
 MAX_NEW_BETS_PER_DAY = 6
 MAX_BACKTESTS_PER_DAY = 6
+MAX_SAME_MARKET_PER_DAY = 2
 
-LOOKBACK_DAYS = 60
+LOOKBACK_DAYS = 100
 MAX_GOALS = 10
-MIN_HISTORY_MATCHES = 3
+MIN_HISTORY_MATCHES = 4
+MIN_MODEL_MATCHES = 40
+
 MIN_PROBABILITY = 0.60
+MAX_PROBABILITY = 0.92
+MIN_LIFT = 0.03
+
+HALF_LIFE_DAYS = 40
+FORM_MATCHES = 5
+FORM_WEIGHT = 0.10
+SHRINK = 3.0
+DC_RHO = -0.06
+
+REPORT_DAYS = 21
+CALIBRATION_PRIOR = 30
+MAX_CALIBRATION_SHIFT = 0.10
 
 REQUEST_TIMEOUT = 25
 API_DELAY_SECONDS = 1.0
@@ -41,8 +71,19 @@ COMPETITIONS = {
     "CL": "Ligue des champions",
 }
 
+MARKETS = [
+    "1", "N", "2", "1X", "X2", "12",
+    "Over 0.5", "Over 1.5", "Over 2.5", "Over 3.5",
+    "Under 1.5", "Under 2.5", "Under 3.5",
+    "BTTS Oui", "BTTS Non",
+]
+
+# Over 0.5 est exclu de la sélection automatique : choisi presque
+# toujours, il n'apporte aucune information.
+EXCLUDED_MARKETS = {"Over 0.5"}
+
 HEADERS = {
-    "User-Agent": "FOOT-AI-PRO-V10-Virtual-Simulation"
+    "User-Agent": "FOOT-AI-PRO-V12-Virtual-Simulation"
 }
 
 
@@ -73,6 +114,10 @@ def safe_float(value, default=0.0):
         return default
 
 
+def clamp(value, low, high):
+    return max(low, min(value, high))
+
+
 def parse_datetime(value):
     if not value:
         return None
@@ -98,6 +143,15 @@ def match_local_date(match):
         return None
 
     return kickoff.astimezone(LOCAL_TZ).date().isoformat()
+
+
+def day_cutoff(day):
+    """Début de journée (heure française) converti en UTC."""
+    return datetime.combine(
+        day,
+        datetime.min.time(),
+        tzinfo=LOCAL_TZ,
+    ).astimezone(timezone.utc)
 
 
 def log(message):
@@ -189,12 +243,13 @@ def default_state():
     now = utc_now().isoformat()
 
     return {
-        "version": 10,
+        "version": 12,
         "bankroll": INITIAL_BANKROLL,
         "initial_bankroll": INITIAL_BANKROLL,
         "bets": [],
         "history": [],
         "backtests": [],
+        "backtest_report": {},
         "created_at": now,
         "updated_at": now,
     }
@@ -216,10 +271,11 @@ def load_state():
             raise ValueError("Le JSON doit contenir un objet.")
 
         # Préserver les données existantes.
-        state.setdefault("version", 10)
+        state.setdefault("version", 12)
         state.setdefault("bets", [])
         state.setdefault("history", [])
         state.setdefault("backtests", [])
+        state.setdefault("backtest_report", {})
         state.setdefault("created_at", utc_now().isoformat())
 
         for key in ("bets", "history", "backtests"):
@@ -249,7 +305,7 @@ def load_state():
             safe_float(state["initial_bankroll"], INITIAL_BANKROLL)
         )
 
-        state["version"] = 10
+        state["version"] = 12
 
         return state
 
@@ -346,13 +402,47 @@ def save_state(state):
 
 
 # ============================================================
-# STATISTIQUES DES EQUIPES
+# MARCHES
 # ============================================================
 
-def get_team_statistics(matches, team_id, before=None):
-    performances = []
+def market_outcomes(home_goals, away_goals):
+    """Pour un score donné, indique quels marchés sont gagnants."""
+    total = home_goals + away_goals
 
-    for match in matches:
+    return {
+        "1": home_goals > away_goals,
+        "N": home_goals == away_goals,
+        "2": away_goals > home_goals,
+        "1X": home_goals >= away_goals,
+        "X2": away_goals >= home_goals,
+        "12": home_goals != away_goals,
+        "Over 0.5": total >= 1,
+        "Over 1.5": total >= 2,
+        "Over 2.5": total >= 3,
+        "Over 3.5": total >= 4,
+        "Under 1.5": total <= 1,
+        "Under 2.5": total <= 2,
+        "Under 3.5": total <= 3,
+        "BTTS Oui": home_goals > 0 and away_goals > 0,
+        "BTTS Non": home_goals == 0 or away_goals == 0,
+    }
+
+
+def evaluate_market(bet, home_goals, away_goals):
+    return market_outcomes(home_goals, away_goals).get(
+        bet.get("market")
+    )
+
+
+# ============================================================
+# DONNEES HISTORIQUES
+# ============================================================
+
+def extract_results(matches):
+    """Transforme les matchs API en liste simple de résultats."""
+    results = []
+
+    for match in matches or []:
         if match.get("status") != "FINISHED":
             continue
 
@@ -361,11 +451,11 @@ def get_team_statistics(matches, team_id, before=None):
         if kickoff is None:
             continue
 
-        if before is not None and kickoff >= before:
-            continue
-
         home = match.get("homeTeam") or {}
         away = match.get("awayTeam") or {}
+
+        if home.get("id") is None or away.get("id") is None:
+            continue
 
         full_time = (
             (match.get("score") or {}).get("fullTime") or {}
@@ -377,51 +467,204 @@ def get_team_statistics(matches, team_id, before=None):
         if hg is None or ag is None:
             continue
 
-        if home.get("id") == team_id:
-            performances.append(
-                (kickoff, float(hg), float(ag))
-            )
-        elif away.get("id") == team_id:
-            performances.append(
-                (kickoff, float(ag), float(hg))
-            )
+        results.append({
+            "id": match.get("id"),
+            "date": kickoff,
+            "home": home["id"],
+            "away": away["id"],
+            "home_name": home.get("name", "Équipe domicile"),
+            "away_name": away.get("name", "Équipe extérieure"),
+            "hg": int(hg),
+            "ag": int(ag),
+        })
 
-    performances.sort(key=lambda item: item[0], reverse=True)
-    performances = performances[:10]
+    results.sort(key=lambda item: item["date"])
 
-    if not performances:
-        return {
-            "matches": 0,
-            "scored": 1.25,
-            "conceded": 1.25,
-        }
+    return results
 
-    weights = [
-        1.0 / (1.0 + 0.12 * index)
-        for index in range(len(performances))
-    ]
 
-    total_weight = sum(weights)
+def base_rates(results):
+    """Fréquence réelle de chaque marché dans la ligue."""
+    if not results:
+        return {}
 
-    scored = sum(
-        item[1] * weight
-        for item, weight in zip(performances, weights)
-    ) / total_weight
+    totals = Counter()
 
-    conceded = sum(
-        item[2] * weight
-        for item, weight in zip(performances, weights)
-    ) / total_weight
+    for item in results:
+        for market, won in market_outcomes(
+            item["hg"], item["ag"]
+        ).items():
+            if won:
+                totals[market] += 1
 
     return {
-        "matches": len(performances),
-        "scored": scored,
-        "conceded": conceded,
+        market: totals[market] / len(results)
+        for market in MARKETS
     }
 
 
 # ============================================================
-# POISSON
+# MOTEUR : FORCES D'ATTAQUE / DEFENSE + FORME
+# ============================================================
+
+def fit_model(results, now):
+    """Ajuste le modèle sur les résultats passés."""
+    if len(results) < MIN_MODEL_MATCHES:
+        return None
+
+    decay = math.log(2) / HALF_LIFE_DAYS
+
+    weights = [
+        math.exp(
+            -decay * max(
+                (now - item["date"]).total_seconds() / 86400.0,
+                0.0,
+            )
+        )
+        for item in results
+    ]
+
+    total_weight = sum(weights)
+
+    if total_weight <= 0:
+        return None
+
+    mu_home = max(
+        0.3,
+        sum(w * item["hg"] for w, item in zip(weights, results))
+        / total_weight,
+    )
+
+    mu_away = max(
+        0.3,
+        sum(w * item["ag"] for w, item in zip(weights, results))
+        / total_weight,
+    )
+
+    by_team = defaultdict(list)
+
+    for weight, item in zip(weights, results):
+        by_team[item["home"]].append((weight, item, True))
+        by_team[item["away"]].append((weight, item, False))
+
+    attack = {team: 1.0 for team in by_team}
+    defense = {team: 1.0 for team in by_team}
+
+    for _ in range(15):
+        for team, games in by_team.items():
+            numerator = denominator = 0.0
+
+            for weight, item, is_home in games:
+                if is_home:
+                    numerator += weight * item["hg"]
+                    denominator += (
+                        weight * mu_home * defense[item["away"]]
+                    )
+                else:
+                    numerator += weight * item["ag"]
+                    denominator += (
+                        weight * mu_away * defense[item["home"]]
+                    )
+
+            attack[team] = (
+                (numerator + SHRINK) / (denominator + SHRINK)
+            )
+
+        for team, games in by_team.items():
+            numerator = denominator = 0.0
+
+            for weight, item, is_home in games:
+                if is_home:
+                    numerator += weight * item["ag"]
+                    denominator += (
+                        weight * mu_away * attack[item["away"]]
+                    )
+                else:
+                    numerator += weight * item["hg"]
+                    denominator += (
+                        weight * mu_home * attack[item["home"]]
+                    )
+
+            defense[team] = (
+                (numerator + SHRINK) / (denominator + SHRINK)
+            )
+
+    # Forme : points pris sur les derniers matchs (0 à 1).
+    form = {}
+    counts = {}
+
+    for team, games in by_team.items():
+        counts[team] = len(games)
+
+        last = sorted(
+            games,
+            key=lambda entry: entry[1]["date"],
+        )[-FORM_MATCHES:]
+
+        points = 0
+
+        for _, item, is_home in last:
+            goals_for = item["hg"] if is_home else item["ag"]
+            goals_against = item["ag"] if is_home else item["hg"]
+
+            if goals_for > goals_against:
+                points += 3
+            elif goals_for == goals_against:
+                points += 1
+
+        form[team] = points / (3.0 * len(last)) if last else 0.5
+
+    return {
+        "mu_home": mu_home,
+        "mu_away": mu_away,
+        "attack": attack,
+        "defense": defense,
+        "form": form,
+        "counts": counts,
+    }
+
+
+def teams_have_history(model, home_id, away_id):
+    counts = model["counts"]
+
+    return (
+        counts.get(home_id, 0) >= MIN_HISTORY_MATCHES
+        and counts.get(away_id, 0) >= MIN_HISTORY_MATCHES
+    )
+
+
+def expected_goals(model, home_id, away_id):
+    attack = model["attack"]
+    defense = model["defense"]
+    form = model["form"]
+
+    home_lambda = (
+        model["mu_home"]
+        * attack.get(home_id, 1.0)
+        * defense.get(away_id, 1.0)
+    )
+
+    away_lambda = (
+        model["mu_away"]
+        * attack.get(away_id, 1.0)
+        * defense.get(home_id, 1.0)
+    )
+
+    home_lambda *= (
+        1.0 + FORM_WEIGHT * 2.0 * (form.get(home_id, 0.5) - 0.5)
+    )
+    away_lambda *= (
+        1.0 + FORM_WEIGHT * 2.0 * (form.get(away_id, 0.5) - 0.5)
+    )
+
+    return (
+        clamp(home_lambda, 0.15, 4.0),
+        clamp(away_lambda, 0.15, 4.0),
+    )
+
+
+# ============================================================
+# POISSON + CORRECTION DIXON-COLES
 # ============================================================
 
 def poisson_probability(lam, goals):
@@ -438,90 +681,63 @@ def poisson_probability(lam, goals):
         return 0.0
 
 
-def estimate_goals(home_stats, away_stats):
-    home_lambda = (
-        0.55 * home_stats["scored"]
-        + 0.45 * away_stats["conceded"]
-        + 0.15
+def dixon_coles_tau(hg, ag, home_lambda, away_lambda):
+    if hg == 0 and ag == 0:
+        return 1.0 - home_lambda * away_lambda * DC_RHO
+    if hg == 0 and ag == 1:
+        return 1.0 + home_lambda * DC_RHO
+    if hg == 1 and ag == 0:
+        return 1.0 + away_lambda * DC_RHO
+    if hg == 1 and ag == 1:
+        return 1.0 - DC_RHO
+
+    return 1.0
+
+
+def analyze_match(model, home_id, away_id):
+    home_lambda, away_lambda = expected_goals(
+        model,
+        home_id,
+        away_id,
     )
 
-    away_lambda = (
-        0.55 * away_stats["scored"]
-        + 0.45 * home_stats["conceded"]
-    )
-
-    return (
-        max(0.15, min(home_lambda, 4.0)),
-        max(0.15, min(away_lambda, 4.0)),
-    )
-
-
-def analyze_match(home_stats, away_stats):
-    home_lambda, away_lambda = estimate_goals(
-        home_stats,
-        away_stats,
-    )
-
-    markets = {
-        "1": 0.0,
-        "N": 0.0,
-        "2": 0.0,
-        "1X": 0.0,
-        "X2": 0.0,
-        "Over 0.5": 0.0,
-        "Over 1.5": 0.0,
-        "Over 2.5": 0.0,
-        "Over 3.5": 0.0,
-        "Under 2.5": 0.0,
-        "Under 3.5": 0.0,
-        "BTTS Oui": 0.0,
-        "BTTS Non": 0.0,
-    }
-
-    best_score = "1-1"
-    best_score_probability = -1.0
+    cells = []
+    total_probability = 0.0
 
     for hg in range(MAX_GOALS + 1):
         ph = poisson_probability(home_lambda, hg)
 
         for ag in range(MAX_GOALS + 1):
             pa = poisson_probability(away_lambda, ag)
-            p = ph * pa
-            total = hg + ag
 
-            if hg > ag:
-                markets["1"] += p
-            elif hg == ag:
-                markets["N"] += p
-            else:
-                markets["2"] += p
+            p = max(
+                0.0,
+                ph * pa * dixon_coles_tau(
+                    hg, ag, home_lambda, away_lambda
+                ),
+            )
 
-            if hg >= ag:
-                markets["1X"] += p
-            if ag >= hg:
-                markets["X2"] += p
+            cells.append((hg, ag, p))
+            total_probability += p
 
-            if total >= 1:
-                markets["Over 0.5"] += p
-            if total >= 2:
-                markets["Over 1.5"] += p
-            if total >= 3:
-                markets["Over 2.5"] += p
-            if total >= 4:
-                markets["Over 3.5"] += p
-            if total <= 2:
-                markets["Under 2.5"] += p
-            if total <= 3:
-                markets["Under 3.5"] += p
+    if total_probability <= 0:
+        return None
 
-            if hg > 0 and ag > 0:
-                markets["BTTS Oui"] += p
-            else:
-                markets["BTTS Non"] += p
+    markets = {market: 0.0 for market in MARKETS}
 
-            if p > best_score_probability:
-                best_score_probability = p
-                best_score = f"{hg}-{ag}"
+    best_score = "1-1"
+    best_score_probability = -1.0
+
+    for hg, ag, p in cells:
+        p /= total_probability
+
+        for market, won in market_outcomes(hg, ag).items():
+            if won:
+                markets[market] += p
+
+        if p > best_score_probability:
+            best_score_probability = p
+            best_score = f"{hg}-{ag}"
 
     return {
         "markets": markets,
@@ -532,61 +748,87 @@ def analyze_match(home_stats, away_stats):
 
 
 # ============================================================
-# SELECTION PLUS VARIEE
+# CALIBRATION ADAPTATIVE (APPRENTISSAGE LEGER)
 # ============================================================
 
-def select_prediction(analysis):
+def calibrate(market, probability, calibration):
+    """Corrige le biais moyen constaté sur ce marché."""
+    if not calibration:
+        return probability
+
+    info = calibration.get(market)
+
+    if not info or info.get("n", 0) <= 0:
+        return probability
+
+    reliability = info["n"] / (info["n"] + CALIBRATION_PRIOR)
+
+    shift = clamp(
+        info["hit_rate"] - info["mean_pred"],
+        -MAX_CALIBRATION_SHIFT,
+        MAX_CALIBRATION_SHIFT,
+    )
+
+    return clamp(probability + reliability * shift, 0.01, 0.99)
+
+
+# ============================================================
+# SELECTION MULTI-MARCHES
+# ============================================================
+
+def rank_candidates(analysis, rates, calibration, usage):
+    """Classe les marchés intéressants d'un match."""
     candidates = []
 
-    # On écarte le marché Over 0.5 de la sélection automatique :
-    # il était choisi presque systématiquement et offre peu de valeur.
-    excluded_markets = {"Over 0.5"}
-
-    for market, probability in analysis["markets"].items():
-        if market in excluded_markets:
+    for market, raw_probability in analysis["markets"].items():
+        if market in EXCLUDED_MARKETS:
             continue
+
+        probability = calibrate(
+            market,
+            raw_probability,
+            calibration,
+        )
 
         if probability < MIN_PROBABILITY:
             continue
 
-        # Une probabilité extrêmement haute ne garantit pas un pari sûr.
-        # On estime la cote théorique sans prétendre qu'elle existe chez
-        # un bookmaker.
-        estimated_odds = 1.0 / probability
+        if probability > MAX_PROBABILITY:
+            continue
 
-        # Score de classement : favorise les probabilités élevées tout
-        # en évitant de toujours sélectionner les mêmes marchés.
-        score = probability
+        base_rate = rates.get(market, 0.5)
+        lift = probability - base_rate
 
-        if market in ("1X", "X2"):
-            score -= 0.025
-        if market in ("Over 3.5", "Under 2.5", "Under 3.5"):
-            score += 0.015
+        # Le marché doit faire mieux que sa fréquence habituelle.
+        if lift < MIN_LIFT:
+            continue
+
+        score = probability + 0.5 * lift
+
+        if market in ("1X", "X2", "12"):
+            score -= 0.03
+
+        score -= 0.03 * usage.get(market, 0)
+
+        estimated_odds = clamp(1.0 / probability, 1.01, 10.0)
 
         candidates.append({
             "market": market,
-            "probability": probability,
-            "odds": max(1.01, min(estimated_odds, 10.0)),
+            "probability": round(probability, 4),
+            "raw_probability": round(raw_probability, 4),
+            "base_rate": round(base_rate, 4),
+            "lift": round(lift, 4),
+            "odds": round(estimated_odds, 2),
             "score": score,
             "exact_score": analysis["exact_score"],
         })
-
-    if not candidates:
-        return None
 
     candidates.sort(
         key=lambda item: item["score"],
         reverse=True,
     )
 
-    chosen = candidates[0]
-
-    return {
-        "market": chosen["market"],
-        "probability": round(chosen["probability"], 4),
-        "odds": round(chosen["odds"], 2),
-        "exact_score": chosen["exact_score"],
-    }
+    return candidates
 
 
 # ============================================================
@@ -678,6 +920,7 @@ def create_virtual_bet(state, match, competition_code, prediction):
 
     bet = {
         "bet_id": make_bet_id(match_id, prediction["market"]),
+        "engine": "V12",
         "match_id": match_id,
         "competition": competition_code,
         "competition_name": COMPETITIONS.get(
@@ -690,6 +933,9 @@ def create_virtual_bet(state, match, competition_code, prediction):
         "created_date": local_date(),
         "market": prediction["market"],
         "probability": prediction["probability"],
+        "raw_probability": prediction["raw_probability"],
+        "base_rate": prediction["base_rate"],
+        "lift": prediction["lift"],
         "odds": prediction["odds"],
         "exact_score_prediction": prediction["exact_score"],
         "stake": round_money(stake),
@@ -703,48 +949,151 @@ def create_virtual_bet(state, match, competition_code, prediction):
 
     log(
         f"NOUVEAU PARI : {bet['home_team']} - {bet['away_team']} | "
-        f"{bet['market']} | {prediction['probability']:.1%}"
+        f"{bet['market']} | {prediction['probability']:.1%} | "
+        f"avantage {prediction['lift']:+.1%}"
     )
 
     return True
 
 
-# ============================================================
-# EVALUATION DES MARCHES
-# ============================================================
+def create_today_bets(state, all_matches, all_results, calibration):
+    today = local_date()
+    now = utc_now()
 
-def evaluate_market(bet, home_goals, away_goals):
-    market = bet.get("market")
-    total = home_goals + away_goals
+    existing_ids = get_existing_bet_ids(state)
 
-    if market == "1":
-        return home_goals > away_goals
-    if market == "N":
-        return home_goals == away_goals
-    if market == "2":
-        return away_goals > home_goals
-    if market == "1X":
-        return home_goals >= away_goals
-    if market == "X2":
-        return away_goals >= home_goals
-    if market == "Over 0.5":
-        return total >= 1
-    if market == "Over 1.5":
-        return total >= 2
-    if market == "Over 2.5":
-        return total >= 3
-    if market == "Over 3.5":
-        return total >= 4
-    if market == "Under 2.5":
-        return total <= 2
-    if market == "Under 3.5":
-        return total <= 3
-    if market == "BTTS Oui":
-        return home_goals > 0 and away_goals > 0
-    if market == "BTTS Non":
-        return home_goals == 0 or away_goals == 0
+    matches_with_bets = {
+        str(bet.get("match_id"))
+        for bet in state["bets"]
+        if bet.get("match_id") is not None
+    }
 
-    return None
+    usage = Counter(
+        bet.get("market")
+        for bet in state["bets"]
+        if bet.get("created_date") == today
+    )
+
+    flat = []
+
+    for competition_code, matches in all_matches.items():
+        if not matches:
+            continue
+
+        results = all_results.get(competition_code, [])
+        model = fit_model(results, now)
+
+        if model is None:
+            log(
+                f"Données insuffisantes pour "
+                f"{COMPETITIONS[competition_code]}."
+            )
+            continue
+
+        rates = base_rates(results)
+
+        for match in matches:
+            if match.get("status") not in ("SCHEDULED", "TIMED"):
+                continue
+
+            if match_local_date(match) != today:
+                continue
+
+            if str(match.get("id")) in matches_with_bets:
+                continue
+
+            kickoff = parse_datetime(match.get("utcDate"))
+
+            if kickoff is None or kickoff <= now:
+                continue
+
+            home = match.get("homeTeam") or {}
+            away = match.get("awayTeam") or {}
+
+            home_id = home.get("id")
+            away_id = away.get("id")
+
+            if not home_id or not away_id:
+                continue
+
+            if not teams_have_history(model, home_id, away_id):
+                log(
+                    f"Historique insuffisant : "
+                    f"{home.get('name')} - {away.get('name')}"
+                )
+                continue
+
+            analysis = analyze_match(model, home_id, away_id)
+
+            if analysis is None:
+                continue
+
+            candidates = rank_candidates(
+                analysis,
+                rates,
+                calibration,
+                usage,
+            )
+
+            for candidate in candidates:
+                bet_id = make_bet_id(
+                    match.get("id"),
+                    candidate["market"],
+                )
+
+                if bet_id in existing_ids:
+                    continue
+
+                flat.append({
+                    "match": match,
+                    "competition_code": competition_code,
+                    "prediction": candidate,
+                })
+
+    flat.sort(
+        key=lambda item: item["prediction"]["score"],
+        reverse=True,
+    )
+
+    remaining = max(
+        0,
+        MAX_NEW_BETS_PER_DAY - count_bets_today(state),
+    )
+
+    created = 0
+    used_matches = set()
+
+    for item in flat:
+        if created >= remaining:
+            break
+
+        match_key = str(item["match"].get("id"))
+        market = item["prediction"]["market"]
+
+        # Un seul pari par match et pas trop du même marché.
+        if match_key in used_matches:
+            continue
+
+        if usage[market] >= MAX_SAME_MARKET_PER_DAY:
+            continue
+
+        if create_virtual_bet(
+            state,
+            item["match"],
+            item["competition_code"],
+            item["prediction"],
+        ):
+            created += 1
+            used_matches.add(match_key)
+            usage[market] += 1
+            save_state(state)
+
+    log(
+        f"Nouveaux paris créés : {created}. "
+        f"Limite quotidienne : {MAX_NEW_BETS_PER_DAY}."
+    )
+
+    return created
 
 
 # ============================================================
@@ -853,6 +1202,160 @@ def settle_finished_matches(state, matches):
 
 
 # ============================================================
+# TESTS HISTORIQUES (WALK-FORWARD)
+# ============================================================
+
+def model_for_day(results, day):
+    """Modèle ajusté uniquement sur les matchs AVANT ce jour."""
+    cutoff = day_cutoff(day)
+
+    prior = [item for item in results if item["date"] < cutoff]
+
+    model = fit_model(prior, cutoff)
+
+    if model is None:
+        return None, None
+
+    return model, base_rates(prior)
+
+
+def run_historical_backtest(all_results, days=REPORT_DAYS):
+    """
+    Compare les prédictions aux résultats réels des derniers jours.
+    Chaque jour est prédit avec un modèle qui ne connaît que le passé.
+    Retourne (rapport, calibration).
+    """
+    start_day = local_now().date() - timedelta(days=days)
+
+    market_stats = {
+        market: {"n": 0, "hits": 0, "pred_sum": 0.0}
+        for market in MARKETS
+    }
+
+    picks = defaultdict(lambda: {"n": 0, "wins": 0})
+
+    brier_sum = 0.0
+    accuracy_hits = 0
+    match_count = 0
+
+    for results in all_results.values():
+        by_day = defaultdict(list)
+
+        for item in results:
+            day = item["date"].astimezone(LOCAL_TZ).date()
+
+            if day >= start_day:
+                by_day[day].append(item)
+
+        for day in sorted(by_day):
+            model, rates = model_for_day(results, day)
+
+            if model is None:
+                continue
+
+            for item in by_day[day]:
+                if not teams_have_history(
+                    model, item["home"], item["away"]
+                ):
+                    continue
+
+                analysis = analyze_match(
+                    model, item["home"], item["away"]
+                )
+
+                if analysis is None:
+                    continue
+
+                outcomes = market_outcomes(item["hg"], item["ag"])
+
+                for market, probability in analysis["markets"].items():
+                    stats = market_stats[market]
+                    stats["n"] += 1
+                    stats["hits"] += 1 if outcomes[market] else 0
+                    stats["pred_sum"] += probability
+
+                p1x2 = [
+                    analysis["markets"]["1"],
+                    analysis["markets"]["N"],
+                    analysis["markets"]["2"],
+                ]
+
+                actual = (
+                    0 if item["hg"] > item["ag"]
+                    else 1 if item["hg"] == item["ag"]
+                    else 2
+                )
+
+                for index in range(3):
+                    target = 1.0 if index == actual else 0.0
+                    brier_sum += (p1x2[index] - target) ** 2
+
+                if p1x2.index(max(p1x2)) == actual:
+                    accuracy_hits += 1
+
+                match_count += 1
+
+                ranked = rank_candidates(
+                    analysis, rates, None, Counter()
+                )
+
+                if ranked:
+                    market = ranked[0]["market"]
+                    picks[market]["n"] += 1
+
+                    if outcomes[market]:
+                        picks[market]["wins"] += 1
+
+    calibration = {}
+    report_markets = {}
+
+    for market, stats in market_stats.items():
+        if stats["n"] <= 0:
+            continue
+
+        hit_rate = stats["hits"] / stats["n"]
+        mean_pred = stats["pred_sum"] / stats["n"]
+
+        calibration[market] = {
+            "n": stats["n"],
+            "hit_rate": hit_rate,
+            "mean_pred": mean_pred,
+        }
+
+        report_markets[market] = {
+            "n": stats["n"],
+            "hit_rate": round(hit_rate, 4),
+            "mean_pred": round(mean_pred, 4),
+        }
+
+    pick_total = sum(item["n"] for item in picks.values())
+    pick_wins = sum(item["wins"] for item in picks.values())
+
+    report = {
+        "generated_at": utc_now().isoformat(),
+        "days": days,
+        "matches": match_count,
+        "brier_1x2": (
+            round(brier_sum / match_count, 4)
+            if match_count else None
+        ),
+        "accuracy_1x2": (
+            round(accuracy_hits / match_count, 4)
+            if match_count else None
+        ),
+        "markets": report_markets,
+        "picks": dict(picks),
+        "picks_total": pick_total,
+        "picks_win_rate": (
+            round(pick_wins / pick_total, 4)
+            if pick_total else None
+        ),
+    }
+
+    return report, calibration
+
+
+# ============================================================
 # BACKTESTS D'HIER — SEPARES DE LA BANKROLL
 # ============================================================
 
@@ -860,10 +1363,9 @@ def backtest_id(match_id, market):
     return f"BACKTEST:{match_id}:{market}"
 
 
-def create_yesterday_backtests(state, all_matches):
-    yesterday = (
-        local_now().date() - timedelta(days=1)
-    ).isoformat()
+def create_yesterday_backtests(state, all_results):
+    yesterday_date = local_now().date() - timedelta(days=1)
+    yesterday = yesterday_date.isoformat()
 
     existing_ids = {
         item.get("backtest_id")
@@ -872,66 +1374,51 @@ def create_yesterday_backtests(state, all_matches):
 
     candidates = []
 
-    for competition_code, matches in all_matches.items():
-        if matches is None:
+    for competition_code, results in all_results.items():
+        yesterday_matches = [
+            item for item in results
+            if item["date"].astimezone(LOCAL_TZ).date()
+            == yesterday_date
+        ]
+
+        if not yesterday_matches:
             continue
 
-        for match in matches:
-            if match_local_date(match) != yesterday:
-                continue
+        model, rates = model_for_day(results, yesterday_date)
 
-            if match.get("status") != "FINISHED":
-                continue
+        if model is None:
+            continue
 
-            kickoff = parse_datetime(match.get("utcDate"))
-
-            if kickoff is None:
-                continue
-
-            home = match.get("homeTeam") or {}
-            away = match.get("awayTeam") or {}
-
-            home_id = home.get("id")
-            away_id = away.get("id")
-
-            if not home_id or not away_id:
-                continue
-
-            hs = get_team_statistics(matches, home_id, before=kickoff)
-            aws = get_team_statistics(matches, away_id, before=kickoff)
-
-            if (
-                hs["matches"] < MIN_HISTORY_MATCHES
-                or aws["matches"] < MIN_HISTORY_MATCHES
+        for item in yesterday_matches:
+            if not teams_have_history(
+                model, item["home"], item["away"]
             ):
                 continue
 
-            analysis = analyze_match(hs, aws)
-            prediction = select_prediction(analysis)
+            analysis = analyze_match(
+                model, item["home"], item["away"]
+            )
 
-            if prediction is None:
+            if analysis is None:
                 continue
 
-            match_id = match.get("id")
-            unique_id = backtest_id(match_id, prediction["market"])
+            ranked = rank_candidates(
+                analysis, rates, None, Counter()
+            )
+
+            if not ranked:
+                continue
+
+            prediction = ranked[0]
+            unique_id = backtest_id(item["id"], prediction["market"])
 
             if unique_id in existing_ids:
                 continue
 
-            full_time = (
-                (match.get("score") or {}).get("fullTime") or {}
-            )
-
-            hg = full_time.get("home")
-            ag = full_time.get("away")
-
-            if hg is None or ag is None:
-                continue
-
             won = evaluate_market(
                 {"market": prediction["market"]},
-                int(hg),
-                int(ag),
+                item["hg"],
+                item["ag"],
             )
 
             if won is None:
@@ -939,24 +1426,27 @@ def create_yesterday_backtests(state, all_matches):
 
             candidates.append({
                 "backtest_id": unique_id,
-                "match_id": match_id,
+                "engine": "V12",
+                "match_id": item["id"],
                 "date": yesterday,
                 "competition": competition_code,
                 "competition_name": COMPETITIONS.get(
                     competition_code,
                     competition_code,
                 ),
-                "home_team": home.get("name", "Équipe domicile"),
-                "away_team": away.get("name", "Équipe extérieure"),
+                "home_team": item["home_name"],
+                "away_team": item["away_name"],
                 "market": prediction["market"],
                 "probability": prediction["probability"],
                 "estimated_odds": prediction["odds"],
                 "predicted_score": prediction["exact_score"],
-                "actual_score": f"{hg}-{ag}",
+                "actual_score": f"{item['hg']}-{item['ag']}",
                 "stake_simulated": MAX_STAKE,
                 "status": "WON" if won else "LOST",
                 "profit_simulated": (
-                    round_money(MAX_STAKE * prediction["odds"] - MAX_STAKE)
+                    round_money(
+                        MAX_STAKE * prediction["odds"] - MAX_STAKE
+                    )
                     if won else round_money(-MAX_STAKE)
                 ),
                 "created_at": utc_now().isoformat(),
@@ -984,112 +1474,6 @@ def create_yesterday_backtests(state, all_matches):
         log("Aucun nouveau backtest éligible.")
 
     return len(selected)
-
-
-# ============================================================
-# PARIS DU JOUR
-# ============================================================
-
-def create_today_bets(state, all_matches):
-    today = local_date()
-    candidates = []
-
-    existing_ids = get_existing_bet_ids(state)
-
-    for competition_code, matches in all_matches.items():
-        if matches is None:
-            continue
-
-        finished = [
-            match for match in matches
-            if match.get("status") == "FINISHED"
-        ]
-
-        upcoming = [
-            match for match in matches
-            if match.get("status") in ("SCHEDULED", "TIMED")
-            and match_local_date(match) == today
-        ]
-
-        for match in upcoming:
-            kickoff = parse_datetime(match.get("utcDate"))
-
-            if kickoff is None or kickoff <= utc_now():
-                continue
-
-            home = match.get("homeTeam") or {}
-            away = match.get("awayTeam") or {}
-
-            home_id = home.get("id")
-            away_id = away.get("id")
-
-            if not home_id or not away_id:
-                continue
-
-            hs = get_team_statistics(finished, home_id)
-            aws = get_team_statistics(finished, away_id)
-
-            if (
-                hs["matches"] < MIN_HISTORY_MATCHES
-                or aws["matches"] < MIN_HISTORY_MATCHES
-            ):
-                log(
-                    f"Historique insuffisant : "
-                    f"{home.get('name')} - {away.get('name')}"
-                )
-                continue
-
-            analysis = analyze_match(hs, aws)
-            prediction = select_prediction(analysis)
-
-            if prediction is None:
-                continue
-
-            bet_id = make_bet_id(
-                match.get("id"),
-                prediction["market"],
-            )
-
-            if bet_id in existing_ids:
-                continue
-
-            candidates.append({
-                "match": match,
-                "competition_code": competition_code,
-                "prediction": prediction,
-            })
-
-    candidates.sort(
-        key=lambda item: item["prediction"]["probability"],
-        reverse=True,
-    )
-
-    remaining = max(
-        0,
-        MAX_NEW_BETS_PER_DAY - count_bets_today(state),
-    )
-
-    created = 0
-
-    for item in candidates:
-        if created >= remaining:
-            break
-
-        if create_virtual_bet(
-            state,
-            item["match"],
-            item["competition_code"],
-            item["prediction"],
-        ):
-            created += 1
-            save_state(state)
-
-    log(
-        f"Nouveaux paris créés : {created}. "
-        f"Limite quotidienne : {MAX_NEW_BETS_PER_DAY}."
-    )
-
-    return created
 
 
 # ============================================================
@@ -1121,8 +1505,10 @@ def print_statistics(state):
         sum(safe_float(item.get("profit_simulated")) for item in backtests)
     )
 
+    report = state.get("backtest_report") or {}
+
     log("=" * 50)
-    log("BILAN FOOT AI PRO BOT V10")
+    log("BILAN FOOT AI PRO BOT V12")
     log(f"Date française : {local_date()}")
     log(f"Capital initial : {state['initial_bankroll']:.2f} €")
     log(f"Capital actuel : {state['bankroll']:.2f} €")
@@ -1145,6 +1531,30 @@ def print_statistics(state):
     if bt_won + bt_lost:
         log(f"Taux de réussite backtest : {bt_won / (bt_won + bt_lost):.1%}")
 
+    if report.get("matches"):
+        log(f"--- TEST HISTORIQUE ({report['days']} derniers jours) ---")
+        log(f"Matchs analysés : {report['matches']}")
+        log(
+            f"Brier 1X2 : {report['brier_1x2']} "
+            f"(hasard = 0.667, plus bas = mieux)"
+        )
+        log(f"Précision 1X2 : {report['accuracy_1x2']:.1%}")
+
+        if report.get("picks_total"):
+            log(
+                f"Paris sélectionnés : {report['picks_total']} | "
+                f"réussite {report['picks_win_rate']:.1%}"
+            )
+
+            for market, info in sorted(
+                report["picks"].items(),
+                key=lambda entry: -entry[1]["n"],
+            ):
+                log(
+                    f"   {market:10s} {info['n']:3d} paris | "
+                    f"{info['wins'] / info['n']:.1%}"
+                )
+
     log("=" * 50)
 
 
@@ -1153,7 +1563,7 @@ def print_statistics(state):
 # ============================================================
 
 def main():
-    log("Démarrage FOOT AI PRO BOT V10.")
+    log("Démarrage FOOT AI PRO BOT V12.")
     log("Simulation virtuelle uniquement.")
 
     if not get_api_key():
@@ -1163,12 +1573,14 @@ def main():
 
     state = load_state()
     all_matches = {}
+    all_results = {}
 
     for index, code in enumerate(COMPETITIONS):
         log(f"Récupération : {COMPETITIONS[code]}")
 
         matches = fetch_competition_matches(code)
         all_matches[code] = matches
+        all_results[code] = extract_results(matches)
 
         if matches is not None:
             settle_finished_matches(state, matches)
@@ -1178,12 +1590,17 @@ def main():
         if index < len(COMPETITIONS) - 1:
             time.sleep(API_DELAY_SECONDS)
 
+    log("Test historique walk-forward et calibration.")
+    report, calibration = run_historical_backtest(all_results)
+    state["backtest_report"] = report
+    save_state(state)
+
     log("Création des simulations rétrospectives.")
-    create_yesterday_backtests(state, all_matches)
+    create_yesterday_backtests(state, all_results)
     save_state(state)
 
     log("Création des nouveaux pronostics du jour.")
-    create_today_bets(state, all_matches)
+    create_today_bets(state, all_matches, all_results, calibration)
 
     save_state(state)
     print_statistics(state)
