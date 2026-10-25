@@ -1,775 +1,1060 @@
 import os
 import json
 import math
+import time
 from pathlib import Path
-from datetime import datetime, timezone, timedelta
-from zoneinfo import ZoneInfo
+from datetime import datetime, timedelta, timezone
 
 import requests
 
-============================================================
 
-# FOOT AI PRO BOT V7 - SIMULATION VIRTUELLE
+# ============================================================
+# FOOT AI PRO BOT V7
+# Simulation virtuelle uniquement : aucun pari réel.
+# API : football-data.org v4
+# Compatible avec GitHub Actions.
+# ============================================================
 
-Simulation virtuelle uniquement — aucun pari réel
+API_BASE = "https://api.football-data.org/v4"
 
-API : football-data.org v4
-
-Date limite des nouveaux paris : 25 octobre 2026 inclus
-
-============================================================
-
-API_BASE = “https://api.football-data.org/v4”
-STATE_FILE = Path(“data/bankroll.json”)
+STATE_FILE = Path("data/bankroll.json")
 
 INITIAL_BANKROLL = 20.0
-STAKE = 1.0
-MAX_BETS_PER_RUN = 5
+MAX_STAKE = 1.0
+MAX_NEW_BETS_PER_DAY = 2
 
-LOCAL_TIMEZONE = ZoneInfo(“Europe/Paris”)
-MAX_MATCH_DATE = datetime(2026, 10, 25).date()
+LOOKBACK_DAYS = 60
+FORECAST_DAYS = 3
 
-MIN_PROBABILITY = 0.45
-MAX_ESTIMATED_ODDS = 2.50
+# Date limite pour créer de nouveaux paris virtuels.
+BET_CUTOFF_DATE = "2026-10-25"
 
 COMPETITIONS = {
-“FL1”: “Ligue 1”,
-“PL”: “Premier League”,
-“PD”: “Liga”,
-“BL1”: “Bundesliga”,
-“SA”: “Serie A”,
-“CL”: “Ligue des Champions”,
+    "FL1": "Ligue 1",
+    "PL": "Premier League",
+    "PD": "Liga",
+    "BL1": "Bundesliga",
+    "SA": "Serie A",
+    "CL": "Ligue des champions",
 }
 
-API_TOKEN = (
-os.getenv(“FOOTBALL_DATA_API_KEY”)
-or os.getenv(“FOOTBALL_API_KEY”)
-or os.getenv(“FOOTBALL_DATA_TOKEN”)
-)
+REQUEST_TIMEOUT = 25
+API_DELAY_SECONDS = 0.3
 
-HEADERS = {“User-Agent”: “FOOT-AI-PRO/7.0”}
+MAX_GOALS = 8
 
-if API_TOKEN:
-HEADERS[“X-Auth-Token”] = API_TOKEN
-
-============================================================
-
-OUTILS
-
-============================================================
-
-def now_utc():
-return datetime.now(timezone.utc)
-
-def today_local():
-return datetime.now(LOCAL_TIMEZONE).date()
-
-def money(value):
-try:
-value = float(value)
-return round(value, 2) if math.isfinite(value) else 0.0
-except (TypeError, ValueError):
-return 0.0
-
-def print_line():
-print(”-” * 60)
-
-def get_bet_status(bet):
-status = str(
-bet.get(“statut”)
-or bet.get(“status”)
-or bet.get(“result”)
-or “”
-).strip().lower()
-
-if status in ("gagne", "gagné", "won", "win"):
-    return "GAGNE"
-if status in ("perdu", "lost", "loss"):
-    return "PERDU"
-if status in ("annulé", "annule", "void", "cancelled"):
-    return "ANNULE"
-return "EN_ATTENTE"
-
-============================================================
-
-ÉTAT ET COMPATIBILITÉ AVEC APP.PY
-
-============================================================
-
-def default_state():
-return {
-“bankroll_initiale”: INITIAL_BANKROLL,
-“bankroll_actuelle”: INITIAL_BANKROLL,
-“benefice_total”: 0.0,
-“mises_totales”: 0.0,
-“gains_totaux”: 0.0,
-“paris”: [],
-“historique”: [],
-“statistiques”: {
-“total_paris”: 0,
-“paris_gagnes”: 0,
-“paris_perdus”: 0,
-“paris_en_attente”: 0,
-“taux_reussite”: 0.0,
-},
-“starting_bankroll”: INITIAL_BANKROLL,
-“bankroll”: INITIAL_BANKROLL,
-“profit”: 0.0,
-“bets”: [],
-“message”: “”,
-“derniere_mise_a_jour”: None,
+HEADERS = {
+    "User-Agent": "FOOT-AI-PRO-V7-Virtual-Simulation"
 }
 
-def convert_app_bet(bet):
-return {
-**bet,
-“match_id”: bet.get(“match_id”, bet.get(“fixture_id”)),
-“competition”: bet.get(“competition”) or bet.get(“league”) or “Compétition”,
-“date_match”: (
-bet.get(“date_match”)
-or bet.get(“date”)
-or bet.get(“match_date”)
-),
-“domicile”: (
-bet.get(“domicile”)
-or bet.get(“home”)
-or bet.get(“home_team”)
-or “Domicile”
-),
-“exterieur”: (
-bet.get(“exterieur”)
-or bet.get(“away”)
-or bet.get(“away_team”)
-or “Extérieur”
-),
-“marche”: (
-bet.get(“marche”)
-or bet.get(“pick”)
-or bet.get(“market”)
-or bet.get(“pronostic”)
-or “”
-),
-“probabilite”: money(
-bet.get(“probabilite”, bet.get(“probability”, 0))
-),
-“cote_estimee”: money(
-bet.get(“cote_estimee”, bet.get(“odds”, bet.get(“cote”, 0)))
-),
-“mise”: money(bet.get(“mise”, bet.get(“stake”, 0))),
-“statut”: get_bet_status(bet),
-“gain”: money(bet.get(“gain”, bet.get(“payout”, 0))),
-“score_prevu”: bet.get(“score_prevu”) or bet.get(“score”) or “”,
-“score_final”: bet.get(“score_final”) or bet.get(“actual_score”) or “”,
-}
 
-def sync_app_format(state):
-app_bets = []
+# ============================================================
+# OUTILS
+# ============================================================
 
-for bet in state.get("paris", []):
-    status = get_bet_status(bet)
-    translated_status = {
-        "EN_ATTENTE": "En attente",
-        "GAGNE": "Gagné",
-        "PERDU": "Perdu",
-        "ANNULE": "Annulé",
-    }.get(status, "En attente")
-    stake = money(bet.get("mise", 0))
-    payout = money(bet.get("gain", 0))
-    if status == "GAGNE":
-        profit = money(payout - stake)
-    elif status == "PERDU":
-        profit = -stake
-    else:
-        profit = 0.0
-    app_bets.append({
-        **bet,
-        "match_id": bet.get("match_id"),
-        "date": bet.get("date_match") or bet.get("date_creation", ""),
-        "match_date": bet.get("date_match") or bet.get("date_creation", ""),
-        "league": bet.get("competition", ""),
-        "competition": bet.get("competition", ""),
-        "home": bet.get("domicile", ""),
-        "home_team": bet.get("domicile", ""),
-        "away": bet.get("exterieur", ""),
-        "away_team": bet.get("exterieur", ""),
-        "pick": bet.get("marche", ""),
-        "market": bet.get("marche", ""),
-        "pronostic": bet.get("marche", ""),
-        "probability": bet.get("probabilite", 0),
-        "probability_pct": bet.get("probabilite", 0),
-        "odds": bet.get("cote_estimee", 0),
-        "stake": stake,
-        "status": translated_status,
-        "result": translated_status,
-        "score": bet.get("score_prevu", ""),
-        "actual_score": bet.get("score_final", ""),
-        "settled": status in ("GAGNE", "PERDU", "ANNULE"),
-        "profit": profit,
-    })
-state["starting_bankroll"] = money(
-    state.get("bankroll_initiale", INITIAL_BANKROLL)
-)
-state["bankroll"] = money(
-    state.get("bankroll_actuelle", INITIAL_BANKROLL)
-)
-state["profit"] = money(state.get("benefice_total", 0))
-state["bets"] = app_bets
-return state
+def utc_now():
+    return datetime.now(timezone.utc)
 
-def load_state():
-STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
 
-if not STATE_FILE.exists():
-    state = default_state()
-    save_state(state)
-    return state
-with STATE_FILE.open("r", encoding="utf-8") as file:
-    state = json.load(file)
-if not isinstance(state, dict):
-    raise RuntimeError("bankroll.json doit contenir un objet JSON.")
-old_bankroll = state.get(
-    "bankroll_actuelle",
-    state.get("bankroll", state.get("starting_bankroll", INITIAL_BANKROLL)),
-)
-old_initial = state.get(
-    "bankroll_initiale",
-    state.get("starting_bankroll", INITIAL_BANKROLL),
-)
-defaults = default_state()
-if not isinstance(state.get("paris"), list):
-    state["paris"] = []
-if not state["paris"] and isinstance(state.get("bets"), list):
-    state["paris"] = [
-        convert_app_bet(bet)
-        for bet in state["bets"]
-        if isinstance(bet, dict)
+def utc_date():
+    return utc_now().date().isoformat()
+
+
+def round_money(value):
+    return round(float(value), 2)
+
+
+def safe_float(value, default=0.0):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def parse_datetime(value):
+    if not value:
+        return None
+
+    try:
+        parsed = datetime.fromisoformat(
+            str(value).replace("Z", "+00:00")
+        )
+
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+
+        return parsed.astimezone(timezone.utc)
+
+    except (ValueError, TypeError):
+        return None
+
+
+def parse_date(value):
+    try:
+        return datetime.strptime(
+            value,
+            "%Y-%m-%d"
+        ).date()
+    except (ValueError, TypeError):
+        return None
+
+
+def log(message):
+    print(
+        f"[{utc_now().strftime('%Y-%m-%d %H:%M:%S UTC')}] "
+        f"{message}",
+        flush=True
+    )
+
+
+# ============================================================
+# GESTION DE LA CLÉ API
+# ============================================================
+
+def get_api_key():
+    possible_names = [
+        "FOOTBALL_DATA_API_KEY",
+        "FOOTBALL_API_KEY",
+        "FOOTBALL_DATA_TOKEN",
     ]
-if not isinstance(state.get("historique"), list):
-    state["historique"] = []
-for key, value in defaults.items():
-    state.setdefault(key, value)
-state["bankroll_actuelle"] = money(old_bankroll)
-state["bankroll_initiale"] = money(old_initial)
-for key in ("mises_totales", "gains_totaux", "benefice_total"):
-    state[key] = money(state.get(key, 0))
-update_statistics(state)
-return sync_app_format(state)
 
-def save_state(state):
-STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    for name in possible_names:
+        value = os.environ.get(name, "").strip()
 
-state["derniere_mise_a_jour"] = now_utc().isoformat()
-sync_app_format(state)
-temporary_file = STATE_FILE.with_suffix(".tmp")
-with temporary_file.open("w", encoding="utf-8") as file:
-    json.dump(state, file, ensure_ascii=False, indent=2)
-temporary_file.replace(STATE_FILE)
+        if value:
+            return value
 
-def update_statistics(state):
-bets = state.get(“paris”, [])
+    return None
 
-for bet in bets:
-    bet["statut"] = get_bet_status(bet)
-won = sum(1 for bet in bets if bet["statut"] == "GAGNE")
-lost = sum(1 for bet in bets if bet["statut"] == "PERDU")
-pending = sum(1 for bet in bets if bet["statut"] == "EN_ATTENTE")
-settled = won + lost
-state["statistiques"] = {
-    "total_paris": len(bets),
-    "paris_gagnes": won,
-    "paris_perdus": lost,
-    "paris_en_attente": pending,
-    "taux_reussite": round(won / settled * 100, 2) if settled else 0.0,
-}
-gross_payouts = sum(
-    money(bet.get("gain", 0))
-    for bet in bets
-    if bet["statut"] == "GAGNE"
-)
-settled_stakes = sum(
-    money(bet.get("mise", 0))
-    for bet in bets
-    if bet["statut"] in ("GAGNE", "PERDU")
-)
-state["gains_totaux"] = money(gross_payouts)
-state["benefice_total"] = money(gross_payouts - settled_stakes)
 
-============================================================
-
-API
-
-============================================================
+# ============================================================
+# API FOOTBALL-DATA.ORG
+# ============================================================
 
 def api_get(endpoint, params=None):
-if not API_TOKEN:
-raise RuntimeError(
-“Clé API absente. Vérifie FOOTBALL_DATA_API_KEY dans GitHub Secrets.”
-)
+    api_key = get_api_key()
 
-try:
-    response = requests.get(
-        f"{API_BASE}{endpoint}",
-        headers=HEADERS,
-        params=params,
-        timeout=25,
-    )
-    if response.status_code == 429:
-        print("API : limite de requêtes atteinte.")
-        return None
-    if response.status_code == 403:
-        print("API : compétition ou période non autorisée.")
-        return None
-    if response.status_code == 401:
-        print("API : clé invalide.")
-        return None
-    response.raise_for_status()
-    return response.json()
-except requests.RequestException as exc:
-    print(f"API : erreur réseau : {exc}")
-    return None
-
-def get_competition_matches(code, date_from, date_to):
-data = api_get(
-f”/competitions/{code}/matches”,
-params={“dateFrom”: date_from, “dateTo”: date_to},
-)
-
-if not isinstance(data, dict):
-    return None
-matches = data.get("matches")
-return matches if isinstance(matches, list) else None
-
-============================================================
-
-STATISTIQUES DES ÉQUIPES
-
-============================================================
-
-def build_team_stats(matches):
-stats = {}
-
-def ensure_team(team_id):
-    if team_id not in stats:
-        stats[team_id] = {
-            "played": 0,
-            "scored": 0,
-            "conceded": 0,
-            "home_played": 0,
-            "home_scored": 0,
-            "home_conceded": 0,
-            "away_played": 0,
-            "away_scored": 0,
-            "away_conceded": 0,
-        }
-    return stats[team_id]
-for match in matches:
-    if match.get("status") not in ("FINISHED", "AWARDED"):
-        continue
-    score = (match.get("score") or {}).get("fullTime") or {}
-    hg, ag = score.get("home"), score.get("away")
-    home_id = (match.get("homeTeam") or {}).get("id")
-    away_id = (match.get("awayTeam") or {}).get("id")
-    if None in (hg, ag, home_id, away_id):
-        continue
-    home, away = ensure_team(home_id), ensure_team(away_id)
-    home["played"] += 1
-    home["scored"] += hg
-    home["conceded"] += ag
-    home["home_played"] += 1
-    home["home_scored"] += hg
-    home["home_conceded"] += ag
-    away["played"] += 1
-    away["scored"] += ag
-    away["conceded"] += hg
-    away["away_played"] += 1
-    away["away_scored"] += ag
-    away["away_conceded"] += hg
-return stats
-
-def league_averages(matches):
-home_goals, away_goals = [], []
-
-for match in matches:
-    if match.get("status") not in ("FINISHED", "AWARDED"):
-        continue
-    score = (match.get("score") or {}).get("fullTime") or {}
-    hg, ag = score.get("home"), score.get("away")
-    if hg is not None and ag is not None:
-        home_goals.append(hg)
-        away_goals.append(ag)
-avg_home = sum(home_goals) / len(home_goals) if home_goals else 1.45
-avg_away = sum(away_goals) / len(away_goals) if away_goals else 1.10
-return max(avg_home, 0.2), max(avg_away, 0.2)
-
-def expected_goals(team_stats, team_id, opponent_id, avg_home, avg_away, home):
-team = team_stats.get(team_id, {})
-opponent = team_stats.get(opponent_id, {})
-
-if home:
-    scored = (
-        team["home_scored"] / team["home_played"]
-        if team.get("home_played", 0) else avg_home
-    )
-    conceded = (
-        opponent["away_conceded"] / opponent["away_played"]
-        if opponent.get("away_played", 0) else avg_home
-    )
-    expected = (scored / avg_home) * (conceded / avg_home) * avg_home
-else:
-    scored = (
-        team["away_scored"] / team["away_played"]
-        if team.get("away_played", 0) else avg_away
-    )
-    conceded = (
-        opponent["home_conceded"] / opponent["home_played"]
-        if opponent.get("home_played", 0) else avg_away
-    )
-    expected = (scored / avg_away) * (conceded / avg_away) * avg_away
-return max(0.15, min(expected, 4.5))
-
-============================================================
-
-POISSON
-
-============================================================
-
-def poisson_probability(goals, expected):
-return math.exp(-expected) * expected ** goals / math.factorial(goals)
-
-def calculate_probabilities(home_xg, away_xg):
-max_goals = 10
-
-home_probs = [poisson_probability(i, home_xg) for i in range(max_goals + 1)]
-away_probs = [poisson_probability(i, away_xg) for i in range(max_goals + 1)]
-result = {
-    "home": 0.0,
-    "draw": 0.0,
-    "away": 0.0,
-    "over15": 0.0,
-    "over25": 0.0,
-    "over35": 0.0,
-    "under35": 0.0,
-    "btts_yes": 0.0,
-    "btts_no": 0.0,
-}
-scores = []
-for hg in range(max_goals + 1):
-    for ag in range(max_goals + 1):
-        probability = home_probs[hg] * away_probs[ag]
-        if hg > ag:
-            result["home"] += probability
-        elif hg == ag:
-            result["draw"] += probability
-        else:
-            result["away"] += probability
-        total = hg + ag
-        if total >= 2:
-            result["over15"] += probability
-        if total >= 3:
-            result["over25"] += probability
-        if total >= 4:
-            result["over35"] += probability
-        if total <= 3:
-            result["under35"] += probability
-        if hg >= 1 and ag >= 1:
-            result["btts_yes"] += probability
-        scores.append((probability, hg, ag))
-result["btts_no"] = max(0.0, 1.0 - result["btts_yes"])
-best_score = max(scores, key=lambda item: item[0])
-result["score"] = f"{best_score[1]}-{best_score[2]}"
-return result
-
-============================================================
-
-SÉLECTION DES MARCHÉS
-
-============================================================
-
-def select_candidates(probabilities):
-markets = [
-(“Les deux équipes marquent : OUI”, probabilities[“btts_yes”], 1.30),
-(“Plus de 2,5 buts”, probabilities[“over25”], 1.20),
-(“Plus de 3,5 buts”, probabilities[“over35”], 1.10),
-(“Victoire domicile”, probabilities[“home”], 1.00),
-(“Victoire extérieur”, probabilities[“away”], 1.00),
-(“Plus de 1,5 but”, probabilities[“over15”], 0.95),
-(“1X”, probabilities[“home”] + probabilities[“draw”], 0.75),
-(“X2”, probabilities[“draw”] + probabilities[“away”], 0.75),
-(“Moins de 3,5 buts”, probabilities[“under35”], 0.65),
-(“Les deux équipes marquent : NON”, probabilities[“btts_no”], 0.60),
-]
-
-candidates = []
-for market, probability, risk_weight in markets:
-    probability = max(0.0, min(1.0, probability))
-    if probability < MIN_PROBABILITY:
-        continue
-    odds = 1.0 / probability if probability > 0 else 99.0
-    if odds > MAX_ESTIMATED_ODDS:
-        continue
-    candidates.append({
-        "marche": market,
-        "probabilite": round(probability * 100, 2),
-        "cote_estimee": round(odds, 2),
-        "classement": probability * risk_weight,
-    })
-candidates.sort(key=lambda item: item["classement"], reverse=True)
-return candidates
-
-def bet_won(bet, home_goals, away_goals):
-market = bet.get(“marche”, “”)
-total = home_goals + away_goals
-
-if market == "1X":
-    return home_goals >= away_goals
-if market == "X2":
-    return away_goals >= home_goals
-if market == "Victoire domicile":
-    return home_goals > away_goals
-if market == "Victoire extérieur":
-    return away_goals > home_goals
-if market == "Plus de 1,5 but":
-    return total >= 2
-if market == "Plus de 2,5 buts":
-    return total >= 3
-if market == "Plus de 3,5 buts":
-    return total >= 4
-if market == "Moins de 3,5 buts":
-    return total <= 3
-if market == "Les deux équipes marquent : OUI":
-    return home_goals >= 1 and away_goals >= 1
-if market == "Les deux équipes marquent : NON":
-    return home_goals == 0 or away_goals == 0
-return False
-
-============================================================
-
-RÈGLEMENT DES PARIS
-
-============================================================
-
-def refresh_pending_bets(state, finished_matches):
-by_id = {
-match.get(“id”): match
-for match in finished_matches
-if match.get(“id”) is not None
-}
-
-updated = 0
-for bet in state["paris"]:
-    if get_bet_status(bet) != "EN_ATTENTE":
-        continue
-    match = by_id.get(bet.get("match_id"))
-    if not match or match.get("status") not in ("FINISHED", "AWARDED"):
-        continue
-    score = (match.get("score") or {}).get("fullTime") or {}
-    home_goals = score.get("home")
-    away_goals = score.get("away")
-    if home_goals is None or away_goals is None:
-        continue
-    bet["score_final"] = f"{home_goals}-{away_goals}"
-    stake = money(bet.get("mise", 0))
-    odds = money(bet.get("cote_estimee", 0))
-    if bet_won(bet, home_goals, away_goals):
-        bet["statut"] = "GAGNE"
-        bet["gain"] = money(stake * odds)
-        state["bankroll_actuelle"] = money(
-            state["bankroll_actuelle"] + bet["gain"]
+    if not api_key:
+        raise RuntimeError(
+            "Clé API manquante. Configure "
+            "FOOTBALL_DATA_API_KEY dans GitHub Secrets."
         )
-        print(f"PARI GAGNÉ : {bet.get('domicile')} - {bet.get('exterieur')}")
-    else:
-        bet["statut"] = "PERDU"
-        bet["gain"] = 0.0
-        print(f"PARI PERDU : {bet.get('domicile')} - {bet.get('exterieur')}")
-    bet["date_reglement"] = now_utc().isoformat()
-    state["historique"].append({
-        "match_id": bet.get("match_id"),
-        "domicile": bet.get("domicile"),
-        "exterieur": bet.get("exterieur"),
-        "marche": bet.get("marche"),
-        "statut": bet.get("statut"),
-        "score_final": bet.get("score_final"),
-        "mise": stake,
-        "gain": money(bet.get("gain", 0)),
-        "date_reglement": bet["date_reglement"],
-    })
-    updated += 1
-print(f"Paris réglés lors de cette exécution : {updated}")
 
-============================================================
+    url = f"{API_BASE}/{endpoint.lstrip('/')}"
 
-DATES
+    headers = {
+        **HEADERS,
+        "X-Auth-Token": api_key,
+    }
 
-============================================================
+    try:
+        response = requests.get(
+            url,
+            headers=headers,
+            params=params or {},
+            timeout=REQUEST_TIMEOUT,
+        )
 
-def parse_match_date(match):
-try:
-kickoff = datetime.fromisoformat(
-match[“utcDate”].replace(“Z”, “+00:00”)
-)
-return kickoff.astimezone(LOCAL_TIMEZONE).date(), kickoff
-except (KeyError, ValueError, TypeError):
-return None, None
+        if response.status_code == 429:
+            log(
+                "Limite API atteinte. "
+                "Arrêt des nouvelles requêtes."
+            )
+            return None
 
-def same_local_day(match):
-match_date, _ = parse_match_date(match)
-return match_date == today_local()
+        if response.status_code in (401, 403):
+            log(
+                "Accès API refusé : "
+                f"HTTP {response.status_code}. "
+                "Vérifie la clé et les compétitions autorisées."
+            )
+            return None
 
-============================================================
+        if response.status_code == 404:
+            log(f"Ressource API introuvable : {endpoint}")
+            return None
 
-ANALYSE PRINCIPALE
+        response.raise_for_status()
 
-============================================================
+        return response.json()
 
-def main():
-print_line()
-print(“FOOT AI PRO BOT V7”)
-print(“Simulation virtuelle uniquement.”)
-print(f”Date française : {datetime.now(LOCAL_TIMEZONE).isoformat()}”)
-print(f”Date limite des nouveaux paris : {MAX_MATCH_DATE}”)
-print_line()
+    except requests.RequestException as exc:
+        log(f"Erreur de connexion API : {exc}")
+        return None
 
-if not API_TOKEN:
-    raise SystemExit(
-        "ERREUR : clé API absente. Vérifie le secret GitHub FOOTBALL_DATA_API_KEY."
+
+# ============================================================
+# BANQUE VIRTUELLE ET SAUVEGARDE
+# ============================================================
+
+def default_state():
+    return {
+        "version": 7,
+        "bankroll": INITIAL_BANKROLL,
+        "initial_bankroll": INITIAL_BANKROLL,
+        "bets": [],
+        "history": [],
+        "created_at": utc_now().isoformat(),
+        "updated_at": utc_now().isoformat(),
+    }
+
+
+def load_state():
+    STATE_FILE.parent.mkdir(
+        parents=True,
+        exist_ok=True
     )
-state = load_state()
-print(f"Capital disponible : {money(state['bankroll_actuelle']):.2f} €")
-today = today_local()
-all_finished = []
-all_candidates = []
-# Ne pas créer de paris pour des dates après la limite.
-can_create_bets = today <= MAX_MATCH_DATE
-if can_create_bets:
-    print(f"Recherche des matchs du jour : {today.isoformat()}")
-else:
-    print("Date limite dépassée : aucun nouveau pari ne sera créé.")
-print_line()
-# Pour pouvoir régler les paris en attente, récupérer les matchs
-# du jour et des jours récents dans chaque compétition.
-date_from = (today - timedelta(days=7)).isoformat()
-date_to = today.isoformat()
-for code, competition_name in COMPETITIONS.items():
-    print(f"Analyse : {competition_name} ({code})")
-    matches = get_competition_matches(code, date_from, date_to)
-    if matches is None:
-        print("  Données indisponibles.")
-        continue
-    all_finished.extend([
-        match for match in matches
-        if match.get("status") in ("FINISHED", "AWARDED")
-    ])
-    if not can_create_bets:
-        continue
-    today_matches = [
-        match for match in matches
-        if match.get("status") in ("SCHEDULED", "TIMED")
-        and same_local_day(match)
-    ]
-    print(f"  Matchs du jour à venir : {len(today_matches)}")
-    if not today_matches:
-        continue
-    team_stats = build_team_stats(matches)
-    avg_home, avg_away = league_averages(matches)
-    for match in today_matches:
-        match_id = match.get("id")
-        if match_id is None:
+
+    if not STATE_FILE.exists():
+        state = default_state()
+        save_state(state)
+
+        log("Nouvelle bankroll virtuelle de 20 € créée.")
+
+        return state
+
+    try:
+        with STATE_FILE.open("r", encoding="utf-8") as file:
+            state = json.load(file)
+
+        if not isinstance(state, dict):
+            raise ValueError("Format JSON invalide.")
+
+        state.setdefault("version", 7)
+        state.setdefault("initial_bankroll", INITIAL_BANKROLL)
+        state.setdefault("bets", [])
+        state.setdefault("history", [])
+        state.setdefault("created_at", utc_now().isoformat())
+
+        if not isinstance(state["bets"], list):
+            state["bets"] = []
+
+        if not isinstance(state["history"], list):
+            state["history"] = []
+
+        if "bankroll" not in state:
+            state["bankroll"] = INITIAL_BANKROLL
+
+        state["bankroll"] = round_money(
+            safe_float(state["bankroll"], INITIAL_BANKROLL)
+        )
+
+        return state
+
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        raise RuntimeError(
+            "Impossible de lire data/bankroll.json. "
+            "Le fichier n'a pas été remplacé automatiquement "
+            f"pour éviter de perdre tes données : {exc}"
+        ) from exc
+
+
+def save_state(state):
+    STATE_FILE.parent.mkdir(
+        parents=True,
+        exist_ok=True
+    )
+
+    state["updated_at"] = utc_now().isoformat()
+
+    temporary_file = STATE_FILE.with_suffix(".tmp")
+
+    with temporary_file.open("w", encoding="utf-8") as file:
+        json.dump(
+            state,
+            file,
+            indent=2,
+            ensure_ascii=False
+        )
+
+    temporary_file.replace(STATE_FILE)
+
+
+# ============================================================
+# STATISTIQUES ET MODÈLE DE POISSON
+# ============================================================
+
+def poisson_probability(lam, goals):
+    if lam <= 0:
+        return 1.0 if goals == 0 else 0.0
+
+    try:
+        return (
+            math.exp(-lam)
+            * (lam ** goals)
+            / math.factorial(goals)
+        )
+    except (OverflowError, ValueError):
+        return 0.0
+
+
+def get_team_statistics(matches, team_id):
+    goals_for = []
+    goals_against = []
+
+    for match in matches:
+        if match.get("status") != "FINISHED":
             continue
-        # Bloquer les doublons.
-        if any(
-            str(bet.get("match_id")) == str(match_id)
-            for bet in state["paris"]
-        ):
-            continue
-        match_date, kickoff = parse_match_date(match)
-        if match_date is None or match_date > MAX_MATCH_DATE:
-            continue
-        if kickoff is None or kickoff <= now_utc():
-            continue
+
         home = match.get("homeTeam") or {}
         away = match.get("awayTeam") or {}
-        if home.get("id") is None or away.get("id") is None:
-            continue
-        home_xg = expected_goals(
-            team_stats, home["id"], away["id"],
-            avg_home, avg_away, True
-        )
-        away_xg = expected_goals(
-            team_stats, away["id"], home["id"],
-            avg_home, avg_away, False
-        )
-        probabilities = calculate_probabilities(home_xg, away_xg)
-        selections = select_candidates(probabilities)
-        if not selections:
-            continue
-        best = selections[0]
-        all_candidates.append({
-            "match_id": match_id,
-            "competition": competition_name,
-            "date_match": match["utcDate"],
-            "domicile": home.get("name", "Domicile"),
-            "exterieur": away.get("name", "Extérieur"),
-            "marche": best["marche"],
-            "probabilite": best["probabilite"],
-            "cote_estimee": best["cote_estimee"],
-            "classement": best["classement"],
-            "score_prevu": probabilities["score"],
-            "buts_attendus_domicile": round(home_xg, 2),
-            "buts_attendus_exterieur": round(away_xg, 2),
-            "date_creation": now_utc().isoformat(),
-        })
-# Régler les paris existants, même si la date limite est dépassée.
-refresh_pending_bets(state, all_finished)
-all_candidates.sort(
-    key=lambda item: (item["classement"], item["probabilite"]),
-    reverse=True,
-)
-created = 0
-if can_create_bets:
-    for candidate in all_candidates:
-        if created >= MAX_BETS_PER_RUN:
-            break
-        if money(state["bankroll_actuelle"]) < STAKE:
-            print("Capital disponible insuffisant pour de nouveaux paris.")
-            break
-        bet = dict(candidate)
-        bet.pop("classement", None)
-        bet["mise"] = STAKE
-        bet["statut"] = "EN_ATTENTE"
-        bet["gain"] = 0.0
-        state["paris"].append(bet)
-        state["bankroll_actuelle"] = money(
-            state["bankroll_actuelle"] - STAKE
-        )
-        state["mises_totales"] = money(
-            state.get("mises_totales", 0) + STAKE
-        )
-        created += 1
-        print_line()
-        print(f"NOUVEAU PARI : {bet['domicile']} - {bet['exterieur']}")
-        print(f"Compétition : {bet['competition']}")
-        print(f"Marché : {bet['marche']}")
-        print(f"Probabilité estimée : {bet['probabilite']} %")
-        print(f"Cote virtuelle estimée : {bet['cote_estimee']}")
-        print(f"Score indicatif : {bet['score_prevu']}")
-        print(f"Mise virtuelle : {STAKE:.2f} €")
-update_statistics(state)
-save_state(state)
-print_line()
-print("RÉSUMÉ DE LA SIMULATION")
-print_line()
-print(f"Nouveaux paris : {created}")
-print(f"Capital disponible : {state['bankroll_actuelle']:.2f} €")
-print(f"Bénéfice réalisé : {state['benefice_total']:.2f} €")
-stats = state["statistiques"]
-print(f"Paris enregistrés : {stats['total_paris']}")
-print(f"Paris gagnés : {stats['paris_gagnes']}")
-print(f"Paris perdus : {stats['paris_perdus']}")
-print(f"Paris en attente : {stats['paris_en_attente']}")
-print(f"Taux de réussite : {stats['taux_reussite']} %")
-print(f"Fichier enregistré : {STATE_FILE}")
-print("Simulation terminée.")
-print_line()
+        score = match.get("score") or {}
+        full_time = score.get("fullTime") or {}
 
-if name == “main”:
-main()
+        home_goals = full_time.get("home")
+        away_goals = full_time.get("away")
+
+        if home_goals is None or away_goals is None:
+            continue
+
+        if home.get("id") == team_id:
+            goals_for.append(float(home_goals))
+            goals_against.append(float(away_goals))
+
+        elif away.get("id") == team_id:
+            goals_for.append(float(away_goals))
+            goals_against.append(float(home_goals))
+
+    if not goals_for:
+        return {
+            "matches": 0,
+            "scored": 1.25,
+            "conceded": 1.25,
+        }
+
+    return {
+        "matches": len(goals_for),
+        "scored": sum(goals_for) / len(goals_for),
+        "conceded": sum(goals_against) / len(goals_against),
+    }
+
+
+def estimate_goals(home_stats, away_stats):
+    home_scoring = home_stats["scored"]
+    away_defending = away_stats["conceded"]
+
+    away_scoring = away_stats["scored"]
+    home_defending = home_stats["conceded"]
+
+    # Pondération simple des buts marqués et encaissés.
+    home_lambda = (
+        0.55 * home_scoring
+        + 0.45 * away_defending
+        + 0.15
+    )
+
+    away_lambda = (
+        0.55 * away_scoring
+        + 0.45 * home_defending
+    )
+
+    home_lambda = max(0.15, min(home_lambda, 4.0))
+    away_lambda = max(0.15, min(away_lambda, 4.0))
+
+    return home_lambda, away_lambda
+
+
+def analyze_match(home_stats, away_stats):
+    home_lambda, away_lambda = estimate_goals(
+        home_stats,
+        away_stats
+    )
+
+    home_win = 0.0
+    draw = 0.0
+    away_win = 0.0
+
+    over_15 = 0.0
+    over_25 = 0.0
+    btts_yes = 0.0
+
+    best_score = (0, 0)
+    best_score_probability = 0.0
+
+    for home_goals in range(MAX_GOALS + 1):
+        home_probability = poisson_probability(
+            home_lambda,
+            home_goals
+        )
+
+        for away_goals in range(MAX_GOALS + 1):
+            away_probability = poisson_probability(
+                away_lambda,
+                away_goals
+            )
+
+            probability = (
+                home_probability * away_probability
+            )
+
+            if home_goals > away_goals:
+                home_win += probability
+
+            elif home_goals == away_goals:
+                draw += probability
+
+            else:
+                away_win += probability
+
+            total_goals = home_goals + away_goals
+
+            if total_goals >= 2:
+                over_15 += probability
+
+            if total_goals >= 3:
+                over_25 += probability
+
+            if home_goals > 0 and away_goals > 0:
+                btts_yes += probability
+
+            if probability > best_score_probability:
+                best_score_probability = probability
+
+                best_score = (
+                    home_goals,
+                    away_goals
+                )
+
+    # La somme est légèrement inférieure à 1 car
+    # le calcul est limité à huit buts par équipe.
+
+    return {
+        "home_win": home_win,
+        "draw": draw,
+        "away_win": away_win,
+        "over_15": over_15,
+        "over_25": over_25,
+        "under_25": 1.0 - over_25,
+        "btts_yes": btts_yes,
+        "btts_no": 1.0 - btts_yes,
+        "home_or_draw": home_win + draw,
+        "away_or_draw": away_win + draw,
+        "exact_score": (
+            f"{best_score[0]}-{best_score[1]}"
+        ),
+        "home_lambda": home_lambda,
+        "away_lambda": away_lambda,
+    }
+
+
+# ============================================================
+# CHOIX DU PRONOSTIC VIRTUEL
+# ============================================================
+
+def select_prediction(analysis):
+    markets = [
+        ("1", analysis["home_win"]),
+        ("N", analysis["draw"]),
+        ("2", analysis["away_win"]),
+        ("1X", analysis["home_or_draw"]),
+        ("X2", analysis["away_or_draw"]),
+        ("Over 1.5", analysis["over_15"]),
+        ("Over 2.5", analysis["over_25"]),
+        ("Under 2.5", analysis["under_25"]),
+        ("BTTS Oui", analysis["btts_yes"]),
+        ("BTTS Non", analysis["btts_no"]),
+    ]
+
+    # Filtre minimum pour éviter les pronostics
+    # dont la probabilité calculée est trop faible.
+    candidates = [
+        item for item in markets
+        if item[1] >= 0.60
+    ]
+
+    if not candidates:
+        return None
+
+    # Le marché le plus probable est sélectionné.
+    # Les probabilités ne constituent pas une garantie.
+    market, probability = max(
+        candidates,
+        key=lambda item: item[1]
+    )
+
+    # Cote théorique avec marge de prudence.
+    estimated_odds = 0.90 / probability
+
+    estimated_odds = max(
+        1.10,
+        min(estimated_odds, 3.00)
+    )
+
+    return {
+        "market": market,
+        "probability": round(probability, 4),
+        "odds": round(estimated_odds, 2),
+        "exact_score": analysis["exact_score"],
+    }
+
+
+# ============================================================
+# HISTORIQUE DES MATCHS
+# ============================================================
+
+def fetch_competition_matches(competition_code):
+    today = utc_now().date()
+
+    date_from = today - timedelta(
+        days=LOOKBACK_DAYS
+    )
+
+    date_to = today + timedelta(
+        days=FORECAST_DAYS
+    )
+
+    payload = api_get(
+        f"competitions/{competition_code}/matches",
+        params={
+            "dateFrom": date_from.isoformat(),
+            "dateTo": date_to.isoformat(),
+        },
+    )
+
+    if not payload:
+        return []
+
+    matches = payload.get("matches", [])
+
+    if not isinstance(matches, list):
+        return []
+
+    return matches
+
+
+# ============================================================
+# IDENTIFICATION DES PARIS
+# ============================================================
+
+def make_bet_id(match_id, market):
+    return f"{match_id}:{market}"
+
+
+def get_existing_bet_ids(state):
+    existing = set()
+
+    for bet in state["bets"]:
+        match_id = bet.get("match_id")
+        market = bet.get("market")
+
+        if match_id is not None and market:
+            existing.add(
+                make_bet_id(match_id, market)
+            )
+
+    return existing
+
+
+def count_bets_today(state):
+    today = utc_date()
+    count = 0
+
+    for bet in state["bets"]:
+        if bet.get("created_date") == today:
+            count += 1
+
+    return count
+
+
+# ============================================================
+# CRÉATION DES PARIS VIRTUELS
+# ============================================================
+
+def create_virtual_bet(
+    state,
+    match,
+    competition_code,
+    prediction,
+):
+    if prediction is None:
+        return False
+
+    match_id = match.get("id")
+
+    if match_id is None:
+        return False
+
+    existing_ids = get_existing_bet_ids(state)
+
+    bet_id = make_bet_id(
+        match_id,
+        prediction["market"]
+    )
+
+    if bet_id in existing_ids:
+        return False
+
+    if count_bets_today(state) >= MAX_NEW_BETS_PER_DAY:
+        return False
+
+    match_date = parse_datetime(
+        match.get("utcDate")
+    )
+
+    if match_date is None:
+        return False
+
+    if match_date <= utc_now():
+        return False
+
+    cutoff = parse_date(BET_CUTOFF_DATE)
+
+    if cutoff and match_date.date() > cutoff:
+        return False
+
+    stake = min(
+        MAX_STAKE,
+        safe_float(state.get("bankroll"))
+    )
+
+    if stake <= 0:
+        log("Capital virtuel insuffisant.")
+        return False
+
+    home_team = (
+        match.get("homeTeam") or {}
+    ).get("name", "Équipe domicile")
+
+    away_team = (
+        match.get("awayTeam") or {}
+    ).get("name", "Équipe extérieure")
+
+    bet = {
+        "bet_id": bet_id,
+        "match_id": match_id,
+        "competition": competition_code,
+        "competition_name": COMPETITIONS.get(
+            competition_code,
+            competition_code
+        ),
+        "home_team": home_team,
+        "away_team": away_team,
+        "match_date": match_date.isoformat(),
+        "created_date": utc_date(),
+        "market": prediction["market"],
+        "probability": prediction["probability"],
+        "odds": prediction["odds"],
+        "exact_score_prediction": prediction["exact_score"],
+        "stake": round_money(stake),
+        "potential_return": round_money(
+            stake * prediction["odds"]
+        ),
+        "profit": 0.0,
+        "status": "PENDING",
+        "result": None,
+    }
+
+    state["bets"].append(bet)
+
+    log(
+        f"PARI VIRTUEL CRÉÉ : {home_team} - {away_team} | "
+        f"{prediction['market']} | "
+        f"Probabilité : {prediction['probability']:.1%} | "
+        f"Mise : {stake:.2f} €"
+    )
+
+    return True
+
+
+# ============================================================
+# RÈGLEMENT AUTOMATIQUE DES PARIS
+# ============================================================
+
+def evaluate_market(bet, home_goals, away_goals):
+    market = bet.get("market")
+
+    total_goals = home_goals + away_goals
+
+    if market == "1":
+        return home_goals > away_goals
+
+    if market == "N":
+        return home_goals == away_goals
+
+    if market == "2":
+        return away_goals > home_goals
+
+    if market == "1X":
+        return home_goals >= away_goals
+
+    if market == "X2":
+        return away_goals >= home_goals
+
+    if market == "Over 1.5":
+        return total_goals >= 2
+
+    if market == "Over 2.5":
+        return total_goals >= 3
+
+    if market == "Under 2.5":
+        return total_goals <= 2
+
+    if market == "BTTS Oui":
+        return home_goals > 0 and away_goals > 0
+
+    if market == "BTTS Non":
+        return home_goals == 0 or away_goals == 0
+
+    return None
+
+
+def settle_bet(state, bet, home_goals, away_goals):
+    if bet.get("status") != "PENDING":
+        return False
+
+    won = evaluate_market(
+        bet,
+        home_goals,
+        away_goals
+    )
+
+    if won is None:
+        log(
+            f"Marché non reconnu pour "
+            f"{bet.get('bet_id')}. "
+            "Paris conservé en attente."
+        )
+        return False
+
+    stake = safe_float(bet.get("stake"))
+    odds = safe_float(bet.get("odds"))
+
+    if won:
+        returned_amount = round_money(
+            stake * odds
+        )
+
+        profit = round_money(
+            returned_amount - stake
+        )
+
+        bet["status"] = "WON"
+        bet["profit"] = profit
+        bet["returned_amount"] = returned_amount
+
+        state["bankroll"] = round_money(
+            safe_float(state["bankroll"]) + profit
+        )
+
+        log(
+            f"PARI GAGNÉ : {bet.get('home_team')} - "
+            f"{bet.get('away_team')} | "
+            f"+{profit:.2f} €"
+        )
+
+    else:
+        bet["status"] = "LOST"
+        bet["profit"] = round_money(-stake)
+        bet["returned_amount"] = 0.0
+
+        state["bankroll"] = round_money(
+            safe_float(state["bankroll"]) - stake
+        )
+
+        log(
+            f"PARI PERDU : {bet.get('home_team')} - "
+            f"{bet.get('away_team')} | "
+            f"-{stake:.2f} €"
+        )
+
+    bet["result"] = (
+        f"{home_goals}-{away_goals}"
+    )
+
+    bet["settled_at"] = utc_now().isoformat()
+
+    state["history"].append({
+        "bet_id": bet.get("bet_id"),
+        "match": (
+            f"{bet.get('home_team')} - "
+            f"{bet.get('away_team')}"
+        ),
+        "market": bet.get("market"),
+        "result": bet["result"],
+        "status": bet["status"],
+        "stake": round_money(stake),
+        "profit": bet["profit"],
+        "settled_at": bet["settled_at"],
+    })
+
+    return True
+
+
+def settle_finished_matches(state, competition_matches):
+    matches_by_id = {
+        str(match.get("id")): match
+        for match in competition_matches
+        if match.get("id") is not None
+    }
+
+    changed = False
+
+    for bet in state["bets"]:
+        if bet.get("status") != "PENDING":
+            continue
+
+        match = matches_by_id.get(
+            str(bet.get("match_id"))
+        )
+
+        if not match:
+            continue
+
+        if match.get("status") != "FINISHED":
+            continue
+
+        score = match.get("score") or {}
+        full_time = score.get("fullTime") or {}
+
+        home_goals = full_time.get("home")
+        away_goals = full_time.get("away")
+
+        if home_goals is None or away_goals is None:
+            continue
+
+        if settle_bet(
+            state,
+            bet,
+            int(home_goals),
+            int(away_goals),
+        ):
+            changed = True
+
+    return changed
+
+
+# ============================================================
+# GÉNÉRATION DES STATISTIQUES
+# ============================================================
+
+def print_statistics(state):
+    bets = state["bets"]
+
+    won = sum(
+        1 for bet in bets
+        if bet.get("status") == "WON"
+    )
+
+    lost = sum(
+        1 for bet in bets
+        if bet.get("status") == "LOST"
+    )
+
+    pending = sum(
+        1 for bet in bets
+        if bet.get("status") == "PENDING"
+    )
+
+    total_profit = round_money(
+        sum(
+            safe_float(bet.get("profit"))
+            for bet in bets
+            if bet.get("status") in ("WON", "LOST")
+        )
+    )
+
+    initial = safe_float(
+        state.get("initial_bankroll"),
+        INITIAL_BANKROLL
+    )
+
+    bankroll = safe_float(
+        state.get("bankroll"),
+        INITIAL_BANKROLL
+    )
+
+    log("=" * 55)
+    log("BILAN FOOT AI PRO V7")
+    log(f"Capital initial : {initial:.2f} €")
+    log(f"Capital virtuel : {bankroll:.2f} €")
+    log(f"Profit net enregistré : {total_profit:.2f} €")
+    log(f"Paris gagnés : {won}")
+    log(f"Paris perdus : {lost}")
+    log(f"Paris en attente : {pending}")
+
+    settled = won + lost
+
+    if settled:
+        log(
+            f"Taux de réussite : "
+            f"{won / settled:.1%}"
+        )
+    else:
+        log("Taux de réussite : aucun résultat réglé.")
+
+    log("=" * 55)
+
+
+# ============================================================
+# EXÉCUTION PRINCIPALE
+# ============================================================
+
+def main():
+    log("Démarrage de FOOT AI PRO BOT V7.")
+    log("Mode simulation virtuelle uniquement.")
+
+    api_key = get_api_key()
+
+    if not api_key:
+        raise RuntimeError(
+            "Clé API manquante. Ajoute le secret "
+            "FOOTBALL_DATA_API_KEY dans les paramètres "
+            "de ton dépôt GitHub."
+        )
+
+    state = load_state()
+
+    matches_by_competition = {}
+
+    # 1. Récupération des matchs et règlement des paris.
+    for competition_code in COMPETITIONS:
+        log(
+            f"Récupération des matchs : "
+            f"{COMPETITIONS[competition_code]}"
+        )
+
+        matches = fetch_competition_matches(
+            competition_code
+        )
+
+        matches_by_competition[
+            competition_code
+        ] = matches
+
+        if matches:
+            settle_finished_matches(
+                state,
+                matches
+            )
+
+        save_state(state)
+
+        time.sleep(API_DELAY_SECONDS)
+
+    # 2. Création des nouveaux paris virtuels.
+    cutoff = parse_date(BET_CUTOFF_DATE)
+    today = utc_now().date()
+
+    if cutoff and today > cutoff:
+        log(
+            "Date limite dépassée : aucun nouveau "
+            "pari virtuel ne sera créé."
+        )
+
+    else:
+        new_bets = 0
+
+        for competition_code, matches in (
+            matches_by_competition.items()
+        ):
+            if count_bets_today(state) >= MAX_NEW_BETS_PER_DAY:
+                log("Limite quotidienne de paris atteinte.")
+                break
+
+            finished_matches = [
+                match
+                for match in matches
+                if match.get("status") == "FINISHED"
+            ]
+
+            upcoming_matches = [
+                match
+                for match in matches
+                if match.get("status") in (
+                    "SCHEDULED",
+                    "TIMED",
+                )
+            ]
+
+            upcoming_matches.sort(
+                key=lambda match: (
+                    match.get("utcDate") or ""
+                )
+            )
+
+            for match in upcoming_matches:
+                if count_bets_today(state) >= MAX_NEW_BETS_PER_DAY:
+                    break
+
+                match_date = parse_datetime(
+                    match.get("utcDate")
+                )
+
+                if not match_date:
+                    continue
+
+                if match_date <= utc_now():
+                    continue
+
+                home_team = match.get("homeTeam") or {}
+                away_team = match.get("awayTeam") or {}
+
+                home_id = home_team.get("id")
+                away_id = away_team.get("id")
+
+                if not home_id or not away_id:
+                    continue
+
+                home_stats = get_team_statistics(
+                    finished_matches,
+                    home_id
+                )
+
+                away_stats = get_team_statistics(
+                    finished_matches,
+                    away_id
+                )
+
+                # Évite de créer des paris à partir
+                # de statistiques insuffisantes.
+                if (
+                    home_stats["matches"] < 3
+                    or away_stats["matches"] < 3
+                ):
+                    log(
+                        f"Statistiques insuffisantes : "
+                        f"{home_team.get('name')} - "
+                        f"{away_team.get('name')}"
+                    )
+                    continue
+
+                analysis = analyze_match(
+                    home_stats,
+                    away_stats
+                )
+
+                prediction = select_prediction(
+                    analysis
+                )
+
+                if prediction is None:
+                    continue
+
+                created = create_virtual_bet(
+                    state,
+                    match,
+                    competition_code,
+                    prediction,
+                )
+
+                if created:
+                    new_bets += 1
+                    save_state(state)
+
+            if count_bets_today(state) >= MAX_NEW_BETS_PER_DAY:
+                break
+
+        log(
+            f"Nouveaux paris virtuels créés : "
+            f"{new_bets}"
+        )
+
+    # 3. Sauvegarde finale et bilan.
+    save_state(state)
+    print_statistics(state)
+
+    log("Exécution terminée.")
+
+
+if __name__ == "__main__":
+    main()
