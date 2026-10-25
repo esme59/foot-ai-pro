@@ -32,12 +32,13 @@ import requests
 
 API_BASE = "https://api.football-data.org/v4"
 STATE_FILE = Path(os.environ.get("BOT_STATE_FILE", "data/bankroll.json"))
+ANALYSES_FILE = Path(os.environ.get("BOT_ANALYSES_FILE", "data/analyses.md"))
 
 INITIAL_BANKROLL = 20.0
 MAX_STAKE = 1.0
 MAX_NEW_BETS_PER_DAY = 6
 MAX_BACKTESTS_PER_DAY = 6
-MAX_SAME_MARKET_PER_DAY = 2
+MAX_SAME_MARKET_PER_DAY = 3
 
 LOOKBACK_DAYS = 100
 MAX_GOALS = 10
@@ -45,6 +46,7 @@ MIN_HISTORY_MATCHES = 4
 MIN_MODEL_MATCHES = 40
 
 MIN_PROBABILITY = 0.60
+MIN_PROBABILITY_FOCUS = 0.55
 MAX_PROBABILITY = 0.92
 MIN_LIFT = 0.03
 
@@ -81,6 +83,10 @@ MARKETS = [
 # Over 0.5 est exclu de la sélection automatique : choisi presque
 # toujours, il n'apporte aucune information.
 EXCLUDED_MARKETS = {"Over 0.5"}
+
+# Marchés ciblés : plus de 2,5 buts et les deux équipes marquent.
+# Mets FOCUS_MARKETS = set() pour réautoriser tous les marchés.
+FOCUS_MARKETS = {"Over 2.5", "BTTS Oui"}
 
 HEADERS = {
     "User-Agent": "FOOT-AI-PRO-V12-Virtual-Simulation"
@@ -250,6 +256,7 @@ def default_state():
         "history": [],
         "backtests": [],
         "backtest_report": {},
+        "analyses": {},
         "created_at": now,
         "updated_at": now,
     }
@@ -276,6 +283,7 @@ def load_state():
         state.setdefault("history", [])
         state.setdefault("backtests", [])
         state.setdefault("backtest_report", {})
+        state.setdefault("analyses", {})
         state.setdefault("created_at", utc_now().isoformat())
 
         for key in ("bets", "history", "backtests"):
@@ -727,6 +735,7 @@ def analyze_match(model, home_id, away_id):
 
     best_score = "1-1"
     best_score_probability = -1.0
+    score_list = []
 
     for hg, ag, p in cells:
         p /= total_probability
@@ -735,13 +744,21 @@ def analyze_match(model, home_id, away_id):
             if won:
                 markets[market] += p
 
+        score_list.append((f"{hg}-{ag}", p))
+
         if p > best_score_probability:
             best_score_probability = p
             best_score = f"{hg}-{ag}"
 
+    score_list.sort(key=lambda entry: entry[1], reverse=True)
+
     return {
         "markets": markets,
         "exact_score": best_score,
+        "top_scores": [
+            {"score": name, "probability": round(prob, 4)}
+            for name, prob in score_list[:3]
+        ],
         "home_lambda": home_lambda,
         "away_lambda": away_lambda,
     }
@@ -784,13 +801,21 @@ def rank_candidates(analysis, rates, calibration, usage):
         if market in EXCLUDED_MARKETS:
             continue
 
+        if FOCUS_MARKETS and market not in FOCUS_MARKETS:
+            continue
+
         probability = calibrate(
             market,
             raw_probability,
             calibration,
         )
 
-        if probability < MIN_PROBABILITY:
+        min_probability = (
+            MIN_PROBABILITY_FOCUS if FOCUS_MARKETS
+            else MIN_PROBABILITY
+        )
+
+        if probability < min_probability:
             continue
 
         if probability > MAX_PROBABILITY:
@@ -1480,6 +1505,293 @@ def create_yesterday_backtests(state, all_results):
 # STATISTIQUES
 # ============================================================
 
+# ============================================================
+# ANALYSES DES MATCHS (CONSULTABLES)
+# ============================================================
+
+def recent_form_string(results, team_id):
+    """Derniers résultats d'une équipe : V (victoire), N, D."""
+    games = [
+        item for item in results
+        if item["home"] == team_id or item["away"] == team_id
+    ][-FORM_MATCHES:]
+
+    letters = []
+
+    for item in games:
+        if item["home"] == team_id:
+            goals_for, goals_against = item["hg"], item["ag"]
+        else:
+            goals_for, goals_against = item["ag"], item["hg"]
+
+        if goals_for > goals_against:
+            letters.append("V")
+        elif goals_for == goals_against:
+            letters.append("N")
+        else:
+            letters.append("D")
+
+    return " ".join(letters) if letters else "-"
+
+
+def build_match_analysis(
+    match, competition_code, model, rates,
+    results, calibration, bets_by_match,
+):
+    home = match.get("homeTeam") or {}
+    away = match.get("awayTeam") or {}
+
+    home_id = home.get("id")
+    away_id = away.get("id")
+
+    if not home_id or not away_id:
+        return None
+
+    if not teams_have_history(model, home_id, away_id):
+        return None
+
+    analysis = analyze_match(model, home_id, away_id)
+
+    if analysis is None:
+        return None
+
+    markets = analysis["markets"]
+    home_name = home.get("name", "Équipe domicile")
+    away_name = away.get("name", "Équipe extérieure")
+
+    ranked = rank_candidates(analysis, rates, calibration, Counter())
+    bet = bets_by_match.get(str(match.get("id")))
+
+    kickoff = parse_datetime(match.get("utcDate"))
+    kickoff_local = kickoff.astimezone(LOCAL_TZ)
+
+    p_home, p_draw, p_away = markets["1"], markets["N"], markets["2"]
+
+    if p_home >= 0.45 and p_home > p_away:
+        favorite = f"{home_name} favori ({p_home:.0%})"
+    elif p_away >= 0.45:
+        favorite = f"{away_name} favori ({p_away:.0%})"
+    else:
+        favorite = "Match équilibré"
+
+    over_25 = markets["Over 2.5"]
+
+    if over_25 >= 0.55:
+        goals_text = f"match plutôt ouvert (Over 2.5 : {over_25:.0%})"
+    elif over_25 <= 0.40:
+        goals_text = f"match plutôt fermé (Over 2.5 : {over_25:.0%})"
+    else:
+        goals_text = f"nombre de buts incertain (Over 2.5 : {over_25:.0%})"
+
+    if bet:
+        decision = (
+            f"Pari virtuel placé : {bet.get('market')} "
+            f"({safe_float(bet.get('probability')):.0%})"
+        )
+        confidence = "Pari placé"
+    elif ranked:
+        best = ranked[0]
+        decision = (
+            f"Pari possible : {best['market']} "
+            f"({best['probability']:.0%}), non placé "
+            f"(limite quotidienne ou plafond par marché)"
+        )
+        confidence = "Moyenne"
+    else:
+        decision = (
+            "Aucun pari : aucun marché assez probable "
+            "avec un avantage net"
+        )
+        confidence = "Faible"
+
+    if ranked:
+        top_probability = ranked[0]["probability"]
+
+        if top_probability >= 0.75:
+            confidence = "Élevée"
+        elif top_probability >= 0.65:
+            confidence = "Moyenne"
+        else:
+            confidence = "Modérée"
+
+    return {
+        "match_id": match.get("id"),
+        "competition": competition_code,
+        "competition_name": COMPETITIONS.get(
+            competition_code, competition_code
+        ),
+        "home_team": home_name,
+        "away_team": away_name,
+        "date": kickoff_local.date().isoformat(),
+        "kickoff_local": kickoff_local.strftime("%H:%M"),
+        "kickoff_utc": kickoff.isoformat(),
+        "expected_goals": {
+            "home": round(analysis["home_lambda"], 2),
+            "away": round(analysis["away_lambda"], 2),
+        },
+        "probable_score": analysis["exact_score"],
+        "top_scores": analysis["top_scores"],
+        "probabilities": {
+            market: round(markets[market], 3)
+            for market in (
+                "1", "N", "2", "Over 1.5", "Over 2.5",
+                "Under 2.5", "BTTS Oui", "BTTS Non",
+            )
+        },
+        "form": {
+            "home": recent_form_string(results, home_id),
+            "away": recent_form_string(results, away_id),
+        },
+        "strengths": {
+            "home_attack": round(model["attack"].get(home_id, 1.0), 2),
+            "home_defense": round(model["defense"].get(home_id, 1.0), 2),
+            "away_attack": round(model["attack"].get(away_id, 1.0), 2),
+            "away_defense": round(model["defense"].get(away_id, 1.0), 2),
+        },
+        "best_picks": [
+            {
+                "market": item["market"],
+                "probability": item["probability"],
+                "lift": item["lift"],
+            }
+            for item in ranked[:3]
+        ],
+        "bet_placed": bool(bet),
+        "decision": decision,
+        "confidence": confidence,
+        "summary": f"{favorite} ; {goals_text}.",
+    }
+
+
+def write_analyses_markdown(analyses):
+    lines = [
+        f"# Analyses FOOT AI PRO V12 — {local_date()}",
+        "",
+        "_Simulation virtuelle, aucun pari réel._",
+        "",
+    ]
+
+    current_day = None
+
+    for item in analyses["matches"]:
+        if item["date"] != current_day:
+            current_day = item["date"]
+            lines += [f"## 📅 {current_day}", ""]
+
+        probs = item["probabilities"]
+        xg = item["expected_goals"]
+        strengths = item["strengths"]
+
+        scores = " | ".join(
+            f"{entry['score']} ({entry['probability']:.0%})"
+            for entry in item["top_scores"]
+        )
+
+        lines += [
+            f"### {item['kickoff_local']} — {item['home_team']} "
+            f"vs {item['away_team']} ({item['competition_name']})",
+            "",
+            f"- **Résumé** : {item['summary']}",
+            f"- **Buts attendus** : {xg['home']} - {xg['away']}",
+            f"- **Scores probables** : {scores}",
+            f"- **1 / N / 2** : {probs['1']:.0%} / {probs['N']:.0%} "
+            f"/ {probs['2']:.0%}",
+            f"- **Over 1.5 / Over 2.5** : {probs['Over 1.5']:.0%} / "
+            f"{probs['Over 2.5']:.0%}",
+            f"- **BTTS Oui / Non** : {probs['BTTS Oui']:.0%} / "
+            f"{probs['BTTS Non']:.0%}",
+            f"- **Forme (5 derniers)** : {item['home_team']} "
+            f"{item['form']['home']} | {item['away_team']} "
+            f"{item['form']['away']}",
+            f"- **Forces (1.00 = moyenne)** : domicile attaque "
+            f"{strengths['home_attack']} / défense "
+            f"{strengths['home_defense']} ; extérieur attaque "
+            f"{strengths['away_attack']} / défense "
+            f"{strengths['away_defense']} (défense basse = solide)",
+            f"- **Décision** : {item['decision']} "
+            f"(confiance : {item['confidence']})",
+            "",
+        ]
+
+    try:
+        ANALYSES_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+        with ANALYSES_FILE.open("w", encoding="utf-8") as file:
+            file.write("\n".join(lines))
+
+    except OSError as exc:
+        log(f"Impossible d'écrire {ANALYSES_FILE} : {exc}")
+
+
+def generate_analyses(state, all_matches, all_results, calibration):
+    """Analyse tous les matchs d'aujourd'hui et de demain."""
+    now = utc_now()
+    today = local_now().date()
+    tomorrow = today + timedelta(days=1)
+    wanted_days = {today.isoformat(), tomorrow.isoformat()}
+
+    bets_by_match = {
+        str(bet.get("match_id")): bet
+        for bet in state["bets"]
+        if bet.get("match_id") is not None
+    }
+
+    items = []
+
+    for competition_code, matches in all_matches.items():
+        if not matches:
+            continue
+
+        results = all_results.get(competition_code, [])
+        model = fit_model(results, now)
+
+        if model is None:
+            continue
+
+        rates = base_rates(results)
+
+        for match in matches:
+            if match.get("status") not in ("SCHEDULED", "TIMED"):
+                continue
+
+            if match_local_date(match) not in wanted_days:
+                continue
+
+            item = build_match_analysis(
+                match, competition_code, model, rates,
+                results, calibration, bets_by_match,
+            )
+
+            if item is not None:
+                items.append(item)
+
+    items.sort(key=lambda entry: entry["kickoff_utc"])
+
+    analyses = {
+        "generated_at": utc_now().isoformat(),
+        "date": today.isoformat(),
+        "count": len(items),
+        "matches": items,
+    }
+
+    state["analyses"] = analyses
+
+    write_analyses_markdown(analyses)
+
+    for item in items:
+        log(
+            f"ANALYSE : {item['home_team']} - {item['away_team']} | "
+            f"xG {item['expected_goals']['home']}-"
+            f"{item['expected_goals']['away']} | "
+            f"score probable {item['probable_score']} | "
+            f"{item['decision']}"
+        )
+
+    log(f"Analyses générées : {len(items)} ({ANALYSES_FILE}).")
+
+    return len(items)
+
+
 def print_statistics(state):
     bets = state["bets"]
 
@@ -1601,6 +1913,9 @@ def main():
 
     log("Création des nouveaux pronostics du jour.")
     create_today_bets(state, all_matches, all_results, calibration)
+
+    log("Génération des analyses de matchs.")
+    generate_analyses(state, all_matches, all_results, calibration)
 
     save_state(state)
     print_statistics(state)
