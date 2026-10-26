@@ -218,13 +218,24 @@ def default_state():
 
 
 def norm_status(value):
-    text = unicodedata.normalize("NFD", str(value or "")).encode("ascii", "ignore").decode().lower()
+    text = unicodedata.normalize(
+        "NFD", str(value or "")
+    ).encode("ascii", "ignore").decode().lower().strip()
+
     if text.startswith("gagn") or text in ("won", "win"):
         return "GAGNÉ"
+
     if text.startswith("perd") or text in ("lost", "loss"):
         return "PERDU"
-    if text.startswith("rembours") or text in ("void", "annule"):
+
+    if text.startswith("rembours") or text in (
+        "void", "annule", "annulee", "refunded", "cancelled", "canceled"
+    ):
         return "REMBOURSÉ"
+
+    if text in ("pending", "en_cours", "en cours", "open"):
+        return "EN_COURS"
+
     return "EN_COURS"
 
 
