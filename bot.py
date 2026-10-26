@@ -700,48 +700,78 @@ def apply_match_result(bet, match, today):
 
 
 def settle_virtual_bets(state, known_matches):
-    open_bets = [b for b in state["paris"] if b["statut"] == "EN_COURS"]
-    if not open_bets:
-        return
+    """Règle les paris ouverts avec les résultats réels de l'API."""
     today = local_now().date()
 
-    # Paris orphelins (sans match_id)
-    for bet in open_bets:
-        if bet.get("match_id") is None:
-            age = (today - parse_day(bet.get("date_placement"), today - timedelta(days=VOID_AFTER_DAYS))).days
-            if age >= VOID_AFTER_DAYS:
-                close_bet(bet, "REMBOURSÉ")
-                log(f"Pari sans identifiant de match remboursé : {bet.get('market')}")
+    open_bets = [
+        b for b in state["paris"]
+        if b.get("statut") == "EN_COURS"
+    ]
 
-    # 1) Règlement avec les matchs déjà téléchargés (0 appel API)
+    if not open_bets:
+        log("Aucun pari en attente.")
+        return
+
+    # 1. Première tentative : résultats déjà téléchargés
     missing = []
-    for bet in state["paris"]:
-        if bet["statut"] != "EN_COURS" or bet.get("match_id") is None:
-            continue
-        match = known_matches.get(str(bet["match_id"]))
-        if match is None:
-            if parse_day(bet.get("date_match"), today) <= today:
-                missing.append(str(bet["match_id"]))
-            continue
-        apply_match_result(bet, match, today)
 
-    # 2) Secours : matchs absents des compétitions téléchargées
+    for bet in open_bets:
+        match_id = bet.get("match_id")
+
+        if match_id is None:
+            continue
+
+        match = known_matches.get(str(match_id))
+
+        if match:
+            apply_match_result(bet, match, today)
+        elif parse_day(bet.get("date_match"), today) <= today:
+            missing.append(str(match_id))
+
+    # 2. Deuxième tentative : récupération individuelle des matchs absents
     calls = 0
+
     for match_id in dict.fromkeys(missing):
         if calls >= MAX_SETTLE_CALLS or time_left() < 120:
-            log("Règlement de secours limité (plafond d'appels/temps) : suite au prochain passage.")
+            log("Limite de récupération atteinte. Les autres paris seront vérifiés au prochain passage.")
             break
-        calls += 1
+
         try:
-            match = api_get(f"matches/{match_id}").get("match", {})
+            data = api_get(f"matches/{match_id}")
+            match = data.get("match", {})
+
+            if not match:
+                log(f"Aucun résultat retourné pour le match {match_id}.")
+                continue
+
+            calls += 1
+
+            for bet in state["paris"]:
+                if (
+                    bet.get("statut") == "EN_COURS"
+                    and str(bet.get("match_id")) == match_id
+                ):
+                    apply_match_result(bet, match, today)
+
         except Exception as exc:
-            log(f"Règlement différé pour le match {match_id} : {exc}")
-            continue
-        for bet in state["paris"]:
-            if bet["statut"] == "EN_COURS" and str(bet.get("match_id")) == match_id:
-                apply_match_result(bet, match, today)
+            log(f"Impossible de régler le match {match_id} : {exc}")
 
     recompute_totals(state)
+
+    remaining = sum(
+        1 for b in state["paris"]
+        if b.get("statut") == "EN_COURS"
+    )
+
+    settled = sum(
+        1 for b in state["paris"]
+        if b.get("statut") in SETTLED
+    )
+
+    log(
+        f"Règlement terminé : {settled} paris réglés au total, "
+        f"{remaining} paris encore en attente."
+    )
 
 
 # ------------------------- EXÉCUTION -------------------------
