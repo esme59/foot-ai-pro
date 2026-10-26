@@ -2,7 +2,7 @@
   "bankroll_initiale": 20.0,
   "bankroll_actuelle": 15.08,
   "benefice_total": 1.6,
-  "mises_totales": 0.0,
+  "mises_totales": 12.52,
   "gains_totaux": 7.6,
   "paris": [
     {
@@ -4953,6 +4953,6 @@
       }
     ]
   },
-  "last_updated": "2026-10-26T14:39:05.549973+00:00",
+  "last_updated": "2026-10-26T15:52:31.273142+00:00",
   "mises_en_cours": 6.52
 }
