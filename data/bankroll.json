@@ -1,11 +1,11 @@
 {
-“version”: 1,
-“bankroll_initiale”: 100.0,
-“bankroll_actuelle”: 100.0,
-“benefice_total”: 0.0,
-“mises_totales”: 0.0,
-“gains_totaux”: 0.0,
-“mises_en_cours”: 0.0,
-“paris”: [],
-“last_updated”: null
+  "version": 1,
+  "bankroll_initiale": 100.0,
+  "bankroll_actuelle": 100.0,
+  "benefice_total": 0.0,
+  "mises_totales": 0.0,
+  "gains_totaux": 0.0,
+  "mises_en_cours": 0.0,
+  "paris": [],
+  "last_updated": "2026-10-26T17:56:44.745862+01:00"
 }

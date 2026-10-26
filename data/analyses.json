@@ -1,0 +1,11 @@
+{
+  "version": 13,
+  "updated_at": "2026-10-26T17:56:44.745691+01:00",
+  "markets": [
+    "BTTS Oui",
+    "BTTS Non",
+    "Over 2.5",
+    "Under 2.5"
+  ],
+  "matches": []
+}
