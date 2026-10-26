@@ -365,176 +365,176 @@
 
 **Compétition :** Serie A
 
-**Résumé :** Le modèle estime 1.68 but(s) pour AC Milan et 1.02 pour Bologna FC 1909.
+**Résumé :** Le modèle estime 1.69 but(s) pour AC Milan et 0.98 pour Bologna FC 1909.
 
 ### 📊 Pourcentage estimé de chaque marché
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **52.8%** |
-| Match nul | **24.2%** |
-| Victoire de l'équipe à l'extérieur | **23.0%** |
-| Double chance : domicile ou nul | **77.0%** |
-| Double chance : extérieur ou nul | **47.2%** |
-| Une équipe gagne | **75.8%** |
-| Plus de 0,5 but | **93.3%** |
-| Plus de 1,5 but | **75.1%** |
-| Plus de 2,5 buts | **50.6%** |
-| Plus de 3,5 buts | **28.5%** |
-| Moins de 1,5 but | **24.9%** |
-| Moins de 2,5 buts | **49.4%** |
-| Moins de 3,5 buts | **71.5%** |
-| Les deux équipes marquent : OUI | **52.0%** |
-| Les deux équipes marquent : NON | **48.0%** |
+| Victoire de l'équipe à domicile | **54.0%** |
+| Match nul | **24.1%** |
+| Victoire de l'équipe à l'extérieur | **21.8%** |
+| Double chance : domicile ou nul | **78.2%** |
+| Double chance : extérieur ou nul | **46.0%** |
+| Une équipe gagne | **75.9%** |
+| Plus de 0,5 but | **93.1%** |
+| Plus de 1,5 but | **74.5%** |
+| Plus de 2,5 buts | **49.8%** |
+| Plus de 3,5 buts | **27.9%** |
+| Moins de 1,5 but | **25.5%** |
+| Moins de 2,5 buts | **50.2%** |
+| Moins de 3,5 buts | **72.1%** |
+| Les deux équipes marquent : OUI | **50.9%** |
+| Les deux équipes marquent : NON | **49.1%** |
 
 ### 🎯 Scores exacts les plus probables
 
+- **1-0** : 11.7%
 - **1-1** : 11.5%
-- **1-0** : 11.3%
+- **2-0** : 9.9%
 - **2-1** : 9.7%
-- **2-0** : 9.5%
-- **0-1** : 6.9%
+- **0-0** : 6.9%
 
 ### ⚽ Buts attendus par le modèle
 
-- **AC Milan :** 1.68 but(s)
-- **Bologna FC 1909 :** 1.02 but(s)
+- **AC Milan :** 1.69 but(s)
+- **Bologna FC 1909 :** 0.98 but(s)
 
 ### 📈 Forme récente
 
-- **AC Milan :** V N V N N
+- **AC Milan :** V V N V N
 - **Bologna FC 1909 :** V D V N D
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
-- **AC Milan :** 1.79 marqué(s) et 1.09 encaissé(s) en moyenne.
+- **AC Milan :** 1.81 marqué(s) et 0.99 encaissé(s) en moyenne.
 - **Bologna FC 1909 :** 1.08 marqué(s) et 1.26 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
-- **Attaque domicile :** 1.79
-- **Défense domicile :** 1.09
+- **Attaque domicile :** 1.81
+- **Défense domicile :** 0.99
 - **Attaque extérieure :** 1.08
 - **Défense extérieure :** 1.26
 
 ### ⭐ Marchés les plus probables
 
-- **Over 0.5 :** 93.3% de probabilité estimée.
-- **1X :** 77.0% de probabilité estimée.
-- **12 :** 75.8% de probabilité estimée.
+- **Over 0.5 :** 93.1% de probabilité estimée.
+- **1X :** 78.2% de probabilité estimée.
+- **12 :** 75.9% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 1 (52.8%)
+- **Pronostic 1/N/2 :** 1 (54.0%)
 - **Confiance indicative :** Indicative — non calibrée
-- **Score le plus probable :** 1-1
+- **Score le plus probable :** 1-0
 
 ## ⚽ 18:30 — Venezia FC vs FC Internazionale Milano
 
 **Compétition :** Serie A
 
-**Résumé :** Le modèle estime 1.29 but(s) pour Venezia FC et 2.03 pour FC Internazionale Milano.
+**Résumé :** Le modèle estime 1.24 but(s) pour Venezia FC et 1.91 pour FC Internazionale Milano.
 
 ### 📊 Pourcentage estimé de chaque marché
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **24.1%** |
-| Match nul | **21.4%** |
-| Victoire de l'équipe à l'extérieur | **54.4%** |
-| Double chance : domicile ou nul | **45.6%** |
-| Double chance : extérieur ou nul | **75.9%** |
-| Une équipe gagne | **78.6%** |
-| Plus de 0,5 but | **96.4%** |
-| Plus de 1,5 but | **84.4%** |
-| Plus de 2,5 buts | **64.6%** |
-| Plus de 3,5 buts | **42.5%** |
-| Moins de 1,5 but | **15.6%** |
-| Moins de 2,5 buts | **35.4%** |
-| Moins de 3,5 buts | **57.5%** |
-| Les deux équipes marquent : OUI | **63.1%** |
-| Les deux équipes marquent : NON | **36.9%** |
+| Victoire de l'équipe à domicile | **24.7%** |
+| Match nul | **22.3%** |
+| Victoire de l'équipe à l'extérieur | **53.1%** |
+| Double chance : domicile ou nul | **46.9%** |
+| Double chance : extérieur ou nul | **75.3%** |
+| Une équipe gagne | **77.7%** |
+| Plus de 0,5 but | **95.7%** |
+| Plus de 1,5 but | **82.3%** |
+| Plus de 2,5 buts | **61.1%** |
+| Plus de 3,5 buts | **38.7%** |
+| Moins de 1,5 but | **17.7%** |
+| Moins de 2,5 buts | **39.0%** |
+| Moins de 3,5 buts | **61.3%** |
+| Les deux équipes marquent : OUI | **60.6%** |
+| Les deux équipes marquent : NON | **39.4%** |
 
 ### 🎯 Scores exacts les plus probables
 
-- **1-2** : 9.6%
-- **1-1** : 9.5%
-- **0-2** : 7.4%
-- **0-1** : 7.3%
-- **1-3** : 6.5%
+- **1-1** : 10.1%
+- **1-2** : 9.7%
+- **0-1** : 8.2%
+- **0-2** : 7.8%
+- **2-1** : 6.3%
 
 ### ⚽ Buts attendus par le modèle
 
-- **Venezia FC :** 1.29 but(s)
-- **FC Internazionale Milano :** 2.03 but(s)
+- **Venezia FC :** 1.24 but(s)
+- **FC Internazionale Milano :** 1.91 but(s)
 
 ### 📈 Forme récente
 
-- **Venezia FC :** V D D D D
-- **FC Internazionale Milano :** V V D V N
+- **Venezia FC :** D V D D D
+- **FC Internazionale Milano :** V V V D V
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
-- **Venezia FC :** 0.99 marqué(s) et 1.99 encaissé(s) en moyenne.
-- **FC Internazionale Milano :** 2.30 marqué(s) et 1.45 encaissé(s) en moyenne.
+- **Venezia FC :** 0.90 marqué(s) et 1.90 encaissé(s) en moyenne.
+- **FC Internazionale Milano :** 2.15 marqué(s) et 1.45 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
-- **Attaque domicile :** 0.99
-- **Défense domicile :** 1.99
-- **Attaque extérieure :** 2.3
+- **Attaque domicile :** 0.9
+- **Défense domicile :** 1.9
+- **Attaque extérieure :** 2.15
 - **Défense extérieure :** 1.45
 
 ### ⭐ Marchés les plus probables
 
-- **Over 0.5 :** 96.4% de probabilité estimée.
-- **Over 1.5 :** 84.4% de probabilité estimée.
-- **12 :** 78.6% de probabilité estimée.
+- **Over 0.5 :** 95.7% de probabilité estimée.
+- **Over 1.5 :** 82.3% de probabilité estimée.
+- **12 :** 77.7% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 2 (54.4%)
+- **Pronostic 1/N/2 :** 2 (53.1%)
 - **Confiance indicative :** Indicative — non calibrée
-- **Score le plus probable :** 1-2
+- **Score le plus probable :** 1-1
 
 ## ⚽ 18:30 — Parma Calcio 1913 vs Udinese Calcio
 
 **Compétition :** Serie A
 
-**Résumé :** Le modèle estime 1.45 but(s) pour Parma Calcio 1913 et 1.39 pour Udinese Calcio.
+**Résumé :** Le modèle estime 1.45 but(s) pour Parma Calcio 1913 et 1.33 pour Udinese Calcio.
 
 ### 📊 Pourcentage estimé de chaque marché
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **38.7%** |
-| Match nul | **25.1%** |
-| Victoire de l'équipe à l'extérieur | **36.3%** |
-| Double chance : domicile ou nul | **63.7%** |
-| Double chance : extérieur ou nul | **61.3%** |
-| Une équipe gagne | **74.9%** |
-| Plus de 0,5 but | **94.2%** |
-| Plus de 1,5 but | **77.6%** |
-| Plus de 2,5 buts | **54.0%** |
-| Plus de 3,5 buts | **31.7%** |
-| Moins de 1,5 but | **22.4%** |
-| Moins de 2,5 buts | **46.0%** |
-| Moins de 3,5 buts | **68.3%** |
-| Les deux équipes marquent : OUI | **57.5%** |
-| Les deux équipes marquent : NON | **42.5%** |
+| Victoire de l'équipe à domicile | **40.0%** |
+| Match nul | **25.3%** |
+| Victoire de l'équipe à l'extérieur | **34.7%** |
+| Double chance : domicile ou nul | **65.3%** |
+| Double chance : extérieur ou nul | **60.0%** |
+| Une équipe gagne | **74.7%** |
+| Plus de 0,5 but | **93.8%** |
+| Plus de 1,5 but | **76.6%** |
+| Plus de 2,5 buts | **52.6%** |
+| Plus de 3,5 buts | **30.4%** |
+| Moins de 1,5 but | **23.4%** |
+| Moins de 2,5 buts | **47.4%** |
+| Moins de 3,5 buts | **69.6%** |
+| Les deux équipes marquent : OUI | **56.3%** |
+| Les deux équipes marquent : NON | **43.7%** |
 
 ### 🎯 Scores exacts les plus probables
 
-- **1-1** : 11.8%
-- **2-1** : 8.5%
-- **1-0** : 8.4%
-- **1-2** : 8.2%
-- **0-1** : 8.1%
+- **1-1** : 12.0%
+- **1-0** : 9.0%
+- **2-1** : 8.7%
+- **0-1** : 8.3%
+- **1-2** : 8.0%
 
 ### ⚽ Buts attendus par le modèle
 
 - **Parma Calcio 1913 :** 1.45 but(s)
-- **Udinese Calcio :** 1.39 but(s)
+- **Udinese Calcio :** 1.33 but(s)
 
 ### 📈 Forme récente
 
@@ -544,24 +544,24 @@
 ### ⚽ Moyennes de buts sur les derniers matchs
 
 - **Parma Calcio 1913 :** 0.81 marqué(s) et 1.72 encaissé(s) en moyenne.
-- **Udinese Calcio :** 1.29 marqué(s) et 1.99 encaissé(s) en moyenne.
+- **Udinese Calcio :** 1.17 marqué(s) et 1.99 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
 - **Attaque domicile :** 0.81
 - **Défense domicile :** 1.72
-- **Attaque extérieure :** 1.29
+- **Attaque extérieure :** 1.17
 - **Défense extérieure :** 1.99
 
 ### ⭐ Marchés les plus probables
 
-- **Over 0.5 :** 94.2% de probabilité estimée.
-- **Over 1.5 :** 77.6% de probabilité estimée.
-- **12 :** 74.9% de probabilité estimée.
+- **Over 0.5 :** 93.8% de probabilité estimée.
+- **Over 1.5 :** 76.6% de probabilité estimée.
+- **12 :** 74.7% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 1 (38.7%)
+- **Pronostic 1/N/2 :** 1 (40.0%)
 - **Confiance indicative :** Indicative — non calibrée
 - **Score le plus probable :** 1-1
 
@@ -569,67 +569,67 @@
 
 **Compétition :** Serie A
 
-**Résumé :** Le modèle estime 1.11 but(s) pour Genoa CFC et 1.38 pour Juventus FC.
+**Résumé :** Le modèle estime 1.06 but(s) pour Genoa CFC et 1.35 pour Juventus FC.
 
 ### 📊 Pourcentage estimé de chaque marché
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **30.1%** |
-| Match nul | **26.8%** |
-| Victoire de l'équipe à l'extérieur | **43.2%** |
-| Double chance : domicile ou nul | **56.8%** |
-| Double chance : extérieur ou nul | **69.9%** |
-| Une équipe gagne | **73.2%** |
-| Plus de 0,5 but | **91.7%** |
-| Plus de 1,5 but | **71.0%** |
-| Plus de 2,5 buts | **45.3%** |
-| Plus de 3,5 buts | **24.0%** |
-| Moins de 1,5 but | **29.0%** |
-| Moins de 2,5 buts | **54.7%** |
-| Moins de 3,5 buts | **76.0%** |
-| Les deux équipes marquent : OUI | **50.1%** |
-| Les deux équipes marquent : NON | **49.9%** |
+| Victoire de l'équipe à domicile | **29.4%** |
+| Match nul | **27.2%** |
+| Victoire de l'équipe à l'extérieur | **43.4%** |
+| Double chance : domicile ou nul | **56.6%** |
+| Double chance : extérieur ou nul | **70.6%** |
+| Une équipe gagne | **72.8%** |
+| Plus de 0,5 but | **91.0%** |
+| Plus de 1,5 but | **69.4%** |
+| Plus de 2,5 buts | **43.3%** |
+| Plus de 3,5 buts | **22.3%** |
+| Moins de 1,5 but | **30.6%** |
+| Moins de 2,5 buts | **56.7%** |
+| Moins de 3,5 buts | **77.7%** |
+| Les deux équipes marquent : OUI | **48.4%** |
+| Les deux équipes marquent : NON | **51.6%** |
 
 ### 🎯 Scores exacts les plus probables
 
-- **1-1** : 12.7%
-- **0-1** : 11.5%
-- **1-0** : 9.2%
-- **1-2** : 8.8%
-- **0-0** : 8.3%
+- **1-1** : 12.9%
+- **0-1** : 12.1%
+- **1-0** : 9.5%
+- **0-0** : 9.0%
+- **1-2** : 8.7%
 
 ### ⚽ Buts attendus par le modèle
 
-- **Genoa CFC :** 1.11 but(s)
-- **Juventus FC :** 1.38 but(s)
+- **Genoa CFC :** 1.06 but(s)
+- **Juventus FC :** 1.35 but(s)
 
 ### 📈 Forme récente
 
-- **Genoa CFC :** D V D N D
-- **Juventus FC :** D N V D N
+- **Genoa CFC :** V D V D N
+- **Juventus FC :** V D N V D
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
-- **Genoa CFC :** 0.89 marqué(s) et 1.69 encaissé(s) en moyenne.
-- **Juventus FC :** 1.29 marqué(s) et 1.19 encaissé(s) en moyenne.
+- **Genoa CFC :** 0.90 marqué(s) et 1.54 encaissé(s) en moyenne.
+- **Juventus FC :** 1.35 marqué(s) et 1.08 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
-- **Attaque domicile :** 0.89
-- **Défense domicile :** 1.69
-- **Attaque extérieure :** 1.29
-- **Défense extérieure :** 1.19
+- **Attaque domicile :** 0.9
+- **Défense domicile :** 1.54
+- **Attaque extérieure :** 1.35
+- **Défense extérieure :** 1.08
 
 ### ⭐ Marchés les plus probables
 
-- **Over 0.5 :** 91.7% de probabilité estimée.
-- **Under 3.5 :** 76.0% de probabilité estimée.
-- **12 :** 73.2% de probabilité estimée.
+- **Over 0.5 :** 91.0% de probabilité estimée.
+- **Under 3.5 :** 77.7% de probabilité estimée.
+- **12 :** 72.8% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 2 (43.2%)
+- **Pronostic 1/N/2 :** 2 (43.4%)
 - **Confiance indicative :** Indicative — non calibrée
 - **Score le plus probable :** 1-1
 
@@ -710,67 +710,67 @@
 
 **Compétition :** Serie A
 
-**Résumé :** Le modèle estime 1.78 but(s) pour Frosinone Calcio et 1.21 pour US Lecce.
+**Résumé :** Le modèle estime 1.92 but(s) pour Frosinone Calcio et 1.26 pour US Lecce.
 
 ### 📊 Pourcentage estimé de chaque marché
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **50.6%** |
-| Match nul | **23.3%** |
-| Victoire de l'équipe à l'extérieur | **26.1%** |
-| Double chance : domicile ou nul | **73.9%** |
-| Double chance : extérieur ou nul | **49.4%** |
-| Une équipe gagne | **76.7%** |
-| Plus de 0,5 but | **95.0%** |
-| Plus de 1,5 but | **79.9%** |
-| Plus de 2,5 buts | **57.4%** |
-| Plus de 3,5 buts | **35.0%** |
-| Moins de 1,5 but | **20.1%** |
-| Moins de 2,5 buts | **42.6%** |
-| Moins de 3,5 buts | **65.0%** |
-| Les deux équipes marquent : OUI | **58.4%** |
-| Les deux équipes marquent : NON | **41.6%** |
+| Victoire de l'équipe à domicile | **52.9%** |
+| Match nul | **22.2%** |
+| Victoire de l'équipe à l'extérieur | **24.9%** |
+| Double chance : domicile ou nul | **75.1%** |
+| Double chance : extérieur ou nul | **47.1%** |
+| Une équipe gagne | **77.8%** |
+| Plus de 0,5 but | **95.8%** |
+| Plus de 1,5 but | **82.6%** |
+| Plus de 2,5 buts | **61.5%** |
+| Plus de 3,5 buts | **39.2%** |
+| Moins de 1,5 but | **17.4%** |
+| Moins de 2,5 buts | **38.5%** |
+| Moins de 3,5 buts | **60.8%** |
+| Les deux équipes marquent : OUI | **61.0%** |
+| Les deux équipes marquent : NON | **39.0%** |
 
 ### 🎯 Scores exacts les plus probables
 
-- **1-1** : 10.8%
-- **2-1** : 9.6%
-- **1-0** : 8.9%
-- **2-0** : 7.9%
-- **1-2** : 6.6%
+- **1-1** : 10.1%
+- **2-1** : 9.7%
+- **1-0** : 8.0%
+- **2-0** : 7.7%
+- **1-2** : 6.3%
 
 ### ⚽ Buts attendus par le modèle
 
-- **Frosinone Calcio :** 1.78 but(s)
-- **US Lecce :** 1.21 but(s)
+- **Frosinone Calcio :** 1.92 but(s)
+- **US Lecce :** 1.26 but(s)
 
 ### 📈 Forme récente
 
-- **Frosinone Calcio :** V D V N V
-- **US Lecce :** V D D V D
+- **Frosinone Calcio :** N V D V N
+- **US Lecce :** D V D D V
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
-- **Frosinone Calcio :** 1.69 marqué(s) et 1.29 encaissé(s) en moyenne.
-- **US Lecce :** 1.29 marqué(s) et 1.59 encaissé(s) en moyenne.
+- **Frosinone Calcio :** 1.90 marqué(s) et 1.54 encaissé(s) en moyenne.
+- **US Lecce :** 1.17 marqué(s) et 1.63 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
-- **Attaque domicile :** 1.69
-- **Défense domicile :** 1.29
-- **Attaque extérieure :** 1.29
-- **Défense extérieure :** 1.59
+- **Attaque domicile :** 1.9
+- **Défense domicile :** 1.54
+- **Attaque extérieure :** 1.17
+- **Défense extérieure :** 1.63
 
 ### ⭐ Marchés les plus probables
 
-- **Over 0.5 :** 95.0% de probabilité estimée.
-- **Over 1.5 :** 79.9% de probabilité estimée.
-- **12 :** 76.7% de probabilité estimée.
+- **Over 0.5 :** 95.8% de probabilité estimée.
+- **Over 1.5 :** 82.6% de probabilité estimée.
+- **12 :** 77.8% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 1 (50.6%)
+- **Pronostic 1/N/2 :** 1 (52.9%)
 - **Confiance indicative :** Indicative — non calibrée
 - **Score le plus probable :** 1-1
 
@@ -778,67 +778,67 @@
 
 **Compétition :** Serie A
 
-**Résumé :** Le modèle estime 1.43 but(s) pour ACF Fiorentina et 1.60 pour Atalanta BC.
+**Résumé :** Le modèle estime 1.53 but(s) pour ACF Fiorentina et 1.72 pour Atalanta BC.
 
 ### 📊 Pourcentage estimé de chaque marché
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **34.2%** |
-| Match nul | **24.1%** |
-| Victoire de l'équipe à l'extérieur | **41.7%** |
-| Double chance : domicile ou nul | **58.3%** |
-| Double chance : extérieur ou nul | **65.8%** |
-| Une équipe gagne | **75.9%** |
-| Plus de 0,5 but | **95.2%** |
-| Plus de 1,5 but | **80.6%** |
-| Plus de 2,5 buts | **58.4%** |
-| Plus de 3,5 buts | **36.0%** |
-| Moins de 1,5 but | **19.4%** |
-| Moins de 2,5 buts | **41.6%** |
-| Moins de 3,5 buts | **64.0%** |
-| Les deux équipes marquent : OUI | **60.8%** |
-| Les deux équipes marquent : NON | **39.2%** |
+| Victoire de l'équipe à domicile | **34.4%** |
+| Match nul | **23.1%** |
+| Victoire de l'équipe à l'extérieur | **42.5%** |
+| Double chance : domicile ou nul | **57.5%** |
+| Double chance : extérieur ou nul | **65.6%** |
+| Une équipe gagne | **76.9%** |
+| Plus de 0,5 but | **96.1%** |
+| Plus de 1,5 but | **83.6%** |
+| Plus de 2,5 buts | **63.1%** |
+| Plus de 3,5 buts | **40.9%** |
+| Moins de 1,5 but | **16.4%** |
+| Moins de 2,5 buts | **36.9%** |
+| Moins de 3,5 buts | **59.1%** |
+| Les deux équipes marquent : OUI | **64.4%** |
+| Les deux équipes marquent : NON | **35.6%** |
 
 ### 🎯 Scores exacts les plus probables
 
-- **1-1** : 11.0%
+- **1-1** : 10.2%
 - **1-2** : 8.8%
-- **2-1** : 7.9%
-- **0-1** : 7.7%
-- **1-0** : 6.9%
+- **2-1** : 7.8%
+- **2-2** : 6.7%
+- **0-1** : 6.7%
 
 ### ⚽ Buts attendus par le modèle
 
-- **ACF Fiorentina :** 1.43 but(s)
-- **Atalanta BC :** 1.60 but(s)
+- **ACF Fiorentina :** 1.53 but(s)
+- **Atalanta BC :** 1.72 but(s)
 
 ### 📈 Forme récente
 
-- **ACF Fiorentina :** D D N V D
-- **Atalanta BC :** D V D D D
+- **ACF Fiorentina :** D D D N V
+- **Atalanta BC :** N D V D D
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
-- **ACF Fiorentina :** 1.19 marqué(s) et 2.09 encaissé(s) en moyenne.
-- **Atalanta BC :** 1.39 marqué(s) et 1.49 encaissé(s) en moyenne.
+- **ACF Fiorentina :** 1.17 marqué(s) et 2.08 encaissé(s) en moyenne.
+- **Atalanta BC :** 1.63 marqué(s) et 1.72 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
-- **Attaque domicile :** 1.19
-- **Défense domicile :** 2.09
-- **Attaque extérieure :** 1.39
-- **Défense extérieure :** 1.49
+- **Attaque domicile :** 1.17
+- **Défense domicile :** 2.08
+- **Attaque extérieure :** 1.63
+- **Défense extérieure :** 1.72
 
 ### ⭐ Marchés les plus probables
 
-- **Over 0.5 :** 95.2% de probabilité estimée.
-- **Over 1.5 :** 80.6% de probabilité estimée.
-- **12 :** 75.9% de probabilité estimée.
+- **Over 0.5 :** 96.1% de probabilité estimée.
+- **Over 1.5 :** 83.6% de probabilité estimée.
+- **12 :** 76.9% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 2 (41.7%)
+- **Pronostic 1/N/2 :** 2 (42.5%)
 - **Confiance indicative :** Indicative — non calibrée
 - **Score le plus probable :** 1-1
 
@@ -1468,67 +1468,67 @@
 
 **Compétition :** Bundesliga
 
-**Résumé :** Le modèle estime 1.78 but(s) pour FC Augsburg et 1.80 pour SC Freiburg.
+**Résumé :** Le modèle estime 1.87 but(s) pour FC Augsburg et 1.74 pour SC Freiburg.
 
 ### 📊 Pourcentage estimé de chaque marché
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **38.5%** |
-| Match nul | **22.0%** |
-| Victoire de l'équipe à l'extérieur | **39.5%** |
-| Double chance : domicile ou nul | **60.5%** |
-| Double chance : extérieur ou nul | **61.5%** |
-| Une équipe gagne | **78.0%** |
-| Plus de 0,5 but | **97.2%** |
-| Plus de 1,5 but | **87.2%** |
-| Plus de 2,5 buts | **69.3%** |
-| Plus de 3,5 buts | **48.0%** |
-| Moins de 1,5 but | **12.8%** |
-| Moins de 2,5 buts | **30.7%** |
-| Moins de 3,5 buts | **52.0%** |
-| Les deux équipes marquent : OUI | **69.3%** |
-| Les deux équipes marquent : NON | **30.7%** |
+| Victoire de l'équipe à domicile | **41.6%** |
+| Match nul | **21.9%** |
+| Victoire de l'équipe à l'extérieur | **36.6%** |
+| Double chance : domicile ou nul | **63.4%** |
+| Double chance : extérieur ou nul | **58.4%** |
+| Une équipe gagne | **78.1%** |
+| Plus de 0,5 but | **97.3%** |
+| Plus de 1,5 but | **87.5%** |
+| Plus de 2,5 buts | **69.9%** |
+| Plus de 3,5 buts | **48.7%** |
+| Moins de 1,5 but | **12.4%** |
+| Moins de 2,5 buts | **30.1%** |
+| Moins de 3,5 buts | **51.3%** |
+| Les deux équipes marquent : OUI | **69.8%** |
+| Les deux équipes marquent : NON | **30.2%** |
 
 ### 🎯 Scores exacts les plus probables
 
-- **1-1** : 8.9%
-- **1-2** : 8.1%
-- **2-1** : 7.9%
+- **1-1** : 8.8%
+- **2-1** : 8.2%
+- **1-2** : 7.7%
 - **2-2** : 7.2%
-- **0-1** : 5.0%
+- **3-1** : 5.1%
 
 ### ⚽ Buts attendus par le modèle
 
-- **FC Augsburg :** 1.78 but(s)
-- **SC Freiburg :** 1.80 but(s)
+- **FC Augsburg :** 1.87 but(s)
+- **SC Freiburg :** 1.74 but(s)
 
 ### 📈 Forme récente
 
 - **FC Augsburg :** N D N D N
-- **SC Freiburg :** D V N V V
+- **SC Freiburg :** D D V N V
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
 - **FC Augsburg :** 2.09 marqué(s) et 1.69 encaissé(s) en moyenne.
-- **SC Freiburg :** 2.10 marqué(s) et 1.10 encaissé(s) en moyenne.
+- **SC Freiburg :** 1.99 marqué(s) et 1.29 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
 - **Attaque domicile :** 2.09
 - **Défense domicile :** 1.69
-- **Attaque extérieure :** 2.1
-- **Défense extérieure :** 1.1
+- **Attaque extérieure :** 1.99
+- **Défense extérieure :** 1.29
 
 ### ⭐ Marchés les plus probables
 
-- **Over 0.5 :** 97.2% de probabilité estimée.
-- **Over 1.5 :** 87.2% de probabilité estimée.
-- **12 :** 78.0% de probabilité estimée.
+- **Over 0.5 :** 97.3% de probabilité estimée.
+- **Over 1.5 :** 87.5% de probabilité estimée.
+- **12 :** 78.1% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 2 (39.5%)
+- **Pronostic 1/N/2 :** 1 (41.6%)
 - **Confiance indicative :** Indicative — non calibrée
 - **Score le plus probable :** 1-1
 
@@ -1536,137 +1536,137 @@
 
 **Compétition :** Bundesliga
 
-**Résumé :** Le modèle estime 2.09 but(s) pour SV Werder Bremen et 1.61 pour TSG 1899 Hoffenheim.
+**Résumé :** Le modèle estime 1.99 but(s) pour SV Werder Bremen et 1.68 pour TSG 1899 Hoffenheim.
 
 ### 📊 Pourcentage estimé de chaque marché
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **48.9%** |
-| Match nul | **21.0%** |
-| Victoire de l'équipe à l'extérieur | **30.0%** |
-| Double chance : domicile ou nul | **70.0%** |
-| Double chance : extérieur ou nul | **51.1%** |
-| Une équipe gagne | **79.0%** |
+| Victoire de l'équipe à domicile | **45.5%** |
+| Match nul | **21.4%** |
+| Victoire de l'équipe à l'extérieur | **33.1%** |
+| Double chance : domicile ou nul | **66.9%** |
+| Double chance : extérieur ou nul | **54.5%** |
+| Une équipe gagne | **78.6%** |
 | Plus de 0,5 but | **97.5%** |
-| Plus de 1,5 but | **88.4%** |
-| Plus de 2,5 buts | **71.5%** |
-| Plus de 3,5 buts | **50.6%** |
-| Moins de 1,5 but | **11.6%** |
-| Moins de 2,5 buts | **28.5%** |
-| Moins de 3,5 buts | **49.4%** |
-| Les deux équipes marquent : OUI | **70.2%** |
-| Les deux équipes marquent : NON | **29.8%** |
+| Plus de 1,5 but | **88.2%** |
+| Plus de 2,5 buts | **71.0%** |
+| Plus de 3,5 buts | **50.1%** |
+| Moins de 1,5 but | **11.8%** |
+| Moins de 2,5 buts | **29.0%** |
+| Moins de 3,5 buts | **49.9%** |
+| Les deux équipes marquent : OUI | **70.3%** |
+| Les deux équipes marquent : NON | **29.7%** |
 
 ### 🎯 Scores exacts les plus probables
 
-- **2-1** : 8.7%
-- **1-1** : 8.3%
-- **2-2** : 7.0%
-- **1-2** : 6.7%
-- **3-1** : 6.0%
+- **1-1** : 8.5%
+- **2-1** : 8.5%
+- **1-2** : 7.1%
+- **2-2** : 7.1%
+- **3-1** : 5.6%
 
 ### ⚽ Buts attendus par le modèle
 
-- **SV Werder Bremen :** 2.09 but(s)
-- **TSG 1899 Hoffenheim :** 1.61 but(s)
+- **SV Werder Bremen :** 1.99 but(s)
+- **TSG 1899 Hoffenheim :** 1.68 but(s)
 
 ### 📈 Forme récente
 
 - **SV Werder Bremen :** V N N V N
-- **TSG 1899 Hoffenheim :** V D D V D
+- **TSG 1899 Hoffenheim :** V V D D V
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
 - **SV Werder Bremen :** 1.89 marqué(s) et 1.79 encaissé(s) en moyenne.
-- **TSG 1899 Hoffenheim :** 1.66 marqué(s) et 1.99 encaissé(s) en moyenne.
+- **TSG 1899 Hoffenheim :** 1.79 marqué(s) et 1.79 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
 - **Attaque domicile :** 1.89
 - **Défense domicile :** 1.79
-- **Attaque extérieure :** 1.66
-- **Défense extérieure :** 1.99
+- **Attaque extérieure :** 1.79
+- **Défense extérieure :** 1.79
 
 ### ⭐ Marchés les plus probables
 
 - **Over 0.5 :** 97.5% de probabilité estimée.
-- **Over 1.5 :** 88.4% de probabilité estimée.
-- **12 :** 79.0% de probabilité estimée.
+- **Over 1.5 :** 88.2% de probabilité estimée.
+- **12 :** 78.6% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 1 (48.9%)
+- **Pronostic 1/N/2 :** 1 (45.5%)
 - **Confiance indicative :** Indicative — non calibrée
-- **Score le plus probable :** 2-1
+- **Score le plus probable :** 1-1
 
 ## ⚽ 15:30 — Bayer 04 Leverkusen vs VfB Stuttgart
 
 **Compétition :** Bundesliga
 
-**Résumé :** Le modèle estime 2.02 but(s) pour Bayer 04 Leverkusen et 1.44 pour VfB Stuttgart.
+**Résumé :** Le modèle estime 1.89 but(s) pour Bayer 04 Leverkusen et 1.50 pour VfB Stuttgart.
 
 ### 📊 Pourcentage estimé de chaque marché
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **51.1%** |
-| Match nul | **21.5%** |
-| Victoire de l'équipe à l'extérieur | **27.4%** |
-| Double chance : domicile ou nul | **72.6%** |
-| Double chance : extérieur ou nul | **48.9%** |
-| Une équipe gagne | **78.5%** |
-| Plus de 0,5 but | **96.8%** |
-| Plus de 1,5 but | **86.0%** |
-| Plus de 2,5 buts | **67.1%** |
-| Plus de 3,5 buts | **45.4%** |
-| Moins de 1,5 but | **14.0%** |
-| Moins de 2,5 buts | **32.9%** |
-| Moins de 3,5 buts | **54.6%** |
-| Les deux équipes marquent : OUI | **66.1%** |
-| Les deux équipes marquent : NON | **33.9%** |
+| Victoire de l'équipe à domicile | **46.8%** |
+| Match nul | **22.3%** |
+| Victoire de l'équipe à l'extérieur | **30.9%** |
+| Double chance : domicile ou nul | **69.1%** |
+| Double chance : extérieur ou nul | **53.2%** |
+| Une équipe gagne | **77.7%** |
+| Plus de 0,5 but | **96.6%** |
+| Plus de 1,5 but | **85.2%** |
+| Plus de 2,5 buts | **65.9%** |
+| Plus de 3,5 buts | **44.0%** |
+| Moins de 1,5 but | **14.8%** |
+| Moins de 2,5 buts | **34.1%** |
+| Moins de 3,5 buts | **56.0%** |
+| Les deux équipes marquent : OUI | **66.0%** |
+| Les deux équipes marquent : NON | **34.0%** |
 
 ### 🎯 Scores exacts les plus probables
 
-- **2-1** : 9.2%
-- **1-1** : 9.2%
-- **2-2** : 6.6%
-- **1-2** : 6.6%
-- **2-0** : 6.4%
+- **1-1** : 9.6%
+- **2-1** : 9.0%
+- **1-2** : 7.2%
+- **2-2** : 6.8%
+- **1-0** : 6.4%
 
 ### ⚽ Buts attendus par le modèle
 
-- **Bayer 04 Leverkusen :** 2.02 but(s)
-- **VfB Stuttgart :** 1.44 but(s)
+- **Bayer 04 Leverkusen :** 1.89 but(s)
+- **VfB Stuttgart :** 1.50 but(s)
 
 ### 📈 Forme récente
 
-- **Bayer 04 Leverkusen :** V V V N V
+- **Bayer 04 Leverkusen :** D V V V N
 - **VfB Stuttgart :** D N D V V
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
-- **Bayer 04 Leverkusen :** 2.21 marqué(s) et 1.43 encaissé(s) en moyenne.
+- **Bayer 04 Leverkusen :** 1.99 marqué(s) et 1.59 encaissé(s) en moyenne.
 - **VfB Stuttgart :** 1.61 marqué(s) et 1.45 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
-- **Attaque domicile :** 2.21
-- **Défense domicile :** 1.43
+- **Attaque domicile :** 1.99
+- **Défense domicile :** 1.59
 - **Attaque extérieure :** 1.61
 - **Défense extérieure :** 1.45
 
 ### ⭐ Marchés les plus probables
 
-- **Over 0.5 :** 96.8% de probabilité estimée.
-- **Over 1.5 :** 86.0% de probabilité estimée.
-- **12 :** 78.5% de probabilité estimée.
+- **Over 0.5 :** 96.6% de probabilité estimée.
+- **Over 1.5 :** 85.2% de probabilité estimée.
+- **12 :** 77.7% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 1 (51.1%)
+- **Pronostic 1/N/2 :** 1 (46.8%)
 - **Confiance indicative :** Indicative — non calibrée
-- **Score le plus probable :** 2-1
+- **Score le plus probable :** 1-1
 
 ## ⚽ 16:00 — Manchester City FC vs Brighton & Hove Albion FC
 
@@ -2148,39 +2148,39 @@
 
 **Compétition :** Serie A
 
-**Résumé :** Le modèle estime 1.32 but(s) pour Udinese Calcio et 1.91 pour AS Roma.
+**Résumé :** Le modèle estime 1.25 but(s) pour Udinese Calcio et 1.91 pour AS Roma.
 
 ### 📊 Pourcentage estimé de chaque marché
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **26.5%** |
+| Victoire de l'équipe à domicile | **25.0%** |
 | Match nul | **22.3%** |
-| Victoire de l'équipe à l'extérieur | **51.2%** |
-| Double chance : domicile ou nul | **48.8%** |
-| Double chance : extérieur ou nul | **73.5%** |
+| Victoire de l'équipe à l'extérieur | **52.8%** |
+| Double chance : domicile ou nul | **47.2%** |
+| Double chance : extérieur ou nul | **75.0%** |
 | Une équipe gagne | **77.7%** |
-| Plus de 0,5 but | **96.1%** |
-| Plus de 1,5 but | **83.3%** |
-| Plus de 2,5 buts | **62.7%** |
-| Plus de 3,5 buts | **40.5%** |
-| Moins de 1,5 but | **16.7%** |
-| Moins de 2,5 buts | **37.3%** |
-| Moins de 3,5 buts | **59.5%** |
-| Les deux équipes marquent : OUI | **62.5%** |
-| Les deux équipes marquent : NON | **37.5%** |
+| Plus de 0,5 but | **95.8%** |
+| Plus de 1,5 but | **82.4%** |
+| Plus de 2,5 buts | **61.3%** |
+| Plus de 3,5 buts | **39.0%** |
+| Moins de 1,5 but | **17.6%** |
+| Moins de 2,5 buts | **38.7%** |
+| Moins de 3,5 buts | **61.0%** |
+| Les deux équipes marquent : OUI | **60.9%** |
+| Les deux équipes marquent : NON | **39.1%** |
 
 ### 🎯 Scores exacts les plus probables
 
-- **1-1** : 10.0%
-- **1-2** : 9.5%
-- **0-1** : 7.5%
-- **0-2** : 7.2%
-- **2-1** : 6.6%
+- **1-1** : 10.1%
+- **1-2** : 9.7%
+- **0-1** : 8.1%
+- **0-2** : 7.7%
+- **2-1** : 6.3%
 
 ### ⚽ Buts attendus par le modèle
 
-- **Udinese Calcio :** 1.32 but(s)
+- **Udinese Calcio :** 1.25 but(s)
 - **AS Roma :** 1.91 but(s)
 
 ### 📈 Forme récente
@@ -2190,25 +2190,25 @@
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
-- **Udinese Calcio :** 1.29 marqué(s) et 1.99 encaissé(s) en moyenne.
+- **Udinese Calcio :** 1.17 marqué(s) et 1.99 encaissé(s) en moyenne.
 - **AS Roma :** 2.07 marqué(s) et 1.15 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
-- **Attaque domicile :** 1.29
+- **Attaque domicile :** 1.17
 - **Défense domicile :** 1.99
 - **Attaque extérieure :** 2.07
 - **Défense extérieure :** 1.15
 
 ### ⭐ Marchés les plus probables
 
-- **Over 0.5 :** 96.1% de probabilité estimée.
-- **Over 1.5 :** 83.3% de probabilité estimée.
+- **Over 0.5 :** 95.8% de probabilité estimée.
+- **Over 1.5 :** 82.4% de probabilité estimée.
 - **12 :** 77.7% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 2 (51.2%)
+- **Pronostic 1/N/2 :** 2 (52.8%)
 - **Confiance indicative :** Indicative — non calibrée
 - **Score le plus probable :** 1-1
 
@@ -2358,29 +2358,29 @@
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **57.8%** |
+| Victoire de l'équipe à domicile | **57.9%** |
 | Match nul | **20.1%** |
-| Victoire de l'équipe à l'extérieur | **22.1%** |
-| Double chance : domicile ou nul | **77.9%** |
-| Double chance : extérieur ou nul | **42.2%** |
+| Victoire de l'équipe à l'extérieur | **22.0%** |
+| Double chance : domicile ou nul | **78.0%** |
+| Double chance : extérieur ou nul | **42.1%** |
 | Une équipe gagne | **79.9%** |
 | Plus de 0,5 but | **97.1%** |
-| Plus de 1,5 but | **86.9%** |
-| Plus de 2,5 buts | **68.7%** |
-| Plus de 3,5 buts | **47.3%** |
-| Moins de 1,5 but | **13.1%** |
-| Moins de 2,5 buts | **31.3%** |
-| Moins de 3,5 buts | **52.7%** |
-| Les deux équipes marquent : OUI | **65.4%** |
-| Les deux équipes marquent : NON | **34.6%** |
+| Plus de 1,5 but | **86.8%** |
+| Plus de 2,5 buts | **68.6%** |
+| Plus de 3,5 buts | **47.2%** |
+| Moins de 1,5 but | **13.2%** |
+| Moins de 2,5 buts | **31.4%** |
+| Moins de 3,5 buts | **52.8%** |
+| Les deux équipes marquent : OUI | **65.2%** |
+| Les deux équipes marquent : NON | **34.8%** |
 
 ### 🎯 Scores exacts les plus probables
 
 - **2-1** : 9.4%
 - **1-1** : 8.5%
-- **2-0** : 7.1%
+- **2-0** : 7.2%
 - **3-1** : 7.0%
-- **1-0** : 6.4%
+- **1-0** : 6.5%
 
 ### ⚽ Buts attendus par le modèle
 
@@ -2389,30 +2389,30 @@
 
 ### 📈 Forme récente
 
-- **FC Bayern München :** N V N N V
+- **FC Bayern München :** V N V N N
 - **Borussia Dortmund :** V V N D N
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
-- **FC Bayern München :** 2.99 marqué(s) et 1.16 encaissé(s) en moyenne.
+- **FC Bayern München :** 2.99 marqué(s) et 1.15 encaissé(s) en moyenne.
 - **Borussia Dortmund :** 1.61 marqué(s) et 0.92 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
 - **Attaque domicile :** 2.99
-- **Défense domicile :** 1.16
+- **Défense domicile :** 1.15
 - **Attaque extérieure :** 1.61
 - **Défense extérieure :** 0.92
 
 ### ⭐ Marchés les plus probables
 
 - **Over 0.5 :** 97.1% de probabilité estimée.
-- **Over 1.5 :** 86.9% de probabilité estimée.
+- **Over 1.5 :** 86.8% de probabilité estimée.
 - **12 :** 79.9% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 1 (57.8%)
+- **Pronostic 1/N/2 :** 1 (57.9%)
 - **Confiance indicative :** Indicative — non calibrée
 - **Score le plus probable :** 2-1
 
@@ -2624,67 +2624,67 @@
 
 **Compétition :** Serie A
 
-**Résumé :** Le modèle estime 1.77 but(s) pour AC Milan et 1.65 pour FC Internazionale Milano.
+**Résumé :** Le modèle estime 1.78 but(s) pour AC Milan et 1.53 pour FC Internazionale Milano.
 
 ### 📊 Pourcentage estimé de chaque marché
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **41.2%** |
-| Match nul | **22.5%** |
-| Victoire de l'équipe à l'extérieur | **36.3%** |
-| Double chance : domicile ou nul | **63.7%** |
-| Double chance : extérieur ou nul | **58.8%** |
-| Une équipe gagne | **77.5%** |
-| Plus de 0,5 but | **96.7%** |
-| Plus de 1,5 but | **85.5%** |
-| Plus de 2,5 buts | **66.4%** |
-| Plus de 3,5 buts | **44.6%** |
-| Moins de 1,5 but | **14.5%** |
-| Moins de 2,5 buts | **33.6%** |
-| Moins de 3,5 buts | **55.4%** |
-| Les deux équipes marquent : OUI | **67.0%** |
-| Les deux équipes marquent : NON | **33.0%** |
+| Victoire de l'équipe à domicile | **43.9%** |
+| Match nul | **22.8%** |
+| Victoire de l'équipe à l'extérieur | **33.3%** |
+| Double chance : domicile ou nul | **66.7%** |
+| Double chance : extérieur ou nul | **56.1%** |
+| Une équipe gagne | **77.2%** |
+| Plus de 0,5 but | **96.3%** |
+| Plus de 1,5 but | **84.3%** |
+| Plus de 2,5 buts | **64.3%** |
+| Plus de 3,5 buts | **42.2%** |
+| Moins de 1,5 but | **15.7%** |
+| Moins de 2,5 buts | **35.7%** |
+| Moins de 3,5 buts | **57.8%** |
+| Les deux équipes marquent : OUI | **65.1%** |
+| Les deux équipes marquent : NON | **34.9%** |
 
 ### 🎯 Scores exacts les plus probables
 
-- **1-1** : 9.6%
-- **2-1** : 8.5%
-- **1-2** : 7.9%
-- **2-2** : 7.0%
-- **1-0** : 5.8%
+- **1-1** : 9.9%
+- **2-1** : 8.9%
+- **1-2** : 7.6%
+- **2-2** : 6.8%
+- **1-0** : 6.5%
 
 ### ⚽ Buts attendus par le modèle
 
-- **AC Milan :** 1.77 but(s)
-- **FC Internazionale Milano :** 1.65 but(s)
+- **AC Milan :** 1.78 but(s)
+- **FC Internazionale Milano :** 1.53 but(s)
 
 ### 📈 Forme récente
 
-- **AC Milan :** V N V N N
-- **FC Internazionale Milano :** V V D V N
+- **AC Milan :** V V N V N
+- **FC Internazionale Milano :** V V V D V
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
-- **AC Milan :** 1.79 marqué(s) et 1.09 encaissé(s) en moyenne.
-- **FC Internazionale Milano :** 2.30 marqué(s) et 1.45 encaissé(s) en moyenne.
+- **AC Milan :** 1.81 marqué(s) et 0.99 encaissé(s) en moyenne.
+- **FC Internazionale Milano :** 2.15 marqué(s) et 1.45 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
-- **Attaque domicile :** 1.79
-- **Défense domicile :** 1.09
-- **Attaque extérieure :** 2.3
+- **Attaque domicile :** 1.81
+- **Défense domicile :** 0.99
+- **Attaque extérieure :** 2.15
 - **Défense extérieure :** 1.45
 
 ### ⭐ Marchés les plus probables
 
-- **Over 0.5 :** 96.7% de probabilité estimée.
-- **Over 1.5 :** 85.5% de probabilité estimée.
-- **12 :** 77.5% de probabilité estimée.
+- **Over 0.5 :** 96.3% de probabilité estimée.
+- **Over 1.5 :** 84.3% de probabilité estimée.
+- **12 :** 77.2% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 1 (41.2%)
+- **Pronostic 1/N/2 :** 1 (43.9%)
 - **Confiance indicative :** Indicative — non calibrée
 - **Score le plus probable :** 1-1
 
@@ -2833,67 +2833,67 @@
 
 **Compétition :** Serie A
 
-**Résumé :** Le modèle estime 2.20 but(s) pour Como 1907 et 1.00 pour Venezia FC.
+**Résumé :** Le modèle estime 2.15 but(s) pour Como 1907 et 0.95 pour Venezia FC.
 
 ### 📊 Pourcentage estimé de chaque marché
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **64.6%** |
-| Match nul | **19.4%** |
-| Victoire de l'équipe à l'extérieur | **16.0%** |
-| Double chance : domicile ou nul | **84.0%** |
-| Double chance : extérieur ou nul | **35.4%** |
-| Une équipe gagne | **80.6%** |
-| Plus de 0,5 but | **95.9%** |
-| Plus de 1,5 but | **82.8%** |
-| Plus de 2,5 buts | **61.9%** |
-| Plus de 3,5 buts | **39.6%** |
-| Moins de 1,5 but | **17.2%** |
-| Moins de 2,5 buts | **38.1%** |
-| Moins de 3,5 buts | **60.4%** |
-| Les deux équipes marquent : OUI | **56.1%** |
-| Les deux équipes marquent : NON | **43.9%** |
+| Victoire de l'équipe à domicile | **64.9%** |
+| Match nul | **19.6%** |
+| Victoire de l'équipe à l'extérieur | **15.5%** |
+| Double chance : domicile ou nul | **84.5%** |
+| Double chance : extérieur ou nul | **35.1%** |
+| Une équipe gagne | **80.4%** |
+| Plus de 0,5 but | **95.5%** |
+| Plus de 1,5 but | **81.6%** |
+| Plus de 2,5 buts | **59.9%** |
+| Plus de 3,5 buts | **37.6%** |
+| Moins de 1,5 but | **18.4%** |
+| Moins de 2,5 buts | **40.1%** |
+| Moins de 3,5 buts | **62.4%** |
+| Les deux équipes marquent : OUI | **54.2%** |
+| Les deux équipes marquent : NON | **45.8%** |
 
 ### 🎯 Scores exacts les plus probables
 
-- **2-0** : 9.9%
+- **2-0** : 10.4%
 - **2-1** : 9.9%
-- **1-0** : 9.0%
-- **1-1** : 9.0%
-- **3-0** : 7.2%
+- **1-0** : 9.7%
+- **1-1** : 9.2%
+- **3-0** : 7.5%
 
 ### ⚽ Buts attendus par le modèle
 
-- **Como 1907 :** 2.20 but(s)
-- **Venezia FC :** 1.00 but(s)
+- **Como 1907 :** 2.15 but(s)
+- **Venezia FC :** 0.95 but(s)
 
 ### 📈 Forme récente
 
 - **Como 1907 :** V V V D N
-- **Venezia FC :** V D D D D
+- **Venezia FC :** D V D D D
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
 - **Como 1907 :** 2.07 marqué(s) et 1.15 encaissé(s) en moyenne.
-- **Venezia FC :** 0.99 marqué(s) et 1.99 encaissé(s) en moyenne.
+- **Venezia FC :** 0.90 marqué(s) et 1.90 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
 - **Attaque domicile :** 2.07
 - **Défense domicile :** 1.15
-- **Attaque extérieure :** 0.99
-- **Défense extérieure :** 1.99
+- **Attaque extérieure :** 0.9
+- **Défense extérieure :** 1.9
 
 ### ⭐ Marchés les plus probables
 
-- **Over 0.5 :** 95.9% de probabilité estimée.
-- **1X :** 84.0% de probabilité estimée.
-- **Over 1.5 :** 82.8% de probabilité estimée.
+- **Over 0.5 :** 95.5% de probabilité estimée.
+- **1X :** 84.5% de probabilité estimée.
+- **Over 1.5 :** 81.6% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 1 (64.6%)
+- **Pronostic 1/N/2 :** 1 (64.9%)
 - **Confiance indicative :** Indicative — non calibrée
 - **Score le plus probable :** 2-0
 
@@ -3037,67 +3037,67 @@
 
 **Compétition :** Serie A
 
-**Résumé :** Le modèle estime 1.66 but(s) pour Frosinone Calcio et 1.34 pour Torino FC.
+**Résumé :** Le modèle estime 1.79 but(s) pour Frosinone Calcio et 1.44 pour Torino FC.
 
 ### 📊 Pourcentage estimé de chaque marché
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **45.1%** |
-| Match nul | **24.0%** |
-| Victoire de l'équipe à l'extérieur | **31.0%** |
-| Double chance : domicile ou nul | **69.0%** |
-| Double chance : extérieur ou nul | **54.9%** |
-| Une équipe gagne | **76.0%** |
-| Plus de 0,5 but | **95.0%** |
-| Plus de 1,5 but | **80.1%** |
-| Plus de 2,5 buts | **57.7%** |
-| Plus de 3,5 buts | **35.3%** |
-| Moins de 1,5 but | **19.9%** |
-| Moins de 2,5 buts | **42.3%** |
-| Moins de 3,5 buts | **64.7%** |
-| Les deux équipes marquent : OUI | **59.8%** |
-| Les deux équipes marquent : NON | **40.2%** |
+| Victoire de l'équipe à domicile | **45.8%** |
+| Match nul | **23.0%** |
+| Victoire de l'équipe à l'extérieur | **31.3%** |
+| Double chance : domicile ou nul | **68.7%** |
+| Double chance : extérieur ou nul | **54.2%** |
+| Une équipe gagne | **77.0%** |
+| Plus de 0,5 but | **96.0%** |
+| Plus de 1,5 but | **83.3%** |
+| Plus de 2,5 buts | **62.7%** |
+| Plus de 3,5 buts | **40.4%** |
+| Moins de 1,5 but | **16.7%** |
+| Moins de 2,5 buts | **37.3%** |
+| Moins de 3,5 buts | **59.6%** |
+| Les deux équipes marquent : OUI | **63.6%** |
+| Les deux équipes marquent : NON | **36.4%** |
 
 ### 🎯 Scores exacts les plus probables
 
-- **1-1** : 11.1%
-- **2-1** : 9.2%
-- **1-0** : 8.3%
+- **1-1** : 10.2%
+- **2-1** : 9.1%
 - **1-2** : 7.4%
-- **2-0** : 6.9%
+- **1-0** : 7.1%
+- **2-2** : 6.6%
 
 ### ⚽ Buts attendus par le modèle
 
-- **Frosinone Calcio :** 1.66 but(s)
-- **Torino FC :** 1.34 but(s)
+- **Frosinone Calcio :** 1.79 but(s)
+- **Torino FC :** 1.44 but(s)
 
 ### 📈 Forme récente
 
-- **Frosinone Calcio :** V D V N V
+- **Frosinone Calcio :** N V D V N
 - **Torino FC :** V V V N D
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
-- **Frosinone Calcio :** 1.69 marqué(s) et 1.29 encaissé(s) en moyenne.
+- **Frosinone Calcio :** 1.90 marqué(s) et 1.54 encaissé(s) en moyenne.
 - **Torino FC :** 1.54 marqué(s) et 1.35 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
-- **Attaque domicile :** 1.69
-- **Défense domicile :** 1.29
+- **Attaque domicile :** 1.9
+- **Défense domicile :** 1.54
 - **Attaque extérieure :** 1.54
 - **Défense extérieure :** 1.35
 
 ### ⭐ Marchés les plus probables
 
-- **Over 0.5 :** 95.0% de probabilité estimée.
-- **Over 1.5 :** 80.1% de probabilité estimée.
-- **12 :** 76.0% de probabilité estimée.
+- **Over 0.5 :** 96.0% de probabilité estimée.
+- **Over 1.5 :** 83.3% de probabilité estimée.
+- **12 :** 77.0% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 1 (45.1%)
+- **Pronostic 1/N/2 :** 1 (45.8%)
 - **Confiance indicative :** Indicative — non calibrée
 - **Score le plus probable :** 1-1
 
@@ -3513,67 +3513,67 @@
 
 **Compétition :** Serie A
 
-**Résumé :** Le modèle estime 1.59 but(s) pour US Lecce et 1.13 pour Genoa CFC.
+**Résumé :** Le modèle estime 1.44 but(s) pour US Lecce et 1.15 pour Genoa CFC.
 
 ### 📊 Pourcentage estimé de chaque marché
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **47.9%** |
-| Match nul | **24.9%** |
-| Victoire de l'équipe à l'extérieur | **27.2%** |
-| Double chance : domicile ou nul | **72.8%** |
-| Double chance : extérieur ou nul | **52.1%** |
-| Une équipe gagne | **75.1%** |
-| Plus de 0,5 but | **93.4%** |
-| Plus de 1,5 but | **75.5%** |
-| Plus de 2,5 buts | **51.1%** |
-| Plus de 3,5 buts | **29.0%** |
-| Moins de 1,5 but | **24.5%** |
-| Moins de 2,5 buts | **48.9%** |
-| Moins de 3,5 buts | **71.0%** |
-| Les deux équipes marquent : OUI | **53.9%** |
-| Les deux équipes marquent : NON | **46.1%** |
+| Victoire de l'équipe à domicile | **43.7%** |
+| Match nul | **26.1%** |
+| Victoire de l'équipe à l'extérieur | **30.2%** |
+| Double chance : domicile ou nul | **69.8%** |
+| Double chance : extérieur ou nul | **56.3%** |
+| Une équipe gagne | **73.9%** |
+| Plus de 0,5 but | **92.5%** |
+| Plus de 1,5 but | **73.2%** |
+| Plus de 2,5 buts | **48.1%** |
+| Plus de 3,5 buts | **26.3%** |
+| Moins de 1,5 but | **26.8%** |
+| Moins de 2,5 buts | **51.9%** |
+| Moins de 3,5 buts | **73.7%** |
+| Les deux équipes marquent : OUI | **52.3%** |
+| Les deux équipes marquent : NON | **47.7%** |
 
 ### 🎯 Scores exacts les plus probables
 
-- **1-1** : 11.8%
-- **1-0** : 10.5%
-- **2-1** : 9.4%
-- **2-0** : 8.3%
-- **0-1** : 7.5%
+- **1-1** : 12.4%
+- **1-0** : 10.8%
+- **2-1** : 9.0%
+- **0-1** : 8.6%
+- **2-0** : 7.8%
 
 ### ⚽ Buts attendus par le modèle
 
-- **US Lecce :** 1.59 but(s)
-- **Genoa CFC :** 1.13 but(s)
+- **US Lecce :** 1.44 but(s)
+- **Genoa CFC :** 1.15 but(s)
 
 ### 📈 Forme récente
 
-- **US Lecce :** V D D V D
-- **Genoa CFC :** D V D N D
+- **US Lecce :** D V D D V
+- **Genoa CFC :** V D V D N
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
-- **US Lecce :** 1.29 marqué(s) et 1.59 encaissé(s) en moyenne.
-- **Genoa CFC :** 0.89 marqué(s) et 1.69 encaissé(s) en moyenne.
+- **US Lecce :** 1.17 marqué(s) et 1.63 encaissé(s) en moyenne.
+- **Genoa CFC :** 0.90 marqué(s) et 1.54 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
-- **Attaque domicile :** 1.29
-- **Défense domicile :** 1.59
-- **Attaque extérieure :** 0.89
-- **Défense extérieure :** 1.69
+- **Attaque domicile :** 1.17
+- **Défense domicile :** 1.63
+- **Attaque extérieure :** 0.9
+- **Défense extérieure :** 1.54
 
 ### ⭐ Marchés les plus probables
 
-- **Over 0.5 :** 93.4% de probabilité estimée.
-- **Over 1.5 :** 75.5% de probabilité estimée.
-- **12 :** 75.1% de probabilité estimée.
+- **Over 0.5 :** 92.5% de probabilité estimée.
+- **12 :** 73.9% de probabilité estimée.
+- **Under 3.5 :** 73.7% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 1 (47.9%)
+- **Pronostic 1/N/2 :** 1 (43.7%)
 - **Confiance indicative :** Indicative — non calibrée
 - **Score le plus probable :** 1-1
 
@@ -3717,67 +3717,67 @@
 
 **Compétition :** Serie A
 
-**Résumé :** Le modèle estime 1.55 but(s) pour Juventus FC et 1.29 pour SSC Napoli.
+**Résumé :** Le modèle estime 1.59 but(s) pour Juventus FC et 1.25 pour SSC Napoli.
 
 ### 📊 Pourcentage estimé de chaque marché
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **43.3%** |
-| Match nul | **24.8%** |
-| Victoire de l'équipe à l'extérieur | **31.9%** |
-| Double chance : domicile ou nul | **68.1%** |
-| Double chance : extérieur ou nul | **56.7%** |
-| Une équipe gagne | **75.2%** |
-| Plus de 0,5 but | **94.2%** |
-| Plus de 1,5 but | **77.6%** |
-| Plus de 2,5 buts | **54.1%** |
-| Plus de 3,5 buts | **31.8%** |
-| Moins de 1,5 but | **22.4%** |
-| Moins de 2,5 buts | **45.9%** |
-| Moins de 3,5 buts | **68.2%** |
-| Les deux équipes marquent : OUI | **57.2%** |
-| Les deux équipes marquent : NON | **42.8%** |
+| Victoire de l'équipe à domicile | **45.2%** |
+| Match nul | **24.7%** |
+| Victoire de l'équipe à l'extérieur | **30.1%** |
+| Double chance : domicile ou nul | **69.9%** |
+| Double chance : extérieur ou nul | **54.8%** |
+| Une équipe gagne | **75.3%** |
+| Plus de 0,5 but | **94.1%** |
+| Plus de 1,5 but | **77.5%** |
+| Plus de 2,5 buts | **53.9%** |
+| Plus de 3,5 buts | **31.6%** |
+| Moins de 1,5 but | **22.5%** |
+| Moins de 2,5 buts | **46.1%** |
+| Moins de 3,5 buts | **68.4%** |
+| Les deux équipes marquent : OUI | **56.7%** |
+| Les deux équipes marquent : NON | **43.3%** |
 
 ### 🎯 Scores exacts les plus probables
 
-- **1-1** : 11.7%
-- **2-1** : 9.0%
-- **1-0** : 9.0%
-- **1-2** : 7.6%
-- **0-1** : 7.5%
+- **1-1** : 11.6%
+- **1-0** : 9.3%
+- **2-1** : 9.2%
+- **2-0** : 7.4%
+- **0-1** : 7.3%
 
 ### ⚽ Buts attendus par le modèle
 
-- **Juventus FC :** 1.55 but(s)
-- **SSC Napoli :** 1.29 but(s)
+- **Juventus FC :** 1.59 but(s)
+- **SSC Napoli :** 1.25 but(s)
 
 ### 📈 Forme récente
 
-- **Juventus FC :** D N V D N
+- **Juventus FC :** V D N V D
 - **SSC Napoli :** N V D D V
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
-- **Juventus FC :** 1.29 marqué(s) et 1.19 encaissé(s) en moyenne.
+- **Juventus FC :** 1.35 marqué(s) et 1.08 encaissé(s) en moyenne.
 - **SSC Napoli :** 1.53 marqué(s) et 1.61 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
-- **Attaque domicile :** 1.29
-- **Défense domicile :** 1.19
+- **Attaque domicile :** 1.35
+- **Défense domicile :** 1.08
 - **Attaque extérieure :** 1.53
 - **Défense extérieure :** 1.61
 
 ### ⭐ Marchés les plus probables
 
-- **Over 0.5 :** 94.2% de probabilité estimée.
-- **Over 1.5 :** 77.6% de probabilité estimée.
-- **12 :** 75.2% de probabilité estimée.
+- **Over 0.5 :** 94.1% de probabilité estimée.
+- **Over 1.5 :** 77.5% de probabilité estimée.
+- **12 :** 75.3% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 1 (43.3%)
+- **Pronostic 1/N/2 :** 1 (45.2%)
 - **Confiance indicative :** Indicative — non calibrée
 - **Score le plus probable :** 1-1
 
@@ -3858,67 +3858,67 @@
 
 **Compétition :** Serie A
 
-**Résumé :** Le modèle estime 1.87 but(s) pour US Sassuolo Calcio et 1.38 pour ACF Fiorentina.
+**Résumé :** Le modèle estime 1.87 but(s) pour US Sassuolo Calcio et 1.37 pour ACF Fiorentina.
 
 ### 📊 Pourcentage estimé de chaque marché
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **49.1%** |
+| Victoire de l'équipe à domicile | **49.2%** |
 | Match nul | **22.5%** |
-| Victoire de l'équipe à l'extérieur | **28.4%** |
-| Double chance : domicile ou nul | **71.6%** |
-| Double chance : extérieur ou nul | **50.9%** |
+| Victoire de l'équipe à l'extérieur | **28.2%** |
+| Double chance : domicile ou nul | **71.8%** |
+| Double chance : extérieur ou nul | **50.8%** |
 | Une équipe gagne | **77.5%** |
 | Plus de 0,5 but | **96.1%** |
-| Plus de 1,5 but | **83.6%** |
-| Plus de 2,5 buts | **63.1%** |
-| Plus de 3,5 buts | **41.0%** |
-| Moins de 1,5 but | **16.4%** |
-| Moins de 2,5 buts | **36.9%** |
-| Moins de 3,5 buts | **59.0%** |
-| Les deux équipes marquent : OUI | **63.4%** |
-| Les deux équipes marquent : NON | **36.6%** |
+| Plus de 1,5 but | **83.4%** |
+| Plus de 2,5 buts | **62.9%** |
+| Plus de 3,5 buts | **40.7%** |
+| Moins de 1,5 but | **16.6%** |
+| Moins de 2,5 buts | **37.1%** |
+| Moins de 3,5 buts | **59.3%** |
+| Les deux équipes marquent : OUI | **63.1%** |
+| Les deux équipes marquent : NON | **36.9%** |
 
 ### 🎯 Scores exacts les plus probables
 
 - **1-1** : 10.0%
 - **2-1** : 9.4%
-- **1-0** : 7.2%
+- **1-0** : 7.3%
 - **1-2** : 6.9%
 - **2-0** : 6.8%
 
 ### ⚽ Buts attendus par le modèle
 
 - **US Sassuolo Calcio :** 1.87 but(s)
-- **ACF Fiorentina :** 1.38 but(s)
+- **ACF Fiorentina :** 1.37 but(s)
 
 ### 📈 Forme récente
 
 - **US Sassuolo Calcio :** D D N D V
-- **ACF Fiorentina :** D D N V D
+- **ACF Fiorentina :** D D D N V
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
 - **US Sassuolo Calcio :** 1.45 marqué(s) et 1.81 encaissé(s) en moyenne.
-- **ACF Fiorentina :** 1.19 marqué(s) et 2.09 encaissé(s) en moyenne.
+- **ACF Fiorentina :** 1.17 marqué(s) et 2.08 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
 - **Attaque domicile :** 1.45
 - **Défense domicile :** 1.81
-- **Attaque extérieure :** 1.19
-- **Défense extérieure :** 2.09
+- **Attaque extérieure :** 1.17
+- **Défense extérieure :** 2.08
 
 ### ⭐ Marchés les plus probables
 
 - **Over 0.5 :** 96.1% de probabilité estimée.
-- **Over 1.5 :** 83.6% de probabilité estimée.
+- **Over 1.5 :** 83.4% de probabilité estimée.
 - **12 :** 77.5% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 1 (49.1%)
+- **Pronostic 1/N/2 :** 1 (49.2%)
 - **Confiance indicative :** Indicative — non calibrée
 - **Score le plus probable :** 1-1
 
@@ -3926,67 +3926,67 @@
 
 **Compétition :** Serie A
 
-**Résumé :** Le modèle estime 1.66 but(s) pour Atalanta BC et 1.05 pour Parma Calcio 1913.
+**Résumé :** Le modèle estime 1.80 but(s) pour Atalanta BC et 1.15 pour Parma Calcio 1913.
 
 ### 📊 Pourcentage estimé de chaque marché
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **51.7%** |
-| Match nul | **24.4%** |
-| Victoire de l'équipe à l'extérieur | **23.9%** |
-| Double chance : domicile ou nul | **76.1%** |
-| Double chance : extérieur ou nul | **48.3%** |
-| Une équipe gagne | **75.6%** |
-| Plus de 0,5 but | **93.3%** |
-| Plus de 1,5 but | **75.3%** |
-| Plus de 2,5 buts | **50.9%** |
-| Plus de 3,5 buts | **28.8%** |
-| Moins de 1,5 but | **24.7%** |
-| Moins de 2,5 buts | **49.1%** |
-| Moins de 3,5 buts | **71.2%** |
-| Les deux équipes marquent : OUI | **52.6%** |
-| Les deux équipes marquent : NON | **47.4%** |
+| Victoire de l'équipe à domicile | **52.7%** |
+| Match nul | **23.1%** |
+| Victoire de l'équipe à l'extérieur | **24.1%** |
+| Double chance : domicile ou nul | **75.9%** |
+| Double chance : extérieur ou nul | **47.3%** |
+| Une équipe gagne | **76.9%** |
+| Plus de 0,5 but | **94.7%** |
+| Plus de 1,5 but | **79.3%** |
+| Plus de 2,5 buts | **56.5%** |
+| Plus de 3,5 buts | **34.1%** |
+| Moins de 1,5 but | **20.7%** |
+| Moins de 2,5 buts | **43.5%** |
+| Moins de 3,5 buts | **65.9%** |
+| Les deux équipes marquent : OUI | **56.9%** |
+| Les deux équipes marquent : NON | **43.1%** |
 
 ### 🎯 Scores exacts les plus probables
 
-- **1-1** : 11.6%
-- **1-0** : 11.1%
-- **2-1** : 9.6%
-- **2-0** : 9.2%
-- **0-1** : 7.0%
+- **1-1** : 10.8%
+- **2-1** : 9.8%
+- **1-0** : 9.5%
+- **2-0** : 8.5%
+- **1-2** : 6.2%
 
 ### ⚽ Buts attendus par le modèle
 
-- **Atalanta BC :** 1.66 but(s)
-- **Parma Calcio 1913 :** 1.05 but(s)
+- **Atalanta BC :** 1.80 but(s)
+- **Parma Calcio 1913 :** 1.15 but(s)
 
 ### 📈 Forme récente
 
-- **Atalanta BC :** D V D D D
+- **Atalanta BC :** N D V D D
 - **Parma Calcio 1913 :** D D D V D
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
-- **Atalanta BC :** 1.39 marqué(s) et 1.49 encaissé(s) en moyenne.
+- **Atalanta BC :** 1.63 marqué(s) et 1.72 encaissé(s) en moyenne.
 - **Parma Calcio 1913 :** 0.81 marqué(s) et 1.72 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
-- **Attaque domicile :** 1.39
-- **Défense domicile :** 1.49
+- **Attaque domicile :** 1.63
+- **Défense domicile :** 1.72
 - **Attaque extérieure :** 0.81
 - **Défense extérieure :** 1.72
 
 ### ⭐ Marchés les plus probables
 
-- **Over 0.5 :** 93.3% de probabilité estimée.
-- **1X :** 76.1% de probabilité estimée.
-- **12 :** 75.6% de probabilité estimée.
+- **Over 0.5 :** 94.7% de probabilité estimée.
+- **Over 1.5 :** 79.3% de probabilité estimée.
+- **12 :** 76.9% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 1 (51.7%)
+- **Pronostic 1/N/2 :** 1 (52.7%)
 - **Confiance indicative :** Indicative — non calibrée
 - **Score le plus probable :** 1-1
 

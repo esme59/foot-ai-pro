@@ -116,8 +116,10 @@
       "result": "1-3",
       "returned_amount": 1.26,
       "settled_at": "2026-10-26T10:57:11.899179+00:00",
-      "statut": "EN_COURS",
-      "gain": null
+      "statut": "GAGNÉ",
+      "gain": 0.0,
+      "score_final": "1-3",
+      "date_reglement": "2026-10-26"
     },
     {
       "bet_id": "559656:BTTS Oui",
@@ -381,6 +383,35 @@
       "statut": "GAGNÉ",
       "gain": 0.0,
       "score_final": "3-0",
+      "date_reglement": "2026-10-26"
+    },
+    {
+      "bet_id": "565836:BTTS Oui",
+      "engine": "V12",
+      "match_id": 565836,
+      "competition": "BL1",
+      "competition_name": "Bundesliga",
+      "home_team": "SC Freiburg",
+      "away_team": "FC Bayern München",
+      "match_date": "2026-10-25T16:30:00+00:00",
+      "created_date": "2026-10-25",
+      "market": "BTTS Oui",
+      "probability": 0.7918,
+      "raw_probability": 0.7443,
+      "base_rate": 0.5738,
+      "lift": 0.218,
+      "odds": 1.26,
+      "exact_score_prediction": "1-1",
+      "stake": 1.0,
+      "potential_return": 1.26,
+      "profit": 0.26,
+      "status": "WON",
+      "result": "1-3",
+      "returned_amount": 1.26,
+      "settled_at": "2026-10-26T10:57:11.899179+00:00",
+      "statut": "GAGNÉ",
+      "gain": 0.0,
+      "score_final": "1-3",
       "date_reglement": "2026-10-26"
     },
     {
@@ -4838,6 +4869,6 @@
       }
     ]
   },
-  "last_updated": "2026-10-26T12:18:47.816552+00:00",
+  "last_updated": "2026-10-26T12:39:18.723139+00:00",
   "mises_en_cours": 4.52
 }
