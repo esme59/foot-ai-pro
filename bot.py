@@ -289,15 +289,19 @@ def repair_bet(bet):
     status = bet["statut"]
     stake = bet["mise"]
 
-    if status == "GAGNÉ":
+        if status == "GAGNÉ":
         # Le gain représente le retour total, mise comprise.
-        payout = safe_float(
-            bet.get("gain")
-            or bet.get("returned_amount")
-            or bet.get("potential_return")
-        )
+        payout = safe_float(bet.get("gain"))
+
         if payout <= 0:
-            payout = round(stake * odds, 2) if odds > 1 else stake
+            payout = safe_float(bet.get("returned_amount"))
+
+        if payout <= 0:
+            payout = safe_float(bet.get("potential_return"))
+
+        if payout <= 0 and odds > 1:
+            payout = round(stake * odds, 2)
+
         bet["gain"] = round(payout, 2)
 
     elif status == "PERDU":
