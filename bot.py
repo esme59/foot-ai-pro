@@ -300,7 +300,7 @@ def repair_bet(bet):
     status = bet["statut"]
     stake = bet["mise"]
 
-        if status == "GAGNÉ":
+    if status == "GAGNÉ":
         # Le gain représente le retour total, mise comprise.
         payout = safe_float(bet.get("gain"))
 
