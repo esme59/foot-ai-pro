@@ -313,22 +313,62 @@ def repair_bet(bet):
 
 def recompute_totals(state):
     initial = safe_float(state.get("bankroll_initiale"), INITIAL_BANKROLL)
-    stakes = gains = profit = open_stakes = 0.0
-    for bet in state["paris"]:
-        stake = safe_float(bet.get("mise"))
-        stakes += stake
-        if bet["statut"] == "EN_COURS":
+
+    stakes = 0.0
+    gains = 0.0
+    profit = 0.0
+    open_stakes = 0.0
+
+    paris = state.get("paris", [])
+
+    for bet in paris:
+        # Compatibilité avec les anciens et les nouveaux paris
+        stake = safe_float(bet.get("mise", bet.get("stake", 0)))
+        statut = norm_status(
+            bet.get("statut", bet.get("status", "EN_COURS"))
+        )
+
+        bet["mise"] = round(stake, 2)
+        bet["statut"] = statut
+
+        # Récupération des gains des anciens paris
+        payout = safe_float(
+            bet.get("gain", bet.get("returned_amount", 0))
+        )
+
+        if statut == "EN_COURS":
             open_stakes += stake
-        else:
-            payout = safe_float(bet.get("gain"))
+
+        elif statut in SETTLED:
+            if statut == "GAGNÉ" and payout <= 0:
+                payout = safe_float(
+                    bet.get("returned_amount",
+                            bet.get("potential_return", 0))
+                )
+
+            if statut == "PERDU":
+                payout = 0.0
+
+            if statut in ("ANNULÉ", "REMBOURSÉ"):
+                payout = stake
+
+            bet["gain"] = round(payout, 2)
             gains += payout
             profit += payout - stake
+
     state["mises_totales"] = round(stakes, 2)
     state["gains_totaux"] = round(gains, 2)
     state["benefice_total"] = round(profit, 2)
     state["mises_en_cours"] = round(open_stakes, 2)
-    state["bankroll_actuelle"] = round(initial + profit - open_stakes, 2)
-    state["historique"] = [dict(b) for b in state["paris"] if b["statut"] in SETTLED]
+
+    state["bankroll_actuelle"] = round(
+        initial + profit - open_stakes, 2
+    )
+
+    state["historique"] = [
+        dict(b) for b in paris
+        if norm_status(b.get("statut", "EN_COURS")) in SETTLED
+    ]
 
 
 def load_state():
