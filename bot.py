@@ -229,32 +229,85 @@ def norm_status(value):
 
 
 def bet_odds(bet):
-    odds = safe_float(bet.get("cote_virtuelle") or bet.get("cote"))
+    # Accepte les anciens et les nouveaux noms de champs.
+    odds = safe_float(
+        bet.get("cote_virtuelle")
+        or bet.get("cote")
+        or bet.get("odds")
+    )
     if odds > 1.0:
         return odds
-    prob = safe_float(bet.get("probabilite_estimee"))
+
+    prob = safe_float(
+        bet.get("probabilite_estimee")
+        or bet.get("probability")
+    )
     if 0 < prob < 1:
         return round(1.0 / prob, 3)
+
+    potential_return = safe_float(
+        bet.get("potential_return")
+    )
+    stake = safe_float(bet.get("mise") or bet.get("stake"))
+    if stake > 0 and potential_return > stake:
+        return round(potential_return / stake, 3)
+
     return 0.0
 
 
 def repair_bet(bet):
-    bet["statut"] = norm_status(bet.get("statut"))
-    stake = safe_float(bet.get("mise"))
+    # Convertit les anciens champs V12 vers le format V12.3.
+    bet["match_id"] = bet.get("match_id")
+    bet["domicile"] = (
+        bet.get("domicile") or bet.get("home_team") or "Domicile"
+    )
+    bet["exterieur"] = (
+        bet.get("exterieur") or bet.get("away_team") or "Extérieur"
+    )
+    bet["date_match"] = (
+        bet.get("date_match") or bet.get("match_date")
+    )
+    bet["date_placement"] = (
+        bet.get("date_placement") or bet.get("created_date")
+    )
+
+    bet["mise"] = safe_float(
+        bet.get("mise") or bet.get("stake")
+    )
+
     odds = bet_odds(bet)
     if odds > 1.0:
         bet["cote_virtuelle"] = round(odds, 3)
+
+    raw_status = bet.get("statut") or bet.get("status")
+    bet["statut"] = norm_status(raw_status)
+
+    # Récupère le résultat final déjà enregistré.
+    if not bet.get("score_final") and bet.get("result"):
+        bet["score_final"] = bet["result"]
+
     status = bet["statut"]
+    stake = bet["mise"]
+
     if status == "GAGNÉ":
-        payout = safe_float(bet.get("gain"))
-        if payout < stake:
-            payout = round(stake * odds, 2) if odds > 1.0 else stake
-            bet["gain"] = payout
+        # Le gain représente le retour total, mise comprise.
+        payout = safe_float(
+            bet.get("gain")
+            or bet.get("returned_amount")
+            or bet.get("potential_return")
+        )
+        if payout <= 0:
+            payout = round(stake * odds, 2) if odds > 1 else stake
+        bet["gain"] = round(payout, 2)
+
     elif status == "PERDU":
         bet["gain"] = 0.0
+
     elif status == "REMBOURSÉ":
-        bet["gain"] = stake
+        bet["gain"] = round(stake, 2)
+
     else:
+        bet["statut"] = "EN_COURS"
         bet["gain"] = None
 
 
