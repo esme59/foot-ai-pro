@@ -337,8 +337,13 @@ def recompute_totals(state):
     paris = state.get("paris", [])
 
     for bet in paris:
-        # Compatibilité avec les anciens et les nouveaux paris
-        stake = safe_float(bet.get("mise", bet.get("stake", 0)))
+        stake = safe_float(
+            bet.get("mise", bet.get("stake", 0))
+        )
+
+        # Addition de toutes les mises
+        stakes += stake
+
         statut = norm_status(
             bet.get("statut", bet.get("status", "EN_COURS"))
         )
@@ -346,7 +351,6 @@ def recompute_totals(state):
         bet["mise"] = round(stake, 2)
         bet["statut"] = statut
 
-        # Récupération des gains des anciens paris
         payout = safe_float(
             bet.get("gain", bet.get("returned_amount", 0))
         )
@@ -357,14 +361,16 @@ def recompute_totals(state):
         elif statut in SETTLED:
             if statut == "GAGNÉ" and payout <= 0:
                 payout = safe_float(
-                    bet.get("returned_amount",
-                            bet.get("potential_return", 0))
+                    bet.get(
+                        "returned_amount",
+                        bet.get("potential_return", 0)
+                    )
                 )
 
             if statut == "PERDU":
                 payout = 0.0
 
-            if statut in ("ANNULÉ", "REMBOURSÉ"):
+            if statut == "REMBOURSÉ":
                 payout = stake
 
             bet["gain"] = round(payout, 2)
@@ -381,7 +387,8 @@ def recompute_totals(state):
     )
 
     state["historique"] = [
-        dict(b) for b in paris
+        dict(b)
+        for b in paris
         if norm_status(b.get("statut", "EN_COURS")) in SETTLED
     ]
 
