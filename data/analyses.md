@@ -1468,67 +1468,67 @@
 
 **Compétition :** Bundesliga
 
-**Résumé :** Le modèle estime 1.87 but(s) pour FC Augsburg et 1.74 pour SC Freiburg.
+**Résumé :** Le modèle estime 1.78 but(s) pour FC Augsburg et 1.80 pour SC Freiburg.
 
 ### 📊 Pourcentage estimé de chaque marché
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **41.6%** |
-| Match nul | **21.9%** |
-| Victoire de l'équipe à l'extérieur | **36.6%** |
-| Double chance : domicile ou nul | **63.4%** |
-| Double chance : extérieur ou nul | **58.4%** |
-| Une équipe gagne | **78.1%** |
-| Plus de 0,5 but | **97.3%** |
-| Plus de 1,5 but | **87.5%** |
-| Plus de 2,5 buts | **69.9%** |
-| Plus de 3,5 buts | **48.7%** |
-| Moins de 1,5 but | **12.4%** |
-| Moins de 2,5 buts | **30.1%** |
-| Moins de 3,5 buts | **51.3%** |
-| Les deux équipes marquent : OUI | **69.8%** |
-| Les deux équipes marquent : NON | **30.2%** |
+| Victoire de l'équipe à domicile | **38.5%** |
+| Match nul | **22.0%** |
+| Victoire de l'équipe à l'extérieur | **39.5%** |
+| Double chance : domicile ou nul | **60.5%** |
+| Double chance : extérieur ou nul | **61.5%** |
+| Une équipe gagne | **78.0%** |
+| Plus de 0,5 but | **97.2%** |
+| Plus de 1,5 but | **87.2%** |
+| Plus de 2,5 buts | **69.3%** |
+| Plus de 3,5 buts | **48.0%** |
+| Moins de 1,5 but | **12.8%** |
+| Moins de 2,5 buts | **30.7%** |
+| Moins de 3,5 buts | **52.0%** |
+| Les deux équipes marquent : OUI | **69.3%** |
+| Les deux équipes marquent : NON | **30.7%** |
 
 ### 🎯 Scores exacts les plus probables
 
-- **1-1** : 8.8%
-- **2-1** : 8.2%
-- **1-2** : 7.7%
+- **1-1** : 8.9%
+- **1-2** : 8.1%
+- **2-1** : 7.9%
 - **2-2** : 7.2%
-- **3-1** : 5.1%
+- **0-1** : 5.0%
 
 ### ⚽ Buts attendus par le modèle
 
-- **FC Augsburg :** 1.87 but(s)
-- **SC Freiburg :** 1.74 but(s)
+- **FC Augsburg :** 1.78 but(s)
+- **SC Freiburg :** 1.80 but(s)
 
 ### 📈 Forme récente
 
 - **FC Augsburg :** N D N D N
-- **SC Freiburg :** D D V N V
+- **SC Freiburg :** D V N V V
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
 - **FC Augsburg :** 2.09 marqué(s) et 1.69 encaissé(s) en moyenne.
-- **SC Freiburg :** 1.99 marqué(s) et 1.29 encaissé(s) en moyenne.
+- **SC Freiburg :** 2.10 marqué(s) et 1.10 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
 - **Attaque domicile :** 2.09
 - **Défense domicile :** 1.69
-- **Attaque extérieure :** 1.99
-- **Défense extérieure :** 1.29
+- **Attaque extérieure :** 2.1
+- **Défense extérieure :** 1.1
 
 ### ⭐ Marchés les plus probables
 
-- **Over 0.5 :** 97.3% de probabilité estimée.
-- **Over 1.5 :** 87.5% de probabilité estimée.
-- **12 :** 78.1% de probabilité estimée.
+- **Over 0.5 :** 97.2% de probabilité estimée.
+- **Over 1.5 :** 87.2% de probabilité estimée.
+- **12 :** 78.0% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 1 (41.6%)
+- **Pronostic 1/N/2 :** 2 (39.5%)
 - **Confiance indicative :** Indicative — non calibrée
 - **Score le plus probable :** 1-1
 
@@ -1536,137 +1536,137 @@
 
 **Compétition :** Bundesliga
 
-**Résumé :** Le modèle estime 1.99 but(s) pour SV Werder Bremen et 1.68 pour TSG 1899 Hoffenheim.
+**Résumé :** Le modèle estime 2.09 but(s) pour SV Werder Bremen et 1.61 pour TSG 1899 Hoffenheim.
 
 ### 📊 Pourcentage estimé de chaque marché
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **45.5%** |
-| Match nul | **21.4%** |
-| Victoire de l'équipe à l'extérieur | **33.1%** |
-| Double chance : domicile ou nul | **66.9%** |
-| Double chance : extérieur ou nul | **54.5%** |
-| Une équipe gagne | **78.6%** |
+| Victoire de l'équipe à domicile | **48.9%** |
+| Match nul | **21.0%** |
+| Victoire de l'équipe à l'extérieur | **30.0%** |
+| Double chance : domicile ou nul | **70.0%** |
+| Double chance : extérieur ou nul | **51.1%** |
+| Une équipe gagne | **79.0%** |
 | Plus de 0,5 but | **97.5%** |
-| Plus de 1,5 but | **88.2%** |
-| Plus de 2,5 buts | **71.0%** |
-| Plus de 3,5 buts | **50.1%** |
-| Moins de 1,5 but | **11.8%** |
-| Moins de 2,5 buts | **29.0%** |
-| Moins de 3,5 buts | **49.9%** |
-| Les deux équipes marquent : OUI | **70.3%** |
-| Les deux équipes marquent : NON | **29.7%** |
+| Plus de 1,5 but | **88.4%** |
+| Plus de 2,5 buts | **71.5%** |
+| Plus de 3,5 buts | **50.6%** |
+| Moins de 1,5 but | **11.6%** |
+| Moins de 2,5 buts | **28.5%** |
+| Moins de 3,5 buts | **49.4%** |
+| Les deux équipes marquent : OUI | **70.2%** |
+| Les deux équipes marquent : NON | **29.8%** |
 
 ### 🎯 Scores exacts les plus probables
 
-- **1-1** : 8.5%
-- **2-1** : 8.5%
-- **1-2** : 7.1%
-- **2-2** : 7.1%
-- **3-1** : 5.6%
+- **2-1** : 8.7%
+- **1-1** : 8.3%
+- **2-2** : 7.0%
+- **1-2** : 6.7%
+- **3-1** : 6.0%
 
 ### ⚽ Buts attendus par le modèle
 
-- **SV Werder Bremen :** 1.99 but(s)
-- **TSG 1899 Hoffenheim :** 1.68 but(s)
+- **SV Werder Bremen :** 2.09 but(s)
+- **TSG 1899 Hoffenheim :** 1.61 but(s)
 
 ### 📈 Forme récente
 
 - **SV Werder Bremen :** V N N V N
-- **TSG 1899 Hoffenheim :** V V D D V
+- **TSG 1899 Hoffenheim :** V D D V D
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
 - **SV Werder Bremen :** 1.89 marqué(s) et 1.79 encaissé(s) en moyenne.
-- **TSG 1899 Hoffenheim :** 1.79 marqué(s) et 1.79 encaissé(s) en moyenne.
+- **TSG 1899 Hoffenheim :** 1.66 marqué(s) et 1.99 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
 - **Attaque domicile :** 1.89
 - **Défense domicile :** 1.79
-- **Attaque extérieure :** 1.79
-- **Défense extérieure :** 1.79
+- **Attaque extérieure :** 1.66
+- **Défense extérieure :** 1.99
 
 ### ⭐ Marchés les plus probables
 
 - **Over 0.5 :** 97.5% de probabilité estimée.
-- **Over 1.5 :** 88.2% de probabilité estimée.
-- **12 :** 78.6% de probabilité estimée.
+- **Over 1.5 :** 88.4% de probabilité estimée.
+- **12 :** 79.0% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 1 (45.5%)
+- **Pronostic 1/N/2 :** 1 (48.9%)
 - **Confiance indicative :** Indicative — non calibrée
-- **Score le plus probable :** 1-1
+- **Score le plus probable :** 2-1
 
 ## ⚽ 15:30 — Bayer 04 Leverkusen vs VfB Stuttgart
 
 **Compétition :** Bundesliga
 
-**Résumé :** Le modèle estime 1.89 but(s) pour Bayer 04 Leverkusen et 1.50 pour VfB Stuttgart.
+**Résumé :** Le modèle estime 2.02 but(s) pour Bayer 04 Leverkusen et 1.44 pour VfB Stuttgart.
 
 ### 📊 Pourcentage estimé de chaque marché
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **46.8%** |
-| Match nul | **22.3%** |
-| Victoire de l'équipe à l'extérieur | **30.9%** |
-| Double chance : domicile ou nul | **69.1%** |
-| Double chance : extérieur ou nul | **53.2%** |
-| Une équipe gagne | **77.7%** |
-| Plus de 0,5 but | **96.6%** |
-| Plus de 1,5 but | **85.2%** |
-| Plus de 2,5 buts | **65.9%** |
-| Plus de 3,5 buts | **44.0%** |
-| Moins de 1,5 but | **14.8%** |
-| Moins de 2,5 buts | **34.1%** |
-| Moins de 3,5 buts | **56.0%** |
-| Les deux équipes marquent : OUI | **66.0%** |
-| Les deux équipes marquent : NON | **34.0%** |
+| Victoire de l'équipe à domicile | **51.1%** |
+| Match nul | **21.5%** |
+| Victoire de l'équipe à l'extérieur | **27.4%** |
+| Double chance : domicile ou nul | **72.6%** |
+| Double chance : extérieur ou nul | **48.9%** |
+| Une équipe gagne | **78.5%** |
+| Plus de 0,5 but | **96.8%** |
+| Plus de 1,5 but | **86.0%** |
+| Plus de 2,5 buts | **67.1%** |
+| Plus de 3,5 buts | **45.4%** |
+| Moins de 1,5 but | **14.0%** |
+| Moins de 2,5 buts | **32.9%** |
+| Moins de 3,5 buts | **54.6%** |
+| Les deux équipes marquent : OUI | **66.1%** |
+| Les deux équipes marquent : NON | **33.9%** |
 
 ### 🎯 Scores exacts les plus probables
 
-- **1-1** : 9.6%
-- **2-1** : 9.0%
-- **1-2** : 7.2%
-- **2-2** : 6.8%
-- **1-0** : 6.4%
+- **2-1** : 9.2%
+- **1-1** : 9.2%
+- **2-2** : 6.6%
+- **1-2** : 6.6%
+- **2-0** : 6.4%
 
 ### ⚽ Buts attendus par le modèle
 
-- **Bayer 04 Leverkusen :** 1.89 but(s)
-- **VfB Stuttgart :** 1.50 but(s)
+- **Bayer 04 Leverkusen :** 2.02 but(s)
+- **VfB Stuttgart :** 1.44 but(s)
 
 ### 📈 Forme récente
 
-- **Bayer 04 Leverkusen :** D V V V N
+- **Bayer 04 Leverkusen :** V V V N V
 - **VfB Stuttgart :** D N D V V
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
-- **Bayer 04 Leverkusen :** 1.99 marqué(s) et 1.59 encaissé(s) en moyenne.
+- **Bayer 04 Leverkusen :** 2.21 marqué(s) et 1.43 encaissé(s) en moyenne.
 - **VfB Stuttgart :** 1.61 marqué(s) et 1.45 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
-- **Attaque domicile :** 1.99
-- **Défense domicile :** 1.59
+- **Attaque domicile :** 2.21
+- **Défense domicile :** 1.43
 - **Attaque extérieure :** 1.61
 - **Défense extérieure :** 1.45
 
 ### ⭐ Marchés les plus probables
 
-- **Over 0.5 :** 96.6% de probabilité estimée.
-- **Over 1.5 :** 85.2% de probabilité estimée.
-- **12 :** 77.7% de probabilité estimée.
+- **Over 0.5 :** 96.8% de probabilité estimée.
+- **Over 1.5 :** 86.0% de probabilité estimée.
+- **12 :** 78.5% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 1 (46.8%)
+- **Pronostic 1/N/2 :** 1 (51.1%)
 - **Confiance indicative :** Indicative — non calibrée
-- **Score le plus probable :** 1-1
+- **Score le plus probable :** 2-1
 
 ## ⚽ 16:00 — Manchester City FC vs Brighton & Hove Albion FC
 
@@ -2358,29 +2358,29 @@
 
 | Marché | Probabilité estimée |
 |---|---:|
-| Victoire de l'équipe à domicile | **57.9%** |
+| Victoire de l'équipe à domicile | **57.8%** |
 | Match nul | **20.1%** |
-| Victoire de l'équipe à l'extérieur | **22.0%** |
-| Double chance : domicile ou nul | **78.0%** |
-| Double chance : extérieur ou nul | **42.1%** |
+| Victoire de l'équipe à l'extérieur | **22.1%** |
+| Double chance : domicile ou nul | **77.9%** |
+| Double chance : extérieur ou nul | **42.2%** |
 | Une équipe gagne | **79.9%** |
 | Plus de 0,5 but | **97.1%** |
-| Plus de 1,5 but | **86.8%** |
-| Plus de 2,5 buts | **68.6%** |
-| Plus de 3,5 buts | **47.2%** |
-| Moins de 1,5 but | **13.2%** |
-| Moins de 2,5 buts | **31.4%** |
-| Moins de 3,5 buts | **52.8%** |
-| Les deux équipes marquent : OUI | **65.2%** |
-| Les deux équipes marquent : NON | **34.8%** |
+| Plus de 1,5 but | **86.9%** |
+| Plus de 2,5 buts | **68.7%** |
+| Plus de 3,5 buts | **47.3%** |
+| Moins de 1,5 but | **13.1%** |
+| Moins de 2,5 buts | **31.3%** |
+| Moins de 3,5 buts | **52.7%** |
+| Les deux équipes marquent : OUI | **65.4%** |
+| Les deux équipes marquent : NON | **34.6%** |
 
 ### 🎯 Scores exacts les plus probables
 
 - **2-1** : 9.4%
 - **1-1** : 8.5%
-- **2-0** : 7.2%
+- **2-0** : 7.1%
 - **3-1** : 7.0%
-- **1-0** : 6.5%
+- **1-0** : 6.4%
 
 ### ⚽ Buts attendus par le modèle
 
@@ -2389,30 +2389,30 @@
 
 ### 📈 Forme récente
 
-- **FC Bayern München :** V N V N N
+- **FC Bayern München :** N V N N V
 - **Borussia Dortmund :** V V N D N
 
 ### ⚽ Moyennes de buts sur les derniers matchs
 
-- **FC Bayern München :** 2.99 marqué(s) et 1.15 encaissé(s) en moyenne.
+- **FC Bayern München :** 2.99 marqué(s) et 1.16 encaissé(s) en moyenne.
 - **Borussia Dortmund :** 1.61 marqué(s) et 0.92 encaissé(s) en moyenne.
 
 ### 🧠 Indicateurs des équipes
 
 - **Attaque domicile :** 2.99
-- **Défense domicile :** 1.15
+- **Défense domicile :** 1.16
 - **Attaque extérieure :** 1.61
 - **Défense extérieure :** 0.92
 
 ### ⭐ Marchés les plus probables
 
 - **Over 0.5 :** 97.1% de probabilité estimée.
-- **Over 1.5 :** 86.8% de probabilité estimée.
+- **Over 1.5 :** 86.9% de probabilité estimée.
 - **12 :** 79.9% de probabilité estimée.
 
 ### 🤖 Décision du modèle
 
-- **Pronostic 1/N/2 :** 1 (57.9%)
+- **Pronostic 1/N/2 :** 1 (57.8%)
 - **Confiance indicative :** Indicative — non calibrée
 - **Score le plus probable :** 2-1
 

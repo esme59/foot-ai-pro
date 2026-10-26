@@ -1944,52 +1944,52 @@
       "status": "TIMED",
       "history_ok": true,
       "all_markets": {
-        "1": 0.41592,
-        "N": 0.21854,
-        "2": 0.36553,
-        "1X": 0.63447,
-        "X2": 0.58408,
-        "12": 0.78146,
-        "Over 0.5": 0.973,
-        "Over 1.5": 0.8755,
-        "Over 2.5": 0.69939,
-        "Over 3.5": 0.48735,
-        "Under 1.5": 0.1245,
-        "Under 2.5": 0.30061,
-        "Under 3.5": 0.51265,
-        "BTTS Oui": 0.69775,
-        "BTTS Non": 0.30225
+        "1": 0.38496,
+        "N": 0.22012,
+        "2": 0.39491,
+        "1X": 0.60509,
+        "X2": 0.61504,
+        "12": 0.77988,
+        "Over 0.5": 0.97203,
+        "Over 1.5": 0.87199,
+        "Over 2.5": 0.69309,
+        "Over 3.5": 0.47981,
+        "Under 1.5": 0.12801,
+        "Under 2.5": 0.30691,
+        "Under 3.5": 0.52019,
+        "BTTS Oui": 0.69346,
+        "BTTS Non": 0.30654
       },
       "expected_goals": {
-        "home": 1.868,
-        "away": 1.744
+        "home": 1.776,
+        "away": 1.801
       },
       "top_scores": [
         {
           "score": "1-1",
-          "probability": 0.08795
-        },
-        {
-          "score": "2-1",
-          "probability": 0.08216
+          "probability": 0.08945
         },
         {
           "score": "1-2",
-          "probability": 0.07668
+          "probability": 0.08053
+        },
+        {
+          "score": "2-1",
+          "probability": 0.07943
         },
         {
           "score": "2-2",
-          "probability": 0.07163
+          "probability": 0.07151
         },
         {
-          "score": "3-1",
-          "probability": 0.05117
+          "score": "0-1",
+          "probability": 0.05036
         }
       ],
       "probable_score": "1-1",
       "form": {
         "home": "N D N D N",
-        "away": "D D V N V"
+        "away": "D V N V V"
       },
       "goal_averages": {
         "home": {
@@ -1997,33 +1997,33 @@
           "conceded": 1.69
         },
         "away": {
-          "scored": 1.99,
-          "conceded": 1.29
+          "scored": 2.1,
+          "conceded": 1.1
         }
       },
       "strengths": {
         "home_attack": 2.09,
         "home_defense": 1.69,
-        "away_attack": 1.99,
-        "away_defense": 1.29
+        "away_attack": 2.1,
+        "away_defense": 1.1
       },
       "best_picks": [
         {
           "market": "Over 0.5",
-          "probability": 0.9730047203627546
+          "probability": 0.9720300374739006
         },
         {
           "market": "Over 1.5",
-          "probability": 0.8754950707850623
+          "probability": 0.8719918304041773
         },
         {
           "market": "12",
-          "probability": 0.7814582174721538
+          "probability": 0.779875126799266
         }
       ],
-      "decision": "1 (41.6%)",
+      "decision": "2 (39.5%)",
       "confidence": "Indicative — non calibrée",
-      "summary": "Le modèle estime 1.87 but(s) pour FC Augsburg et 1.74 pour SC Freiburg."
+      "summary": "Le modèle estime 1.78 but(s) pour FC Augsburg et 1.80 pour SC Freiburg."
     },
     {
       "id": 565843,
@@ -2036,52 +2036,52 @@
       "status": "TIMED",
       "history_ok": true,
       "all_markets": {
-        "1": 0.45474,
-        "N": 0.21446,
-        "2": 0.3308,
-        "1X": 0.6692,
-        "X2": 0.54526,
-        "12": 0.78554,
-        "Over 0.5": 0.97466,
-        "Over 1.5": 0.88151,
-        "Over 2.5": 0.71034,
-        "Over 3.5": 0.50065,
-        "Under 1.5": 0.11849,
-        "Under 2.5": 0.28966,
-        "Under 3.5": 0.49935,
-        "BTTS Oui": 0.70311,
-        "BTTS Non": 0.29689
+        "1": 0.48925,
+        "N": 0.2104,
+        "2": 0.30035,
+        "1X": 0.69965,
+        "X2": 0.51075,
+        "12": 0.7896,
+        "Over 0.5": 0.97533,
+        "Over 1.5": 0.88401,
+        "Over 2.5": 0.71496,
+        "Over 3.5": 0.50633,
+        "Under 1.5": 0.11599,
+        "Under 2.5": 0.28504,
+        "Under 3.5": 0.49367,
+        "BTTS Oui": 0.70161,
+        "BTTS Non": 0.29839
       },
       "expected_goals": {
-        "home": 1.993,
-        "away": 1.683
+        "home": 2.089,
+        "away": 1.613
       },
       "top_scores": [
         {
-          "score": "1-1",
-          "probability": 0.08497
-        },
-        {
           "score": "2-1",
-          "probability": 0.08466
+          "probability": 0.08684
         },
         {
-          "score": "1-2",
-          "probability": 0.07149
+          "score": "1-1",
+          "probability": 0.08313
         },
         {
           "score": "2-2",
-          "probability": 0.07122
+          "probability": 0.07004
+        },
+        {
+          "score": "1-2",
+          "probability": 0.06705
         },
         {
           "score": "3-1",
-          "probability": 0.05623
+          "probability": 0.06048
         }
       ],
-      "probable_score": "1-1",
+      "probable_score": "2-1",
       "form": {
         "home": "V N N V N",
-        "away": "V V D D V"
+        "away": "V D D V D"
       },
       "goal_averages": {
         "home": {
@@ -2089,33 +2089,33 @@
           "conceded": 1.79
         },
         "away": {
-          "scored": 1.79,
-          "conceded": 1.79
+          "scored": 1.66,
+          "conceded": 1.99
         }
       },
       "strengths": {
         "home_attack": 1.89,
         "home_defense": 1.79,
-        "away_attack": 1.79,
-        "away_defense": 1.79
+        "away_attack": 1.66,
+        "away_defense": 1.99
       },
       "best_picks": [
         {
           "market": "Over 0.5",
-          "probability": 0.9746554184092158
+          "probability": 0.9753342274683195
         },
         {
           "market": "Over 1.5",
-          "probability": 0.8815090121467651
+          "probability": 0.8840128497228262
         },
         {
           "market": "12",
-          "probability": 0.7855443289231119
+          "probability": 0.7895969666609839
         }
       ],
-      "decision": "1 (45.5%)",
+      "decision": "1 (48.9%)",
       "confidence": "Indicative — non calibrée",
-      "summary": "Le modèle estime 1.99 but(s) pour SV Werder Bremen et 1.68 pour TSG 1899 Hoffenheim."
+      "summary": "Le modèle estime 2.09 but(s) pour SV Werder Bremen et 1.61 pour TSG 1899 Hoffenheim."
     },
     {
       "id": 565847,
@@ -2128,57 +2128,57 @@
       "status": "TIMED",
       "history_ok": true,
       "all_markets": {
-        "1": 0.46834,
-        "N": 0.22261,
-        "2": 0.30905,
-        "1X": 0.69095,
-        "X2": 0.53166,
-        "12": 0.77739,
-        "Over 0.5": 0.96637,
-        "Over 1.5": 0.85229,
-        "Over 2.5": 0.65879,
-        "Over 3.5": 0.43997,
-        "Under 1.5": 0.14771,
-        "Under 2.5": 0.34121,
-        "Under 3.5": 0.56003,
-        "BTTS Oui": 0.66005,
-        "BTTS Non": 0.33995
+        "1": 0.51109,
+        "N": 0.21523,
+        "2": 0.27368,
+        "1X": 0.72632,
+        "X2": 0.48891,
+        "12": 0.78477,
+        "Over 0.5": 0.96849,
+        "Over 1.5": 0.85954,
+        "Over 2.5": 0.67121,
+        "Over 3.5": 0.45415,
+        "Under 1.5": 0.14046,
+        "Under 2.5": 0.32879,
+        "Under 3.5": 0.54585,
+        "BTTS Oui": 0.66132,
+        "BTTS Non": 0.33868
       },
       "expected_goals": {
-        "home": 1.889,
-        "away": 1.504
+        "home": 2.02,
+        "away": 1.437
       },
       "top_scores": [
         {
-          "score": "1-1",
-          "probability": 0.09551
-        },
-        {
           "score": "2-1",
-          "probability": 0.09019
+          "probability": 0.09241
         },
         {
-          "score": "1-2",
-          "probability": 0.07181
+          "score": "1-1",
+          "probability": 0.0915
         },
         {
           "score": "2-2",
-          "probability": 0.06781
+          "probability": 0.06642
         },
         {
-          "score": "1-0",
-          "probability": 0.06351
+          "score": "1-2",
+          "probability": 0.06576
+        },
+        {
+          "score": "2-0",
+          "probability": 0.06429
         }
       ],
-      "probable_score": "1-1",
+      "probable_score": "2-1",
       "form": {
-        "home": "D V V V N",
+        "home": "V V V N V",
         "away": "D N D V V"
       },
       "goal_averages": {
         "home": {
-          "scored": 1.99,
-          "conceded": 1.59
+          "scored": 2.21,
+          "conceded": 1.43
         },
         "away": {
           "scored": 1.61,
@@ -2186,28 +2186,28 @@
         }
       },
       "strengths": {
-        "home_attack": 1.99,
-        "home_defense": 1.59,
+        "home_attack": 2.21,
+        "home_defense": 1.43,
         "away_attack": 1.61,
         "away_defense": 1.45
       },
       "best_picks": [
         {
           "market": "Over 0.5",
-          "probability": 0.9663711414905485
+          "probability": 0.9684895702955705
         },
         {
           "market": "Over 1.5",
-          "probability": 0.8522894038020181
+          "probability": 0.8595439563079499
         },
         {
           "market": "12",
-          "probability": 0.7773904947185721
+          "probability": 0.7847685530250403
         }
       ],
-      "decision": "1 (46.8%)",
+      "decision": "1 (51.1%)",
       "confidence": "Indicative — non calibrée",
-      "summary": "Le modèle estime 1.89 but(s) pour Bayer 04 Leverkusen et 1.50 pour VfB Stuttgart."
+      "summary": "Le modèle estime 2.02 but(s) pour Bayer 04 Leverkusen et 1.44 pour VfB Stuttgart."
     },
     {
       "id": 560623,
@@ -3140,57 +3140,57 @@
       "status": "TIMED",
       "history_ok": true,
       "all_markets": {
-        "1": 0.57947,
-        "N": 0.20056,
-        "2": 0.21997,
-        "1X": 0.78003,
-        "X2": 0.42053,
-        "12": 0.79944,
-        "Over 0.5": 0.97094,
-        "Over 1.5": 0.8681,
-        "Over 2.5": 0.68617,
-        "Over 3.5": 0.4716,
-        "Under 1.5": 0.1319,
-        "Under 2.5": 0.31383,
-        "Under 3.5": 0.5284,
-        "BTTS Oui": 0.6525,
-        "BTTS Non": 0.3475
+        "1": 0.57827,
+        "N": 0.20067,
+        "2": 0.22105,
+        "1X": 0.77895,
+        "X2": 0.42173,
+        "12": 0.79933,
+        "Over 0.5": 0.97108,
+        "Over 1.5": 0.86859,
+        "Over 2.5": 0.68704,
+        "Over 3.5": 0.47262,
+        "Under 1.5": 0.13141,
+        "Under 2.5": 0.31296,
+        "Under 3.5": 0.52738,
+        "BTTS Oui": 0.65369,
+        "BTTS Non": 0.34631
       },
       "expected_goals": {
         "home": 2.222,
-        "away": 1.316
+        "away": 1.321
       },
       "top_scores": [
         {
           "score": "2-1",
-          "probability": 0.09444
+          "probability": 0.09433
         },
         {
           "score": "1-1",
-          "probability": 0.085
+          "probability": 0.08491
         },
         {
           "score": "2-0",
-          "probability": 0.07177
+          "probability": 0.0714
         },
         {
           "score": "3-1",
-          "probability": 0.06996
+          "probability": 0.06987
         },
         {
           "score": "1-0",
-          "probability": 0.06459
+          "probability": 0.06427
         }
       ],
       "probable_score": "2-1",
       "form": {
-        "home": "V N V N N",
+        "home": "N V N N V",
         "away": "V V N D N"
       },
       "goal_averages": {
         "home": {
           "scored": 2.99,
-          "conceded": 1.15
+          "conceded": 1.16
         },
         "away": {
           "scored": 1.61,
@@ -3199,25 +3199,25 @@
       },
       "strengths": {
         "home_attack": 2.99,
-        "home_defense": 1.15,
+        "home_defense": 1.16,
         "away_attack": 1.61,
         "away_defense": 0.92
       },
       "best_picks": [
         {
           "market": "Over 0.5",
-          "probability": 0.9709368975404443
+          "probability": 0.9710752325951334
         },
         {
           "market": "Over 1.5",
-          "probability": 0.8681026985454711
+          "probability": 0.8685925010730294
         },
         {
           "market": "12",
-          "probability": 0.7994417006425893
+          "probability": 0.7993250917166681
         }
       ],
-      "decision": "1 (57.9%)",
+      "decision": "1 (57.8%)",
       "confidence": "Indicative — non calibrée",
       "summary": "Le modèle estime 2.22 but(s) pour FC Bayern München et 1.32 pour Borussia Dortmund."
     },
