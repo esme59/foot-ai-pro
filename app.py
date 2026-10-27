@@ -1212,15 +1212,16 @@ with st.sidebar:
     st.caption("ULTIMATE · Tableau de bord")
 
     page = st.radio(
-        "Menu",
-        [
-            "🏠 Accueil",
-            "🔴 Football Live",
-            "🧠 Analyse IA",
-            "🏆 Classement IA",
-            "🧾 Combinés IA",
-            "💶 Mes paris",
-        ],
+        “Menu”,
+[
+“🏠 Accueil”,
+“🔴 Football Live”,
+“🧠 Analyse IA”,
+“⚽ Buteurs du jour”,
+“🏆 Classement IA”,
+“🧾 Combinés IA”,
+“💶 Mes paris”,
+],
         label_visibility="collapsed",
     )
 
