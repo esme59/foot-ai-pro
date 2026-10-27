@@ -878,14 +878,37 @@ def display_match(match, prediction=None):
             if dt else "Horaire inconnu"
         )
 
+    home_crest = match.get("homeTeam", {}).get("crest", "")
+    away_crest = match.get("awayTeam", {}).get("crest", "")
+
+    home_logo = (
+        f'<img src="{home_crest}" '
+        'style="width:48px;height:48px;object-fit:contain;">'
+        if home_crest else "⚽"
+    )
+
+    away_logo = (
+        f'<img src="{away_crest}" '
+        'style="width:48px;height:48px;object-fit:contain;">'
+        if away_crest else "⚽"
+    )
+
     st.markdown(
         f"""
         <div class="card">
             <div class="league">{league}</div>
-            <div class="match-title">
-                {home}
+            <div style="display:flex;align-items:center;
+                        justify-content:space-around;gap:12px;
+                        text-align:center;">
+                <div style="flex:1;">
+                    {home_logo}
+                    <div class="match-title">{home}</div>
+                </div>
                 <span class="green">VS</span>
-                {away}
+                <div style="flex:1;">
+                    {away_logo}
+                    <div class="match-title">{away}</div>
+                </div>
             </div>
             <div class="muted">{time_label}</div>
         </div>
