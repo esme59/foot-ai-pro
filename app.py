@@ -1355,7 +1355,6 @@ elif page == "🧠 Analyse IA":
 
 
 
-```python
 "home": home
             st.write(
                 f"**Compétition :** {prediction['league']}"
