@@ -1,10 +1,10 @@
 {
   "version": 10,
   "bankroll_initiale": 100.0,
-  "bankroll_actuelle": 100.35,
-  "benefice_total": 0.35,
-  "mises_totales": 2.0,
-  "gains_totaux": 2.35,
+  "bankroll_actuelle": 100.8,
+  "benefice_total": 0.8,
+  "mises_totales": 4.0,
+  "gains_totaux": 4.8,
   "mises_en_cours": 0.0,
   "paris": [
     {
@@ -64,9 +64,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.17,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.17,
+      "status": "WON",
+      "result": "2-6",
+      "returned_amount": 1.17,
+      "settled_at": "2026-10-27T21:23:49.919581+00:00"
     },
     {
       "bet_id": "558555:1X",
@@ -121,9 +123,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.28,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.28,
+      "status": "WON",
+      "result": "2-6",
+      "returned_amount": 1.28,
+      "settled_at": "2026-10-27T21:23:49.919649+00:00"
     },
     {
       "bet_id": "558557:Under 3.5",
@@ -204,9 +208,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.17,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.17,
+      "status": "WON",
+      "result": "2-6",
+      "returned_amount": 1.17,
+      "settled_at": "2026-10-27T21:23:49.919581+00:00"
     },
     {
       "bet_id": "558555:1X",
@@ -261,9 +267,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.28,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.28,
+      "status": "WON",
+      "result": "2-6",
+      "returned_amount": 1.28,
+      "settled_at": "2026-10-27T21:23:49.919649+00:00"
     },
     {
       "bet_id": "558557:Under 3.5",
@@ -305,6 +313,26 @@
       "stake": 1.0,
       "profit": 0.15,
       "settled_at": "2026-10-27T00:22:13.427917+00:00"
+    },
+    {
+      "bet_id": "558556:Over 1.5",
+      "match": "US Sassuolo Calcio - SS Lazio",
+      "market": "Over 1.5",
+      "result": "2-6",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.17,
+      "settled_at": "2026-10-27T21:23:49.919581+00:00"
+    },
+    {
+      "bet_id": "558556:X2",
+      "match": "US Sassuolo Calcio - SS Lazio",
+      "market": "X2",
+      "result": "2-6",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.28,
+      "settled_at": "2026-10-27T21:23:49.919649+00:00"
     }
   ],
   "backtests": [
@@ -728,10 +756,10 @@
     }
   ],
   "created_at": "2026-10-26T18:11:41.354906+00:00",
-  "bankroll": 100.35,
+  "bankroll": 100.8,
   "initial_bankroll": 100.0,
   "starting_bankroll": 100.0,
-  "profit": 0.35,
+  "profit": 0.8,
   "historique": [
     {
       "bet_id": "559648:Over 1.5",
@@ -752,15 +780,35 @@
       "stake": 1.0,
       "profit": 0.15,
       "settled_at": "2026-10-27T00:22:13.427917+00:00"
+    },
+    {
+      "bet_id": "558556:Over 1.5",
+      "match": "US Sassuolo Calcio - SS Lazio",
+      "market": "Over 1.5",
+      "result": "2-6",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.17,
+      "settled_at": "2026-10-27T21:23:49.919581+00:00"
+    },
+    {
+      "bet_id": "558556:X2",
+      "match": "US Sassuolo Calcio - SS Lazio",
+      "market": "X2",
+      "result": "2-6",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.28,
+      "settled_at": "2026-10-27T21:23:49.919649+00:00"
     }
   ],
   "statistiques": {
     "total_paris": 7,
-    "paris_gagnes": 2,
+    "paris_gagnes": 4,
     "paris_perdus": 0,
-    "paris_en_attente": 5,
+    "paris_en_attente": 3,
     "taux_reussite": 100.0
   },
-  "derniere_mise_a_jour": "2026-10-27T18:32:13.173485+00:00",
-  "updated_at": "2026-10-27T18:32:13.173492+00:00"
+  "derniere_mise_a_jour": "2026-10-27T21:23:51.779626+00:00",
+  "updated_at": "2026-10-27T21:23:51.779632+00:00"
 }
