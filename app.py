@@ -1255,7 +1255,7 @@ elif page == "🧠 Analyse IA":
         away_crest = prediction.get("away_crest", "")
 
         with st.expander(
-            f"⚽ {prediction['home']} - {prediction['away']}",
+            f"{prediction['home']} - {prediction['away']}",
             expanded=False,
         ):
             logo_home, name_home, versus, logo_away, name_away = st.columns(
@@ -1282,6 +1282,74 @@ elif page == "🧠 Analyse IA":
 
             with name_away:
                 st.markdown(f"**{prediction['away']}**")
+
+            st.write(f"**Compétition :** {prediction['league']}")
+
+            c1, c2, c3 = st.columns(3)
+
+            with c1:
+                card("Victoire domicile", pct(prediction["p1"]))
+
+            with c2:
+                card("Match nul", pct(prediction["px"]))
+
+            with c3:
+                card("Victoire extérieur", pct(prediction["p2"]))
+
+            st.markdown("#### Marchés statistiques")
+
+            market_rows = [
+                {
+                    "Marché": name,
+                    "Probabilité estimée": pct(prob),
+                }
+                for name, prob in prediction["markets"]
+            ]
+
+            st.dataframe(
+                pd.DataFrame(market_rows),
+                use_container_width=True,
+                hide_index=True,
+            )
+
+            st.markdown("#### Scores exacts les plus probables")
+
+            score_cols = st.columns(3)
+
+            for index, (hg, ag, probability) in enumerate(
+                prediction["scores"][:3]
+            ):
+                with score_cols[index]:
+                    card(
+                        f"Score {index + 1}",
+                        f"{hg} - {ag}",
+                        pct(probability),
+                    )
+
+            st.markdown("#### Indicateurs des équipes")
+
+            left, right = st.columns(2)
+
+            with left:
+                card(
+                    f"Buts attendus · {prediction['home']}",
+                    f"{prediction['lambda_home']:.2f}",
+                    f"{prediction['home_games']} matchs historiques",
+                )
+
+            with right:
+                card(
+                    f"Buts attendus · {prediction['away']}",
+                    f"{prediction['lambda_away']:.2f}",
+                    f"{prediction['away_games']} matchs historiques",
+                )
+
+            st.caption(
+                f"Qualité indicative de l'historique : "
+                f"{prediction['confidence']}. "
+                "Les blessures, compositions et cotes ne sont pas intégrées "
+                "si elles ne sont pas disponibles via la source de données."
+            )
 
 ## Étape 2 — Important ⚠️
 
