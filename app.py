@@ -7,11 +7,10 @@ import requests
 import pandas as pd
 import streamlit as st
 
-
 # ============================================================
-# FOOT AI PRO — TABLEAU DE BORD
-# Le bot.py reste responsable du règlement des paris.
-# Cette application lit bankroll.json sans le modifier.
+# FOOT AI PRO - INTERFACE PREMIUM
+# Lecture seule de data/bankroll.json
+# Ne modifie pas bot.py ni le fichier des simulations.
 # ============================================================
 
 st.set_page_config(
@@ -33,85 +32,148 @@ COMPETITIONS = {
     "CL": "Ligue des Champions",
 }
 
+# -------------------- DESIGN --------------------
 
-# ============================================================
-# STYLE
-# ============================================================
+st.markdown("""
+<style>
+.stApp {
+    background: linear-gradient(145deg, #07111f 0%, #0b1728 55%, #0a211f 100%);
+    color: #f3f7fb;
+}
+[data-testid="stSidebar"] {
+    background: #0b1423;
+    border-right: 1px solid #20334a;
+}
+.block-container {
+    padding-top: 1.5rem;
+    padding-bottom: 2rem;
+    max-width: 1450px;
+}
+h1, h2, h3 {
+    color: #f4f8fc !important;
+}
+p, label, span {
+    color: #d8e2ed;
+}
+.hero {
+    padding: 25px;
+    border-radius: 20px;
+    background: linear-gradient(120deg, #102b3a, #123b34);
+    border: 1px solid #235548;
+    margin-bottom: 20px;
+}
+.hero-title {
+    font-size: 30px;
+    font-weight: 850;
+    letter-spacing: 1px;
+}
+.hero-subtitle {
+    color: #b5c9d6;
+    margin-top: 6px;
+}
+.metric-card {
+    background: linear-gradient(145deg, #14243a, #101c2c);
+    border: 1px solid #263b53;
+    border-radius: 16px;
+    padding: 17px;
+    min-height: 115px;
+}
+.metric-label {
+    font-size: 13px;
+    color: #a9bbce;
+    margin-bottom: 9px;
+}
+.metric-value {
+    font-size: 25px;
+    font-weight: 800;
+    color: #f5f8fc;
+}
+.metric-green { color: #4ce0a0; }
+.metric-red { color: #ff7d89; }
+.match-card {
+    background: #101e30;
+    border: 1px solid #263a51;
+    border-radius: 15px;
+    padding: 16px;
+    margin: 10px 0;
+}
+.match-title {
+    font-weight: 750;
+    font-size: 17px;
+    color: #f3f7fb;
+}
+.match-info {
+    font-size: 12px;
+    color: #9eb3c8;
+    margin-bottom: 8px;
+}
+.badge {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    background: #193c37;
+    color: #6ce7b2;
+}
+.section-title {
+    font-size: 20px;
+    font-weight: 800;
+    margin-top: 10px;
+    margin-bottom: 12px;
+}
+div[data-testid="stTabs"] button {
+    border-radius: 10px;
+}
+.stButton > button {
+    border-radius: 10px;
+    border: 1px solid #2c6657;
+    font-weight: 700;
+}
+div[data-testid="stDataFrame"] {
+    border: 1px solid #263a51;
+    border-radius: 12px;
+}
+.small-note {
+    font-size: 12px;
+    color: #9eb3c8;
+}
+</style>
+""", unsafe_allow_html=True)
 
-st.markdown(
-    """
-    <style>
-    .stApp {
-        background: #0b1220;
-        color: #f1f5f9;
-    }
 
-    [data-testid="stSidebar"] {
-        background: #101b2d;
-    }
+# -------------------- FONCTIONS UTILITAIRES --------------------
 
-    div[data-testid="stMetric"] {
-        background: #142238;
-        border: 1px solid #263b57;
-        padding: 16px;
-        border-radius: 12px;
-    }
-
-    div[data-testid="stMetricLabel"] {
-        color: #b8c7dc;
-    }
-
-    div[data-testid="stMetricValue"] {
-        color: #ffffff;
-    }
-
-    .main-title {
-        font-size: 32px;
-        font-weight: 800;
-        color: #ffffff;
-    }
-
-    .sub-title {
-        color: #9fb2cc;
-        font-size: 14px;
-    }
-
-    .info-card {
-        background: #142238;
-        border: 1px solid #263b57;
-        padding: 16px;
-        border-radius: 12px;
-        margin-bottom: 10px;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+def to_float(value, default=0.0):
+    try:
+        if value is None or value == "":
+            return default
+        return float(value)
+    except (ValueError, TypeError):
+        return default
 
 
-# ============================================================
-# LECTURE DES DONNÉES
-# ============================================================
+def format_money(value):
+    return f"{to_float(value):.2f} €".replace(".", ",")
+
 
 def empty_state():
     return {
+        "initial_bankroll": 20.0,
         "starting_bankroll": 20.0,
         "bankroll": 20.0,
-        "day": str(date.today()),
         "bets": [],
         "history": [],
-        "message": "Aucune donnée disponible.",
+        "message": "",
     }
 
 
 def load_state():
-    """
-    Lecture seule de data/bankroll.json.
-    Aucun pari n'est réglé et aucun capital n'est modifié ici.
-    """
+    """Lecture seule : aucune écriture dans bankroll.json."""
     if not DATA_FILE.exists():
         return empty_state(), (
-            "Le fichier data/bankroll.json est introuvable."
+            "Fichier data/bankroll.json introuvable. "
+            "Vérifie qu'il existe bien dans le dépôt GitHub."
         )
 
     try:
@@ -121,326 +183,153 @@ def load_state():
         if not isinstance(data, dict):
             return empty_state(), "Le fichier JSON n'a pas le format attendu."
 
-        data.setdefault("starting_bankroll", 20.0)
-        data.setdefault("bankroll", data["starting_bankroll"])
-        data.setdefault("bets", [])
-        data.setdefault("history", [])
-        data.setdefault("message", "")
+        # Compatibilité avec plusieurs versions du bot.
+        bets = data.get("bets")
+        if not isinstance(bets, list):
+            bets = data.get("paris", [])
+        if not isinstance(bets, list):
+            bets = []
 
-        if not isinstance(data["bets"], list):
-            data["bets"] = []
+        history = data.get("history")
+        if not isinstance(history, list):
+            history = data.get("historique", [])
+        if not isinstance(history, list):
+            history = []
 
-        if not isinstance(data["history"], list):
-            data["history"] = []
+        initial = data.get(
+            "initial_bankroll",
+            data.get("starting_bankroll", data.get("bankroll_initiale", 20.0)),
+        )
+        bankroll = data.get(
+            "bankroll",
+            data.get("bankroll_actuelle", data.get("capital", initial)),
+        )
+
+        data["initial_bankroll"] = to_float(initial, 20.0)
+        data["starting_bankroll"] = to_float(initial, 20.0)
+        data["bankroll"] = to_float(bankroll, data["initial_bankroll"])
+        data["bets"] = bets
+        data["history"] = history
 
         return data, None
 
-    except (OSError, json.JSONDecodeError, TypeError, ValueError) as exc:
-        return empty_state(), f"Impossible de lire les données : {exc}"
+    except (OSError, json.JSONDecodeError) as exc:
+        return empty_state(), f"Impossible de lire le fichier JSON : {exc}"
 
 
-def to_float(value, default=0.0):
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        return default
+def bet_status(bet):
+    status = str(bet.get("status", "")).strip().upper()
 
+    if status in ("WON", "WIN", "GAGNÉ", "GAGNE", "GAGNE"):
+        return "Gagné"
+    if status in ("LOST", "LOSS", "PERDU"):
+        return "Perdu"
+    if status in ("VOID", "CANCELLED", "CANCELED", "ANNULÉ", "ANNULE"):
+        return "Annulé"
+    if status in ("PENDING", "OPEN", "EN ATTENTE"):
+        return "En attente"
 
-def is_settled(bet):
-    return bool(bet.get("settled", False))
-
-
-def get_bet_status(bet):
-    if is_settled(bet):
-        result = str(bet.get("result", "")).strip().lower()
-
-        if result in {"win", "won", "gagné", "gagne", "victoire"}:
+    # Compatibilité avec les anciennes versions.
+    if bet.get("settled") is True:
+        result = str(bet.get("result_status", bet.get("outcome", ""))).upper()
+        if result in ("WON", "WIN", "GAGNÉ", "GAGNE"):
             return "Gagné"
-
-        if result in {"loss", "lost", "perdu", "défaite", "defaite"}:
+        if result in ("LOST", "LOSS", "PERDU"):
             return "Perdu"
-
-        if result in {"void", "annulé", "annule", "remboursé", "rembourse"}:
-            return "Annulé / remboursé"
-
-        return "Terminé"
+        if result in ("VOID", "CANCELLED", "CANCELED"):
+            return "Annulé"
 
     return "En attente"
 
 
-def normalize_result(bet):
-    result = str(bet.get("result", "")).strip().lower()
+def bet_date(bet):
+    raw = (
+        bet.get("match_date")
+        or bet.get("created_date")
+        or bet.get("created_day")
+        or bet.get("created_at")
+        or bet.get("date")
+        or ""
+    )
+    return str(raw)[:10] if raw else "—"
 
-    if not is_settled(bet):
-        return "En attente"
 
-    if result in {"win", "won", "gagné", "gagne", "victoire"}:
-        return "Gagné"
+def match_name(bet):
+    home = bet.get("home_team", bet.get("home", "Équipe domicile"))
+    away = bet.get("away_team", bet.get("away", "Équipe extérieure"))
+    return f"{home} – {away}"
 
-    if result in {"loss", "lost", "perdu", "défaite", "defaite"}:
-        return "Perdu"
 
-    if result in {"void", "annulé", "annule", "remboursé", "rembourse"}:
-        return "Annulé"
+def market_name(bet):
+    return str(
+        bet.get("market")
+        or bet.get("market_name")
+        or bet.get("selection")
+        or "Marché non précisé"
+    )
 
-    return "Autre"
+
+def competition_name(bet):
+    return str(
+        bet.get("competition_name")
+        or bet.get("competition")
+        or bet.get("competition_code")
+        or "Compétition non précisée"
+    )
+
+
+def bet_odds(bet):
+    return to_float(bet.get("odds", bet.get("virtual_odds", 0)))
+
+
+def bet_probability(bet):
+    value = bet.get("probability", bet.get("probability_pct"))
+    if value is None:
+        return None
+
+    probability = to_float(value, -1)
+    if probability < 0:
+        return None
+
+    # Le bot enregistre normalement une probabilité entre 0 et 1.
+    if probability <= 1:
+        probability *= 100
+
+    if probability > 100:
+        return None
+
+    return probability
 
 
 def bet_profit(bet):
-    """
-    Lit le bénéfice déjà enregistré par bot.py.
-    Ne recalcule pas les gains et ne modifie pas les paris.
-    """
-    for key in ("profit", "net_profit", "gain"):
-        if key in bet and bet.get(key) is not None:
-            return to_float(bet.get(key))
+    if bet.get("profit") is not None:
+        return to_float(bet.get("profit"))
 
-    # Compatibilité avec les paris de l'ancienne version du bot.
-    # Si le bot n'a pas enregistré le bénéfice, on ne l'invente pas.
-    return None
+    stake = to_float(bet.get("stake", bet.get("mise", 0)))
+    odds = bet_odds(bet)
+    status = bet_status(bet)
 
+    if status == "Gagné":
+        return stake * (odds - 1) if odds > 0 else 0.0
+    if status == "Perdu":
+        return -stake
 
-def get_match_name(bet):
-    home = (
-        bet.get("home_team")
-        or bet.get("home")
-        or bet.get("homeTeam")
-        or "Équipe domicile"
-    )
-
-    away = (
-        bet.get("away_team")
-        or bet.get("away")
-        or bet.get("awayTeam")
-        or "Équipe extérieure"
-    )
-
-    return f"{home} - {away}"
+    return 0.0
 
 
-def get_competition_name(bet):
-    comp = (
-        bet.get("competition_name")
-        or bet.get("competition")
-        or bet.get("league")
-        or bet.get("competition_code")
-        or "Non renseignée"
-    )
+def bet_score(bet):
+    score = bet.get("actual_score")
+    if score:
+        return str(score)
 
-    return COMPETITIONS.get(str(comp), str(comp))
+    # Dans certaines versions, result contient le score final.
+    if bet_status(bet) != "En attente":
+        result = bet.get("result")
+        if isinstance(result, str) and "-" in result:
+            return result
 
+    return "—"
 
-def get_market_name(bet):
-    return str(
-        bet.get("market")
-        or bet.get("pick")
-        or bet.get("selection")
-        or "Marché non renseigné"
-    )
-
-
-def get_bet_date(bet):
-    for key in ("created_day", "created_at", "date", "match_date"):
-        value = bet.get(key)
-
-        if value:
-            return str(value)[:10]
-
-    return "Date inconnue"
-
-
-# ============================================================
-# STATISTIQUES
-# ============================================================
-
-def calculate_statistics(data):
-    bets = data.get("bets", [])
-
-    settled_bets = [
-        bet for bet in bets
-        if is_settled(bet)
-    ]
-
-    pending_bets = [
-        bet for bet in bets
-        if not is_settled(bet)
-    ]
-
-    wins = sum(
-        1 for bet in settled_bets
-        if normalize_result(bet) == "Gagné"
-    )
-
-    losses = sum(
-        1 for bet in settled_bets
-        if normalize_result(bet) == "Perdu"
-    )
-
-    voids = sum(
-        1 for bet in settled_bets
-        if normalize_result(bet) == "Annulé"
-    )
-
-    decisive_bets = wins + losses
-    win_rate = (
-        wins / decisive_bets * 100
-        if decisive_bets > 0
-        else 0.0
-    )
-
-    known_profits = [
-        bet_profit(bet)
-        for bet in settled_bets
-        if bet_profit(bet) is not None
-    ]
-
-    recorded_profit = sum(known_profits)
-
-    starting_bankroll = to_float(
-        data.get("starting_bankroll"),
-        20.0,
-    )
-
-    current_bankroll = to_float(
-        data.get("bankroll"),
-        starting_bankroll,
-    )
-
-    pending_stakes = sum(
-        to_float(bet.get("stake", 0))
-        for bet in pending_bets
-    )
-
-    # Le capital actuel est celui enregistré par bot.py.
-    # Le bénéfice cumulé calculé à partir du capital peut être
-    # plus fiable que la somme des bénéfices si des paris anciens
-    # ne possèdent pas encore de champ profit.
-    bankroll_profit = current_bankroll - starting_bankroll
-
-    return {
-        "total": len(bets),
-        "settled": len(settled_bets),
-        "pending": len(pending_bets),
-        "wins": wins,
-        "losses": losses,
-        "voids": voids,
-        "win_rate": win_rate,
-        "starting_bankroll": starting_bankroll,
-        "current_bankroll": current_bankroll,
-        "bankroll_profit": bankroll_profit,
-        "recorded_profit": recorded_profit,
-        "known_profit_count": len(known_profits),
-        "pending_stakes": pending_stakes,
-    }
-
-
-def ranking_by_field(bets, field_function):
-    groups = {}
-
-    for bet in bets:
-        if not is_settled(bet):
-            continue
-
-        result = normalize_result(bet)
-
-        if result not in {"Gagné", "Perdu"}:
-            continue
-
-        label = field_function(bet)
-
-        if label not in groups:
-            groups[label] = {"wins": 0, "losses": 0}
-
-        if result == "Gagné":
-            groups[label]["wins"] += 1
-        else:
-            groups[label]["losses"] += 1
-
-    rows = []
-
-    for label, stats in groups.items():
-        total = stats["wins"] + stats["losses"]
-
-        rows.append({
-            "Catégorie": label,
-            "Paris": total,
-            "Gagnés": stats["wins"],
-            "Perdus": stats["losses"],
-            "Réussite (%)": round(stats["wins"] / total * 100, 1),
-        })
-
-    rows.sort(
-        key=lambda row: (
-            row["Réussite (%)"],
-            row["Paris"],
-        ),
-        reverse=True,
-    )
-
-    return rows
-
-
-# ============================================================
-# HISTORIQUE DU CAPITAL
-# ============================================================
-
-def build_capital_history(data):
-    """
-    Utilise l'historique enregistré par bot.py.
-    Si les entrées ne contiennent pas de capital exploitable,
-    affiche un point de départ et le capital actuel.
-    """
-    history = data.get("history", [])
-    rows = []
-
-    for item in history:
-        if not isinstance(item, dict):
-            continue
-
-        day = (
-            item.get("day")
-            or item.get("date")
-            or item.get("created_day")
-        )
-
-        capital = None
-
-        for key in ("bankroll", "capital", "balance"):
-            if item.get(key) is not None:
-                capital = to_float(item.get(key))
-                break
-
-        if day and capital is not None:
-            rows.append({
-                "Date": str(day)[:10],
-                "Capital (€)": capital,
-            })
-
-    if rows:
-        frame = pd.DataFrame(rows)
-        frame = frame.drop_duplicates(subset=["Date"], keep="last")
-        frame = frame.sort_values("Date")
-        return frame
-
-    starting = to_float(data.get("starting_bankroll"), 20.0)
-    current = to_float(data.get("bankroll"), starting)
-
-    today = str(date.today())
-
-    if abs(current - starting) < 0.0001:
-        return pd.DataFrame([
-            {"Date": today, "Capital (€)": starting},
-        ])
-
-    return pd.DataFrame([
-        {"Date": "Départ", "Capital (€)": starting},
-        {"Date": today, "Capital (€)": current},
-    ])
-
-
-# ============================================================
-# API FOOTBALL-DATA.ORG
-# ============================================================
 
 def get_api_key():
     try:
@@ -450,150 +339,209 @@ def get_api_key():
     except Exception:
         pass
 
-    return os.getenv("FOOTBALL_DATA_API_KEY", "").strip()
+    return os.environ.get("FOOTBALL_DATA_API_KEY", "").strip()
 
 
-@st.cache_data(ttl=900, show_spinner=False)
-def fetch_matches(api_key, date_from, date_to, competition_codes):
-    if not api_key:
-        return [], "Clé API manquante."
+# -------------------- STATISTIQUES --------------------
 
-    headers = {"X-Auth-Token": api_key}
-    all_matches = []
-    errors = []
+def calculate_statistics(bets, initial_bankroll, bankroll):
+    wins = sum(1 for bet in bets if bet_status(bet) == "Gagné")
+    losses = sum(1 for bet in bets if bet_status(bet) == "Perdu")
+    voids = sum(1 for bet in bets if bet_status(bet) == "Annulé")
+    pending = sum(1 for bet in bets if bet_status(bet) == "En attente")
 
-    for code in competition_codes:
-        url = f"{API_BASE}/competitions/{code}/matches"
+    settled = wins + losses
+    success_rate = (wins / settled * 100) if settled else 0.0
 
-        try:
-            response = requests.get(
-                url,
-                headers=headers,
-                params={
-                    "dateFrom": date_from,
-                    "dateTo": date_to,
-                },
-                timeout=20,
-            )
-
-            if response.status_code == 429:
-                return all_matches, (
-                    "Limite de requêtes API atteinte. "
-                    "Les données déjà récupérées sont conservées."
-                )
-
-            if response.status_code == 403:
-                errors.append(
-                    f"{COMPETITIONS.get(code, code)} : accès refusé par l'API."
-                )
-                continue
-
-            response.raise_for_status()
-            payload = response.json()
-
-            for match in payload.get("matches", []):
-                match["competition_code_local"] = code
-                all_matches.append(match)
-
-        except requests.RequestException as exc:
-            errors.append(f"{code} : {exc}")
-
-        except (ValueError, TypeError):
-            errors.append(f"{code} : réponse API illisible.")
-
-    all_matches.sort(
-        key=lambda match: match.get("utcDate", "")
+    pending_stakes = sum(
+        to_float(bet.get("stake", bet.get("mise", 0)))
+        for bet in bets
+        if bet_status(bet) == "En attente"
     )
 
-    message = " ".join(errors) if errors else None
-    return all_matches, message
-
-
-def format_match_status(match):
-    status = match.get("status", "UNKNOWN")
-
-    translations = {
-        "SCHEDULED": "À venir",
-        "TIMED": "Programmé",
-        "IN_PLAY": "En direct",
-        "PAUSED": "Mi-temps",
-        "FINISHED": "Terminé",
-        "POSTPONED": "Reporté",
-        "CANCELLED": "Annulé",
-        "SUSPENDED": "Suspendu",
-        "AWARDED": "Résultat attribué",
+    return {
+        "wins": wins,
+        "losses": losses,
+        "voids": voids,
+        "pending": pending,
+        "settled": settled,
+        "success_rate": success_rate,
+        "profit": to_float(bankroll) - to_float(initial_bankroll),
+        "pending_stakes": pending_stakes,
     }
 
-    return translations.get(status, status)
 
-
-def prepare_match_table(matches):
+def bets_dataframe(bets):
     rows = []
 
-    for match in matches:
-        home = match.get("homeTeam", {}).get("name", "Domicile")
-        away = match.get("awayTeam", {}).get("name", "Extérieur")
-
-        competition_code = match.get("competition_code_local", "")
-        competition = COMPETITIONS.get(
-            competition_code,
-            match.get("competition", {}).get("name", "Compétition"),
-        )
-
-        utc_date = match.get("utcDate", "")
-        local_date = utc_date
-
-        if utc_date:
-            try:
-                dt = datetime.fromisoformat(
-                    utc_date.replace("Z", "+00:00")
-                )
-                local_date = dt.strftime("%d/%m/%Y %H:%M")
-            except ValueError:
-                pass
-
-        score = match.get("score", {}).get("fullTime", {})
-        home_score = score.get("home")
-        away_score = score.get("away")
-
-        score_text = "-"
-
-        if home_score is not None and away_score is not None:
-            score_text = f"{home_score} - {away_score}"
+    for bet in bets:
+        probability = bet_probability(bet)
 
         rows.append({
-            "Date": local_date,
-            "Compétition": competition,
-            "Match": f"{home} - {away}",
-            "Statut": format_match_status(match),
-            "Score": score_text,
+            "Date": bet_date(bet),
+            "Match": match_name(bet),
+            "Compétition": competition_name(bet),
+            "Marché": market_name(bet),
+            "Probabilité": f"{probability:.1f}%" if probability is not None else "—",
+            "Cote": bet_odds(bet) or "—",
+            "Mise": format_money(bet.get("stake", bet.get("mise", 0))),
+            "Résultat": bet_status(bet),
+            "Score": bet_score(bet),
+            "Profit": format_money(bet_profit(bet)),
         })
 
     return pd.DataFrame(rows)
 
 
-# ============================================================
-# EN-TÊTE ET SIDEBAR
-# ============================================================
+def metric_card(label, value, extra_class=""):
+    st.markdown(
+        f"""
+        <div class="metric-card">
+            <div class="metric-label">{label}</div>
+            <div class="metric-value {extra_class}">{value}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-st.markdown(
-    '<div class="main-title">⚽ FOOT AI PRO</div>',
-    unsafe_allow_html=True,
+
+# -------------------- MATCHS API --------------------
+
+@st.cache_data(ttl=900, show_spinner=False)
+def fetch_matches(api_key, competitions, date_from, date_to):
+    if not api_key:
+        return [], "Clé API manquante"
+
+    headers = {"X-Auth-Token": api_key}
+    all_matches = []
+    errors = []
+
+    for code in competitions:
+        try:
+            response = requests.get(
+                f"{API_BASE}/competitions/{code}/matches",
+                headers=headers,
+                params={
+                    "dateFrom": date_from,
+                    "dateTo": date_to,
+                },
+                timeout=15,
+            )
+
+            if response.status_code == 429:
+                errors.append(
+                    "Limite de requêtes API atteinte. Réessaie plus tard."
+                )
+                break
+
+            if response.status_code == 403:
+                errors.append(
+                    f"Accès refusé pour {COMPETITIONS.get(code, code)} "
+                    "(vérifie les compétitions autorisées par ton abonnement)."
+                )
+                continue
+
+            if response.status_code == 401:
+                errors.append("Clé API refusée : vérifie FOOTBALL_DATA_API_KEY.")
+                break
+
+            response.raise_for_status()
+            payload = response.json()
+
+            for match in payload.get("matches", []):
+                match["local_competition_name"] = COMPETITIONS.get(code, code)
+                all_matches.append(match)
+
+        except requests.RequestException:
+            errors.append(
+                f"Erreur réseau lors du chargement de {COMPETITIONS.get(code, code)}."
+            )
+        except (ValueError, TypeError):
+            errors.append(
+                f"Réponse API illisible pour {COMPETITIONS.get(code, code)}."
+            )
+
+    # Évite les doublons et trie par date.
+    unique = {}
+    for match in all_matches:
+        unique[match.get("id", str(match))] = match
+
+    matches = list(unique.values())
+    matches.sort(key=lambda item: item.get("utcDate", ""))
+
+    return matches, " ".join(dict.fromkeys(errors))
+
+
+def display_match_card(match):
+    home = match.get("homeTeam", {}).get("name", "Équipe domicile")
+    away = match.get("awayTeam", {}).get("name", "Équipe extérieure")
+    competition = match.get("local_competition_name", "Football")
+    status = match.get("status", "SCHEDULED")
+
+    raw_date = match.get("utcDate", "")
+    try:
+        kickoff = datetime.fromisoformat(raw_date.replace("Z", "+00:00"))
+        kickoff = kickoff.astimezone().strftime("%d/%m à %H:%M")
+    except (ValueError, TypeError):
+        kickoff = "Horaire indisponible"
+
+    score = match.get("score", {}).get("fullTime", {})
+    home_score = score.get("home")
+    away_score = score.get("away")
+
+    if home_score is not None and away_score is not None:
+        score_text = f"{home_score} – {away_score}"
+    else:
+        score_text = "VS"
+
+    if status == "IN_PLAY":
+        status_text = "EN DIRECT"
+    elif status == "PAUSED":
+        status_text = "MI-TEMPS"
+    elif status == "FINISHED":
+        status_text = "TERMINÉ"
+    elif status == "POSTPONED":
+        status_text = "REPORTÉ"
+    elif status == "CANCELLED":
+        status_text = "ANNULÉ"
+    else:
+        status_text = kickoff
+
+    st.markdown(
+        f"""
+        <div class="match-card">
+            <div class="match-info">{competition} · {status_text}</div>
+            <div class="match-title">{home}</div>
+            <div style="font-size:23px;font-weight:850;margin:6px 0;">
+                {score_text}
+            </div>
+            <div class="match-title">{away}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+# -------------------- CHARGEMENT --------------------
+
+state, state_error = load_state()
+
+bets = state.get("bets", [])
+initial_bankroll = to_float(
+    state.get("initial_bankroll", state.get("starting_bankroll", 20))
 )
+bankroll = to_float(state.get("bankroll", initial_bankroll))
 
-st.markdown(
-    '<div class="sub-title">'
-    "Tableau de bord • Capital virtuel • Statistiques • Matchs"
-    "</div>",
-    unsafe_allow_html=True,
-)
+stats = calculate_statistics(bets, initial_bankroll, bankroll)
 
-st.write("")
+# -------------------- MENU LATÉRAL --------------------
 
 with st.sidebar:
-    st.header("⚙️ Configuration")
+    st.markdown("## ⚽ FOOT AI PRO")
+    st.caption("Centre de contrôle football")
 
-    st.caption("Capital de départ prévu : 20 €")
+    st.markdown("---")
+    st.markdown("### ⚙️ Paramètres des matchs")
 
     selected_competitions = st.multiselect(
         "Compétitions",
@@ -602,378 +550,450 @@ with st.sidebar:
         format_func=lambda code: COMPETITIONS[code],
     )
 
-    days_ahead = st.slider(
-        "Matchs à venir",
-        min_value=1,
-        max_value=14,
-        value=7,
+    days_back = st.slider(
+        "Jours précédents",
+        min_value=0,
+        max_value=7,
+        value=1,
     )
 
-    days_back = st.slider(
-        "Jours d'historique des matchs",
-        min_value=1,
-        max_value=14,
+    days_ahead = st.slider(
+        "Jours à venir",
+        min_value=0,
+        max_value=7,
         value=3,
     )
 
-    refresh = st.button(
-        "🔄 Actualiser les données",
-        use_container_width=True,
-    )
+    refresh = st.button("🔄 Actualiser les données", use_container_width=True)
 
     if refresh:
-        st.cache_data.clear()
+        fetch_matches.clear()
         st.rerun()
 
-    st.divider()
-    st.caption(
-        "Les paris et le capital sont gérés par bot.py. "
-        "Ce tableau de bord ne modifie pas le fichier de données."
-    )
+    st.markdown("---")
+    st.markdown("### 💰 Capital virtuel")
+    st.markdown(f"## {format_money(bankroll)}")
+    st.caption("Simulation uniquement — aucun pari réel.")
 
+if state_error:
+    st.warning(state_error)
 
-# ============================================================
-# CHARGEMENT DES DONNÉES
-# ============================================================
+# -------------------- ENTÊTE --------------------
 
-data, load_error = load_state()
-stats = calculate_statistics(data)
+st.markdown(
+    """
+    <div class="hero">
+        <div class="hero-title">FOOT AI PRO</div>
+        <div class="hero-subtitle">
+            Football · Analyse des simulations · Suivi des performances
+        </div>
+        <br>
+        <span class="badge">MODE SIMULATION</span>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
-if load_error:
-    st.warning(load_error)
-
-bets = data.get("bets", [])
-
-api_key = get_api_key()
-
-date_from = (date.today() - timedelta(days=days_back)).isoformat()
-date_to = (date.today() + timedelta(days=days_ahead)).isoformat()
-
-matches = []
-api_message = None
-
-if selected_competitions:
-    with st.spinner("Chargement des rencontres..."):
-        matches, api_message = fetch_matches(
-            api_key,
-            date_from,
-            date_to,
-            tuple(selected_competitions),
-        )
-else:
-    api_message = "Sélectionne au moins une compétition."
-
-
-# ============================================================
-# INDICATEURS PRINCIPAUX
-# ============================================================
-
-st.subheader("📊 Vue d'ensemble")
+# -------------------- INDICATEURS --------------------
 
 col1, col2, col3, col4 = st.columns(4)
 
-col1.metric(
-    "💰 Capital virtuel",
-    f"{stats['current_bankroll']:.2f} €",
-)
+with col1:
+    metric_card("💰 Capital virtuel", format_money(bankroll))
 
-col2.metric(
-    "📈 Bénéfice / perte",
-    f"{stats['bankroll_profit']:+.2f} €",
-)
+with col2:
+    profit_class = "metric-green" if stats["profit"] >= 0 else "metric-red"
+    metric_card("📈 Bénéfice / perte", format_money(stats["profit"]), profit_class)
 
-col3.metric(
-    "✅ Paris gagnés",
-    stats["wins"],
-)
+with col3:
+    metric_card("✅ Paris gagnés", str(stats["wins"]), "metric-green")
 
-col4.metric(
-    "🎯 Réussite réelle",
-    f"{stats['win_rate']:.1f}%",
-)
+with col4:
+    metric_card("🎯 Taux de réussite", f'{stats["success_rate"]:.1f}%')
+
+st.write("")
 
 col5, col6, col7, col8 = st.columns(4)
 
-col5.metric("❌ Paris perdus", stats["losses"])
-col6.metric("⏳ Paris en attente", stats["pending"])
-col7.metric("↩️ Paris annulés", stats["voids"])
-col8.metric("💶 Mises en attente", f"{stats['pending_stakes']:.2f} €")
+with col5:
+    metric_card("❌ Paris perdus", str(stats["losses"]), "metric-red")
 
-if stats["settled"] == 0:
-    st.info(
-        "Le bot n'a pas encore enregistré de pari terminé. "
-        "Le taux de réussite sera calculé lorsque les premiers résultats "
-        "seront disponibles."
-    )
+with col6:
+    metric_card("⏳ En attente", str(stats["pending"]))
 
-if stats["known_profit_count"] < stats["settled"]:
-    st.caption(
-        "Certains paris anciens ne possèdent pas de bénéfice individuel "
-        "enregistré. Le bénéfice global affiché est calculé à partir du "
-        "capital actuel moins le capital de départ."
-    )
+with col7:
+    metric_card("↩️ Annulés", str(stats["voids"]))
 
+with col8:
+    metric_card("💵 Mises en attente", format_money(stats["pending_stakes"]))
 
-# ============================================================
-# ONGLETS
-# ============================================================
+st.write("")
 
-tab_dashboard, tab_bets, tab_matches, tab_rankings = st.tabs([
-    "🏠 Tableau de bord",
-    "🎯 Mes paris",
+# -------------------- ONGLETS --------------------
+
+tab_home, tab_matches, tab_ai, tab_bets, tab_rankings = st.tabs([
+    "🏠 Accueil",
     "⚽ Matchs",
+    "🤖 Analyse IA",
+    "🎯 Mes paris",
     "🏆 Classements",
 ])
 
+# -------------------- ACCUEIL --------------------
 
-# ============================================================
-# ONGLET TABLEAU DE BORD
-# ============================================================
+with tab_home:
+    st.markdown("### 📊 Vue d'ensemble")
 
-with tab_dashboard:
-    st.subheader("📈 Évolution du capital")
+    left, right = st.columns([1.3, 1])
 
-    capital_frame = build_capital_history(data)
+    with left:
+        st.markdown("#### Résumé des performances")
 
-    if not capital_frame.empty:
-        st.line_chart(
-            capital_frame.set_index("Date")["Capital (€)"],
-            use_container_width=True,
+        if stats["settled"] > 0:
+            chart_df = pd.DataFrame({
+                "Résultat": ["Gagnés", "Perdus", "Annulés", "En attente"],
+                "Nombre": [
+                    stats["wins"],
+                    stats["losses"],
+                    stats["voids"],
+                    stats["pending"],
+                ],
+            }).set_index("Résultat")
+
+            st.bar_chart(chart_df)
+        else:
+            st.info("Les statistiques apparaîtront lorsque des paris seront enregistrés.")
+
+    with right:
+        st.markdown("#### État du système")
+        st.markdown(
+            f"""
+            <div class="match-card">
+                <div class="match-info">Capital initial</div>
+                <div class="match-title">{format_money(initial_bankroll)}</div>
+                <br>
+                <div class="match-info">Paris enregistrés</div>
+                <div class="match-title">{len(bets)}</div>
+                <br>
+                <div class="match-info">Paris terminés</div>
+                <div class="match-title">{stats["settled"]}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
-    else:
-        st.info("L'historique du capital apparaîtra ici.")
 
-    st.subheader("🧾 Derniers paris")
+        st.caption(
+            "Les statistiques sont calculées à partir des données présentes "
+            "dans bankroll.json."
+        )
+
+    st.markdown("### 🕒 Derniers paris enregistrés")
 
     if bets:
-        recent_bets = sorted(
+        recent = sorted(
             bets,
-            key=lambda bet: (
-                get_bet_date(bet),
-                str(bet.get("settled_at", "")),
-            ),
+            key=lambda bet: bet_date(bet),
             reverse=True,
-        )[:10]
-
-        recent_rows = []
-
-        for bet in recent_bets:
-            profit = bet_profit(bet)
-
-            recent_rows.append({
-                "Date": get_bet_date(bet),
-                "Match": get_match_name(bet),
-                "Compétition": get_competition_name(bet),
-                "Pronostic": get_market_name(bet),
-                "Mise (€)": round(to_float(bet.get("stake", 0)), 2),
-                "Cote": bet.get("virtual_odds", "-"),
-                "Statut": get_bet_status(bet),
-                "Bénéfice (€)": (
-                    round(profit, 2)
-                    if profit is not None
-                    else "-"
-                ),
-            })
+        )[:5]
 
         st.dataframe(
-            pd.DataFrame(recent_rows),
+            bets_dataframe(recent),
             use_container_width=True,
             hide_index=True,
         )
     else:
-        st.info(
-            "Aucun pari enregistré pour le moment. "
-            "Le bot pourra ajouter des paris lors de ses prochaines exécutions."
+        st.info("Aucun pari enregistré pour le moment.")
+
+# -------------------- MATCHS --------------------
+
+with tab_matches:
+    st.markdown("### ⚽ Rencontres des compétitions sélectionnées")
+
+    today = date.today()
+    date_from = (today - timedelta(days=days_back)).isoformat()
+    date_to = (today + timedelta(days=days_ahead)).isoformat()
+
+    api_key = get_api_key()
+
+    if not selected_competitions:
+        st.info("Sélectionne au moins une compétition dans le menu latéral.")
+    elif not api_key:
+        st.error(
+            "Clé API manquante. Ajoute FOOTBALL_DATA_API_KEY dans "
+            "les Secrets de ton application Streamlit."
         )
-
-    st.subheader("🤖 État du bot")
-
-    message = data.get("message", "")
-
-    if message:
-        st.write(str(message))
     else:
-        st.write("Aucun message récent enregistré par le bot.")
+        with st.spinner("Chargement des rencontres..."):
+            matches, api_message = fetch_matches(
+                api_key,
+                tuple(selected_competitions),
+                date_from,
+                date_to,
+            )
 
+        if api_message:
+            st.warning(api_message)
 
-# ============================================================
-# ONGLET PARIS
-# ============================================================
+        if matches:
+            st.caption(
+                f"{len(matches)} rencontre(s) trouvée(s) "
+                f"du {date_from} au {date_to}."
+            )
 
-with tab_bets:
-    st.subheader("⏳ Paris en attente")
+            filter_day = st.selectbox(
+                "Filtrer les rencontres",
+                [
+                    "Toutes les dates",
+                    "Aujourd'hui",
+                    "À venir",
+                    "Terminés",
+                    "En direct",
+                ],
+            )
+
+            if filter_day == "Aujourd'hui":
+                matches = [
+                    match for match in matches
+                    if str(match.get("utcDate", ""))[:10] == today.isoformat()
+                ]
+            elif filter_day == "À venir":
+                matches = [
+                    match for match in matches
+                    if match.get("status") in ("SCHEDULED", "TIMED")
+                ]
+            elif filter_day == "Terminés":
+                matches = [
+                    match for match in matches
+                    if match.get("status") == "FINISHED"
+                ]
+            elif filter_day == "En direct":
+                matches = [
+                    match for match in matches
+                    if match.get("status") in ("IN_PLAY", "PAUSED")
+                ]
+
+            if matches:
+                for index in range(0, len(matches), 2):
+                    left, right = st.columns(2)
+
+                    with left:
+                        display_match_card(matches[index])
+
+                    if index + 1 < len(matches):
+                        with right:
+                            display_match_card(matches[index + 1])
+            else:
+                st.info("Aucune rencontre pour ce filtre.")
+        else:
+            st.info(
+                "Aucun match trouvé sur la période sélectionnée. "
+                "Vérifie les compétitions, les dates et les droits de ton API."
+            )
+
+# -------------------- ANALYSE IA --------------------
+
+with tab_ai:
+    st.markdown("### 🤖 Pronostics enregistrés par le bot")
+
+    st.caption(
+        "Cette section présente les sélections réellement enregistrées dans "
+        "tes simulations. Les probabilités affichées proviennent du fichier "
+        "des paris lorsqu'elles sont disponibles."
+    )
 
     pending_bets = [
         bet for bet in bets
-        if not is_settled(bet)
+        if bet_status(bet) == "En attente"
     ]
 
     if pending_bets:
-        rows = []
-
         for bet in sorted(
             pending_bets,
-            key=lambda item: get_bet_date(item),
+            key=lambda item: bet_date(item),
             reverse=True,
         ):
-            rows.append({
-                "Date": get_bet_date(bet),
-                "Match": get_match_name(bet),
-                "Compétition": get_competition_name(bet),
-                "Pronostic": get_market_name(bet),
-                "Probabilité (%)": round(
-                    to_float(bet.get("probability", 0)) * (
-                        100 if to_float(bet.get("probability", 0)) <= 1
-                        else 1
-                    ),
-                    1,
-                ),
-                "Mise (€)": round(to_float(bet.get("stake", 0)), 2),
-                "Cote virtuelle": bet.get("virtual_odds", "-"),
-            })
+            probability = bet_probability(bet)
+            probability_text = (
+                f"{probability:.1f}%"
+                if probability is not None
+                else "Non disponible"
+            )
 
+            odds = bet_odds(bet)
+            odds_text = f"{odds:.2f}" if odds else "Non disponible"
+
+            st.markdown(
+                f"""
+                <div class="match-card">
+                    <div class="match-info">
+                        {competition_name(bet)} · {bet_date(bet)}
+                    </div>
+                    <div class="match-title">{match_name(bet)}</div>
+                    <br>
+                    <span class="badge">EN ATTENTE</span>
+                    <br><br>
+                    <div><b>Sélection :</b> {market_name(bet)}</div>
+                    <div><b>Probabilité enregistrée :</b> {probability_text}</div>
+                    <div><b>Cote :</b> {odds_text}</div>
+                    <div><b>Mise virtuelle :</b>
+                        {format_money(bet.get("stake", bet.get("mise", 0)))}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+    else:
+        st.info("Aucun pronostic en attente dans les données enregistrées.")
+
+    st.markdown("#### 🔎 À propos des probabilités")
+    st.write(
+        "Les rencontres de l'onglet Matchs proviennent de football-data.org. "
+        "Elles ne constituent pas automatiquement des pronostics. "
+        "Si une probabilité n'est pas enregistrée dans un pari, elle est "
+        "affichée comme indisponible plutôt que d'être inventée."
+    )
+
+# -------------------- MES PARIS --------------------
+
+with tab_bets:
+    st.markdown("### 🎯 Historique des simulations")
+
+    filter_status = st.selectbox(
+        "Filtrer par statut",
+        ["Tous", "En attente", "Gagné", "Perdu", "Annulé"],
+        key="bet_status_filter",
+    )
+
+    filtered_bets = bets
+
+    if filter_status != "Tous":
+        filtered_bets = [
+            bet for bet in bets
+            if bet_status(bet) == filter_status
+        ]
+
+    if filtered_bets:
         st.dataframe(
-            pd.DataFrame(rows),
+            bets_dataframe(filtered_bets),
             use_container_width=True,
             hide_index=True,
         )
     else:
-        st.success("Aucun pari en attente.")
+        st.info("Aucun pari ne correspond à ce filtre.")
 
-    st.subheader("📚 Historique des paris terminés")
+    pending = [bet for bet in bets if bet_status(bet) == "En attente"]
+    settled = [bet for bet in bets if bet_status(bet) != "En attente"]
 
-    settled_bets = [
-        bet for bet in bets
-        if is_settled(bet)
-    ]
+    col_a, col_b = st.columns(2)
 
-    if settled_bets:
-        rows = []
-
-        for bet in sorted(
-            settled_bets,
-            key=lambda item: (
-                get_bet_date(item),
-                str(item.get("settled_at", "")),
-            ),
-            reverse=True,
-        ):
-            profit = bet_profit(bet)
-
-            rows.append({
-                "Date": get_bet_date(bet),
-                "Match": get_match_name(bet),
-                "Compétition": get_competition_name(bet),
-                "Pronostic": get_market_name(bet),
-                "Statut": get_bet_status(bet),
-                "Score réel": bet.get("actual_score", "-"),
-                "Cote": bet.get("virtual_odds", "-"),
-                "Mise (€)": round(to_float(bet.get("stake", 0)), 2),
-                "Bénéfice (€)": (
-                    round(profit, 2)
-                    if profit is not None
-                    else "Non enregistré"
-                ),
-            })
-
-        st.dataframe(
-            pd.DataFrame(rows),
-            use_container_width=True,
-            hide_index=True,
-        )
-    else:
-        st.info("Les paris terminés apparaîtront ici.")
-
-
-# ============================================================
-# ONGLET MATCHS
-# ============================================================
-
-with tab_matches:
-    st.subheader("⚽ Rencontres")
-
-    if api_message:
-        st.warning(api_message)
-
-    if matches:
-        match_frame = prepare_match_table(matches)
-
-        if not match_frame.empty:
+    with col_a:
+        st.markdown("#### ⏳ En attente")
+        if pending:
             st.dataframe(
-                match_frame,
+                bets_dataframe(pending),
                 use_container_width=True,
                 hide_index=True,
             )
-    elif not api_message:
-        st.info(
-            "Aucune rencontre trouvée sur cette période "
-            "pour les compétitions sélectionnées."
-        )
+        else:
+            st.caption("Aucun pari en attente.")
 
-    st.caption(
-        "Les rencontres proviennent de football-data.org. "
-        "La disponibilité dépend de ton abonnement API."
-    )
+    with col_b:
+        st.markdown("#### ✅ Paris terminés")
+        if settled:
+            st.dataframe(
+                bets_dataframe(settled),
+                use_container_width=True,
+                hide_index=True,
+            )
+        else:
+            st.caption("Aucun pari terminé.")
 
-
-# ============================================================
-# ONGLET CLASSEMENTS
-# ============================================================
+# -------------------- CLASSEMENTS --------------------
 
 with tab_rankings:
-    st.subheader("🏆 Performances par compétition")
+    st.markdown("### 🏆 Performances par catégorie")
 
-    league_rows = ranking_by_field(
-        bets,
-        get_competition_name,
-    )
-
-    if league_rows:
-        st.dataframe(
-            pd.DataFrame(league_rows),
-            use_container_width=True,
-            hide_index=True,
-        )
+    if not bets:
+        st.info("Les classements apparaîtront après l'enregistrement de paris.")
     else:
-        st.info(
-            "Le classement des compétitions apparaîtra après "
-            "l'enregistrement de paris gagnés ou perdus."
-        )
+        ranking_rows = []
 
-    st.subheader("🎯 Performances par marché")
+        for category in ("competition", "market"):
+            groups = {}
 
-    market_rows = ranking_by_field(
-        bets,
-        get_market_name,
-    )
+            for bet in bets:
+                key = (
+                    competition_name(bet)
+                    if category == "competition"
+                    else market_name(bet)
+                )
 
-    if market_rows:
-        st.dataframe(
-            pd.DataFrame(market_rows),
-            use_container_width=True,
-            hide_index=True,
-        )
-    else:
-        st.info(
-            "Le classement des marchés apparaîtra après "
-            "l'enregistrement de paris terminés."
-        )
+                if key not in groups:
+                    groups[key] = {
+                        "Paris": 0,
+                        "Gagnés": 0,
+                        "Perdus": 0,
+                        "Profit virtuel": 0.0,
+                    }
 
-    st.caption(
-        "Les classements utilisent uniquement les paris terminés "
-        "et classés comme gagnés ou perdus. Les paris annulés "
-        "ne sont pas inclus dans le taux de réussite."
-    )
+                groups[key]["Paris"] += 1
 
+                status = bet_status(bet)
+                if status == "Gagné":
+                    groups[key]["Gagnés"] += 1
+                elif status == "Perdu":
+                    groups[key]["Perdus"] += 1
 
-# ============================================================
-# PIED DE PAGE
-# ============================================================
+                groups[key]["Profit virtuel"] += bet_profit(bet)
 
-st.divider()
+            for key, values in groups.items():
+                finished = values["Gagnés"] + values["Perdus"]
+                rate = (
+                    values["Gagnés"] / finished * 100
+                    if finished else 0
+                )
 
-st.caption(
-    "FOOT AI PRO • Statistiques de simulation uniquement. "
-    "Les probabilités et résultats ne garantissent aucun gain. "
-    "Le tableau de bord ne passe aucun pari réel."
+                ranking_rows.append({
+                    "Catégorie": "Compétition" if category == "competition" else "Marché",
+                    "Nom": key,
+                    "Paris": values["Paris"],
+                    "Gagnés": values["Gagnés"],
+                    "Perdus": values["Perdus"],
+                    "Réussite": f"{rate:.1f}%",
+                    "Profit virtuel": format_money(values["Profit virtuel"]),
+                    "_profit": values["Profit virtuel"],
+                })
+
+        ranking_df = pd.DataFrame(ranking_rows)
+
+        if not ranking_df.empty:
+            ranking_df = ranking_df.sort_values(
+                "_profit",
+                ascending=False,
+            )
+            ranking_df = ranking_df.drop(columns=["_profit"])
+
+            st.dataframe(
+                ranking_df,
+                use_container_width=True,
+                hide_index=True,
+            )
+
+            st.caption(
+                "Le classement utilise uniquement les paris présents dans "
+                "l'historique. Une catégorie avec peu de paris peut être "
+                "peu représentative."
+            )
+
+# -------------------- PIED DE PAGE --------------------
+
+st.markdown("---")
+st.markdown(
+    """
+    <div style="text-align:center;color:#91a6ba;font-size:12px;">
+        FOOT AI PRO · Tableau de bord de simulation football<br>
+        Données des matchs : football-data.org · Aucun pari réel n'est placé.
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
