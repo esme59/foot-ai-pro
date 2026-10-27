@@ -1656,11 +1656,11 @@ elif page == "🧠 Analyse IA":
                 "Les blessures, compositions et cotes ne sont pas intégrées "
                 "si elles ne sont pas disponibles via la source de données."
             )
-–––––––––––––––––––––––––––––
+# ----------------------------------------------------------
 
 BUTEURS DU JOUR
 
-–––––––––––––––––––––––––––––
+# ----------------------------------------------------------
 
 elif page == “⚽ Buteurs du jour”:
 st.subheader(“⚽ Buteurs du jour”)
