@@ -1354,7 +1354,6 @@ elif page == "🧠 Analyse IA":
 ## Étape 2 — Important ⚠️
 
 
-Dans GitHub, recherche cette ligne :
 
 ```python
 "home": home
