@@ -1287,7 +1287,6 @@ elif page == "🧠 Analyse IA":
 
 Pour que les logos apparaissent, les données `prediction` doivent contenir les adresses des écussons.
 
-**Avant d'aller plus loin, fais cette petite vérification :**
 
 Dans GitHub, recherche cette ligne :
 
