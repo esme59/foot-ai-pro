@@ -1662,8 +1662,8 @@ elif page == "🧠 Analyse IA":
 
 # ----------------------------------------------------------
 
-elif page == "⚽ Buteurs du jour":
-    st.subheader("⚽ Buteurs du jour")
+elif page == “⚽ Buteurs du jour”:
+    st.subheader(“⚽ Buteurs du jour”)
 
 st.caption(
     "Estimations statistiques des chances de marquer. "
