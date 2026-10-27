@@ -1214,13 +1214,13 @@ with st.sidebar:
     page = st.radio(
         "Menu",
 [
-“🏠 Accueil”,
-“🔴 Football Live”,
-“🧠 Analyse IA”,
-“⚽ Buteurs du jour”,
-“🏆 Classement IA”,
-“🧾 Combinés IA”,
-“💶 Mes paris”,
+"🏠 Accueil",
+"🔴 Football Live",
+"🧠 Analyse IA",
+"⚽ Buteurs du jour",
+"🏆 Classement IA",
+"🧾 Combinés IA",
+"💶 Mes paris",
 ],
         label_visibility="collapsed",
     )
