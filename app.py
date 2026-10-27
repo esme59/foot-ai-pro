@@ -1251,10 +1251,48 @@ elif page == "🧠 Analyse IA":
         )
 
     for prediction in analyses:
+        home_crest = prediction.get("home_crest", "")
+        away_crest = prediction.get("away_crest", "")
+
         with st.expander(
-            f"{prediction['home']} - {prediction['away']}",
+            f"⚽ {prediction['home']} - {prediction['away']}",
             expanded=False,
         ):
+            logo_home, name_home, versus, logo_away, name_away = st.columns(
+                [1, 3, 1, 1, 3]
+            )
+
+            with logo_home:
+                if home_crest:
+                    st.image(home_crest, width=45)
+                else:
+                    st.write("⚽")
+
+            with name_home:
+                st.markdown(f"**{prediction['home']}**")
+
+            with versus:
+                st.markdown("### VS")
+
+            with logo_away:
+                if away_crest:
+                    st.image(away_crest, width=45)
+                else:
+                    st.write("⚽")
+
+            with name_away:
+                st.markdown(f"**{prediction['away']}**")
+
+## Étape 2 — Important ⚠️
+
+Pour que les logos apparaissent, les données `prediction` doivent contenir les adresses des écussons.
+
+**Avant d'aller plus loin, fais cette petite vérification :**
+
+Dans GitHub, recherche cette ligne :
+
+```python
+"home": home
             st.write(
                 f"**Compétition :** {prediction['league']}"
             )
