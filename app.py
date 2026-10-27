@@ -1480,38 +1480,10 @@ elif page == "🧠 Analyse IA":
         )
 
     for prediction in analyses:
-        home_crest = prediction.get("home_crest", "")
-        away_crest = prediction.get("away_crest", "")
-
         with st.expander(
             f"{prediction['home']} - {prediction['away']}",
             expanded=False,
         ):
-            logo_home, name_home, versus, logo_away, name_away = st.columns(
-                [1, 3, 1, 1, 3]
-            )
-
-            with logo_home:
-                if home_crest:
-                    st.image(home_crest, width=45)
-                else:
-                    st.write("⚽")
-
-            with name_home:
-                st.markdown(f"**{prediction['home']}**")
-
-            with versus:
-                st.markdown("### VS")
-
-            with logo_away:
-                if away_crest:
-                    st.image(away_crest, width=45)
-                else:
-                    st.write("⚽")
-
-            with name_away:
-                st.markdown(f"**{prediction['away']}**")
-
             st.write(f"**Compétition :** {prediction['league']}")
 
             c1, c2, c3 = st.columns(3)
@@ -1581,135 +1553,65 @@ elif page == "🧠 Analyse IA":
             )
 
 
-
-            with c1:
-                card(
-                    "Victoire domicile",
-                    pct(prediction["p1"]),
-                )
-
-            with c2:
-                card(
-                    "Match nul",
-                    pct(prediction["px"]),
-                )
-
-            with c3:
-                card(
-                    "Victoire extérieur",
-                    pct(prediction["p2"]),
-                )
-
-            st.markdown("#### Marchés statistiques")
-
-            market_rows = [
-                {
-                    "Marché": name,
-                    "Probabilité estimée": pct(prob),
-                }
-                for name, prob in prediction["markets"]
-            ]
-
-            st.dataframe(
-                pd.DataFrame(market_rows),
-                use_container_width=True,
-                hide_index=True,
-            )
-
-            st.markdown(
-                "#### Scores exacts les plus probables"
-            )
-
-            score_cols = st.columns(3)
-
-            for index, (hg, ag, probability) in enumerate(
-                prediction["scores"]
-            ):
-                with score_cols[index]:
-                    card(
-                        f"Score {index + 1}",
-                        f"{hg} - {ag}",
-                        pct(probability),
-                    )
-
-            st.markdown("#### Indicateurs des équipes")
-
-            left, right = st.columns(2)
-
-            with left:
-                card(
-                    f"Buts attendus · {prediction['home']}",
-                    f"{prediction['lambda_home']:.2f}",
-                    f"{prediction['home_games']} matchs historiques",
-                )
-
-            with right:
-                card(
-                    f"Buts attendus · {prediction['away']}",
-                    f"{prediction['lambda_away']:.2f}",
-                    f"{prediction['away_games']} matchs historiques",
-                )
-
-            st.caption(
-                f"Qualité indicative de l'historique : "
-                f"{prediction['confidence']}. "
-                "Les blessures, compositions et cotes ne sont pas intégrées "
-                "si elles ne sont pas disponibles via la source de données."
-            )
-            
-            
+# ----------------------------------------------------------
+# BUTEURS DU JOUR
 # ----------------------------------------------------------
 
-BUTEURS DU JOUR
+elif page == "⚽ Buteurs du jour":
+    st.subheader("⚽ Buteurs du jour")
 
-# ----------------------------------------------------------
+    st.caption(
+        "Estimations statistiques des chances de marquer. "
+        "Les compositions officielles ne sont pas garanties."
+    )
 
-elif page == “⚽ Buteurs du jour”:
-    st.subheader(“⚽ Buteurs du jour”)
+    if st.button("🔄 Actualiser les buteurs"):
+        get_api_football.clear()
+        st.rerun()
 
-st.caption(
-    "Estimations statistiques des chances de marquer. "
-    "Les compositions officielles ne sont pas garanties."
-)
-if st.button("🔄 Actualiser les buteurs"):
-    get_api_football.clear()
-    st.rerun()
-with st.spinner("Analyse des statistiques des joueurs..."):
-    classement_buteurs, erreur_buteurs = charger_classement_buteurs(
-        matches
-    )
-if erreur_buteurs:
-    st.info(erreur_buteurs)
-elif not classement_buteurs:
-    st.info(
-        "Aucun joueur trouvé pour les matchs du jour. "
-        "Vérifie les matchs disponibles et la clé API."
-    )
-else:
-    df = pd.DataFrame([
-        {
-            "Joueur": item["Joueur"],
-            "Équipe": item["Équipe"],
-            "Match": item["Match"],
-            "Buts saison": item["Buts saison"],
-            "Titularisations": item["Titularisations"],
-            "Minutes": item["Minutes"],
-            "Probabilité estimée": pct(
-                item["Probabilité estimée"]
-            ),
-        }
-        for item in classement_buteurs[:30]
-    ])
-    st.dataframe(
-        df,
-        use_container_width=True,
-        hide_index=True,
-    )
-    st.warning(
-        "Ces pourcentages sont des estimations, pas des garanties. "
-        "Ils ne prennent pas nécessairement en compte les blessures "
-        "ou les compositions officielles."
-    )
+    with st.spinner("Analyse des statistiques des joueurs..."):
+        classement_buteurs, erreur_buteurs = charger_classement_buteurs(
+            matches
+        )
+
+    if erreur_buteurs:
+        st.info(erreur_buteurs)
+
+    elif not classement_buteurs:
+        st.info(
+            "Aucun joueur trouvé pour les matchs du jour. "
+            "Vérifie les matchs disponibles et la clé API."
+        )
+
+    else:
+        df = pd.DataFrame([
+            {
+                "Joueur": item["Joueur"],
+                "Équipe": item["Équipe"],
+                "Match": item["Match"],
+                "Buts saison": item["Buts saison"],
+                "Titularisations": item["Titularisations"],
+                "Minutes": item["Minutes"],
+                "Probabilité estimée": pct(
+                    item["Probabilité estimée"]
+                ),
+            }
+            for item in classement_buteurs[:30]
+        ])
+
+        st.dataframe(
+            df,
+            use_container_width=True,
+            hide_index=True,
+        )
+
+        st.warning(
+            "Ces pourcentages sont des estimations, pas des garanties. "
+            "Ils ne prennent pas nécessairement en compte les blessures "
+            "ou les compositions officielles."
+        )
+
+
 # ----------------------------------------------------------
 # CLASSEMENT IA
 # ----------------------------------------------------------
