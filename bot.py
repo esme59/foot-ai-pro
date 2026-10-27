@@ -462,14 +462,12 @@ def analyze_match(home_stats, away_stats):
         away_stats,
     )
 
-    markets = {
+        markets = {
         "1": 0.0,
         "N": 0.0,
         "2": 0.0,
         "1X": 0.0,
         "X2": 0.0,
-        "Over 0.5": 0.0,
-        "Over 1.5": 0.0,
         "Over 2.5": 0.0,
         "Over 3.5": 0.0,
         "Under 2.5": 0.0,
