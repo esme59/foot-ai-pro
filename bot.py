@@ -499,10 +499,6 @@ def analyze_match(home_stats, away_stats):
             if ag >= hg:
                 markets["X2"] += p
 
-            if total >= 1:
-                markets["Over 0.5"] += p
-            if total >= 2:
-                markets["Over 1.5"] += p
             if total >= 3:
                 markets["Over 2.5"] += p
             if total >= 4:
