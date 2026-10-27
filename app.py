@@ -196,6 +196,7 @@ def fetch_team_history(team_id):
 # ------------------------- PERSISTENT HISTORY -------------------------
 
 def init_db():
+    """Crée l'historique et met à niveau les anciennes bases SQLite sans perdre les données."""
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS predictions (
@@ -224,6 +225,40 @@ def init_db():
                 saved_at TEXT
             )
         """)
+        # Une base déjà créée par une ancienne version peut ne pas avoir
+        # toutes les colonnes attendues par read_history() et save_prediction().
+        existing = {
+            row[1] for row in conn.execute("PRAGMA table_info(predictions)").fetchall()
+        }
+        required_columns = {
+            "match_date": "TEXT",
+            "competition": "TEXT",
+            "home_team": "TEXT",
+            "away_team": "TEXT",
+            "home_goals": "REAL",
+            "away_goals": "REAL",
+            "p_home": "REAL",
+            "p_draw": "REAL",
+            "p_away": "REAL",
+            "p_over15": "REAL",
+            "p_over25": "REAL",
+            "p_over35": "REAL",
+            "p_under25": "REAL",
+            "p_under35": "REAL",
+            "p_btts_yes": "REAL",
+            "p_btts_no": "REAL",
+            "selected_market": "TEXT",
+            "selected_probability": "REAL",
+            "actual_home": "INTEGER",
+            "actual_away": "INTEGER",
+            "settled": "INTEGER DEFAULT 0",
+            "saved_at": "TEXT",
+        }
+        for column, definition in required_columns.items():
+            if column not in existing:
+                conn.execute(
+                    f"ALTER TABLE predictions ADD COLUMN {column} {definition}"
+                )
         conn.commit()
 
 
@@ -828,4 +863,3 @@ st.markdown("---")
 st.caption(
     "FOOT AI PRO est un outil statistique informatif. Les probabilités sont des estimations issues de données historiques, "
     "elles peuvent être inexactes et ne garantissent aucun résultat. Joue de manière responsable."
-)
