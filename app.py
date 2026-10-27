@@ -1351,16 +1351,7 @@ elif page == "🧠 Analyse IA":
                 "si elles ne sont pas disponibles via la source de données."
             )
 
-## Étape 2 — Important ⚠️
 
-
-
-"home": home
-            st.write(
-                f"**Compétition :** {prediction['league']}"
-            )
-
-            c1, c2, c3 = st.columns(3)
 
             with c1:
                 card(
