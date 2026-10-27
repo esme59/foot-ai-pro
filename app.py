@@ -1656,14 +1656,14 @@ elif page == "🧠 Analyse IA":
                 "Les blessures, compositions et cotes ne sont pas intégrées "
                 "si elles ne sont pas disponibles via la source de données."
             )
-# ----------------------------------------------------------
+–––––––––––––––––––––––––––––
 
-# BUTEURS DU JOUR
+BUTEURS DU JOUR
 
-# ----------------------------------------------------------
+–––––––––––––––––––––––––––––
 
-elif page == "⚽ Buteurs du jour":
-    st.subheader("⚽ Buteurs du jour")
+elif page == “⚽ Buteurs du jour”:
+st.subheader(“⚽ Buteurs du jour”)
 
 st.caption(
     "Estimations statistiques des chances de marquer. "
@@ -1708,7 +1708,6 @@ else:
         "Ils ne prennent pas nécessairement en compte les blessures "
         "ou les compositions officielles."
     )
-
 # ----------------------------------------------------------
 # CLASSEMENT IA
 # ----------------------------------------------------------
