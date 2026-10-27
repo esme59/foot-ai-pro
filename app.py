@@ -1656,7 +1656,58 @@ elif page == "🧠 Analyse IA":
                 "Les blessures, compositions et cotes ne sont pas intégrées "
                 "si elles ne sont pas disponibles via la source de données."
             )
+–––––––––––––––––––––––––––––
 
+BUTEURS DU JOUR
+
+–––––––––––––––––––––––––––––
+
+elif page == “⚽ Buteurs du jour”:
+st.subheader(“⚽ Buteurs du jour”)
+
+st.caption(
+    "Estimations statistiques des chances de marquer. "
+    "Les compositions officielles ne sont pas garanties."
+)
+if st.button("🔄 Actualiser les buteurs"):
+    get_api_football.clear()
+    st.rerun()
+with st.spinner("Analyse des statistiques des joueurs..."):
+    classement_buteurs, erreur_buteurs = charger_classement_buteurs(
+        matches
+    )
+if erreur_buteurs:
+    st.info(erreur_buteurs)
+elif not classement_buteurs:
+    st.info(
+        "Aucun joueur trouvé pour les matchs du jour. "
+        "Vérifie les matchs disponibles et la clé API."
+    )
+else:
+    df = pd.DataFrame([
+        {
+            "Joueur": item["Joueur"],
+            "Équipe": item["Équipe"],
+            "Match": item["Match"],
+            "Buts saison": item["Buts saison"],
+            "Titularisations": item["Titularisations"],
+            "Minutes": item["Minutes"],
+            "Probabilité estimée": pct(
+                item["Probabilité estimée"]
+            ),
+        }
+        for item in classement_buteurs[:30]
+    ])
+    st.dataframe(
+        df,
+        use_container_width=True,
+        hide_index=True,
+    )
+    st.warning(
+        "Ces pourcentages sont des estimations, pas des garanties. "
+        "Ils ne prennent pas nécessairement en compte les blessures "
+        "ou les compositions officielles."
+    )
 
 # ----------------------------------------------------------
 # CLASSEMENT IA
