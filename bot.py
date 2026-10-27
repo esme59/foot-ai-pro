@@ -9,8 +9,8 @@ from zoneinfo import ZoneInfo
 import requests
 
 # ============================================================
-# FOOT AI PRO BOT V10
-# Simulation virtuelle uniquement — aucun pari réel.
+# FOOT AI PRO BOT V10 - CORRIGE
+# Simulation virtuelle uniquement.
 # API : football-data.org v4
 # Compatible avec GitHub Actions.
 # ============================================================
@@ -43,6 +43,12 @@ COMPETITIONS = {
 
 HEADERS = {
     "User-Agent": "FOOT-AI-PRO-V10-Virtual-Simulation"
+}
+
+# Marchés définitivement exclus des nouveaux pronostics.
+EXCLUDED_MARKETS = {
+    "Over 0.5",
+    "Over 1.5",
 }
 
 
@@ -215,7 +221,6 @@ def load_state():
         if not isinstance(state, dict):
             raise ValueError("Le JSON doit contenir un objet.")
 
-        # Préserver les données existantes.
         state.setdefault("version", 10)
         state.setdefault("bets", [])
         state.setdefault("history", [])
@@ -228,7 +233,6 @@ def load_state():
                     f"Le champ {key} doit être une liste."
                 )
 
-        # Compatibilité entre les anciens noms et les nouveaux.
         if "bankroll" not in state:
             state["bankroll"] = state.get(
                 "bankroll_actuelle",
@@ -262,8 +266,6 @@ def load_state():
 
 
 def synchronize_legacy_fields(state):
-    """Met à jour les champs utilisés par l'ancienne application."""
-
     bets = state["bets"]
 
     won = sum(
@@ -301,7 +303,6 @@ def synchronize_legacy_fields(state):
     state["bankroll_initiale"] = state["initial_bankroll"]
     state["bankroll_actuelle"] = state["bankroll"]
     state["starting_bankroll"] = state["initial_bankroll"]
-    state["initial_bankroll"] = state["initial_bankroll"]
 
     state["benefice_total"] = profit
     state["profit"] = profit
@@ -421,7 +422,7 @@ def get_team_statistics(matches, team_id, before=None):
 
 
 # ============================================================
-# POISSON
+# MODELE DE POISSON
 # ============================================================
 
 def poisson_probability(lam, goals):
@@ -462,7 +463,8 @@ def analyze_match(home_stats, away_stats):
         away_stats,
     )
 
-        markets = {
+    # Les marchés Over 0.5 et Over 1.5 ne sont pas calculés.
+    markets = {
         "1": 0.0,
         "N": 0.0,
         "2": 0.0,
@@ -496,15 +498,19 @@ def analyze_match(home_stats, away_stats):
 
             if hg >= ag:
                 markets["1X"] += p
+
             if ag >= hg:
                 markets["X2"] += p
 
             if total >= 3:
                 markets["Over 2.5"] += p
+
             if total >= 4:
                 markets["Over 3.5"] += p
+
             if total <= 2:
                 markets["Under 2.5"] += p
+
             if total <= 3:
                 markets["Under 3.5"] += p
 
@@ -526,34 +532,26 @@ def analyze_match(home_stats, away_stats):
 
 
 # ============================================================
-# SELECTION PLUS VARIEE
+# SELECTION DES PRONOSTICS
 # ============================================================
 
 def select_prediction(analysis):
     candidates = []
 
-    # On écarte le marché Over 0.5 de la sélection automatique :
-    # il était choisi presque systématiquement et offre peu de valeur.
-        excluded_markets = {"Over 0.5", "Over 1.5"}
-
     for market, probability in analysis["markets"].items():
-        if market in excluded_markets:
+        if market in EXCLUDED_MARKETS:
             continue
 
         if probability < MIN_PROBABILITY:
             continue
 
-        # Une probabilité extrêmement haute ne garantit pas un pari sûr.
-        # On estime la cote théorique sans prétendre qu'elle existe chez
-        # un bookmaker.
         estimated_odds = 1.0 / probability
 
-        # Score de classement : favorise les probabilités élevées tout
-        # en évitant de toujours sélectionner les mêmes marchés.
         score = probability
 
         if market in ("1X", "X2"):
             score -= 0.025
+
         if market in ("Over 3.5", "Under 2.5", "Under 3.5"):
             score += 0.015
 
@@ -635,7 +633,7 @@ def count_bets_today(state):
 
 
 # ============================================================
-# CREATION DES PARIS DU JOUR
+# CREATION DES PARIS VIRTUELS
 # ============================================================
 
 def create_virtual_bet(state, match, competition_code, prediction):
@@ -644,7 +642,13 @@ def create_virtual_bet(state, match, competition_code, prediction):
     if match_id is None or prediction is None:
         return False
 
-    if make_bet_id(match_id, prediction["market"]) in get_existing_bet_ids(state):
+    if prediction.get("market") in EXCLUDED_MARKETS:
+        return False
+
+    if make_bet_id(
+        match_id,
+        prediction["market"],
+    ) in get_existing_bet_ids(state):
         return False
 
     if count_bets_today(state) >= MAX_NEW_BETS_PER_DAY:
@@ -713,28 +717,41 @@ def evaluate_market(bet, home_goals, away_goals):
 
     if market == "1":
         return home_goals > away_goals
+
     if market == "N":
         return home_goals == away_goals
+
     if market == "2":
         return away_goals > home_goals
+
     if market == "1X":
         return home_goals >= away_goals
+
     if market == "X2":
         return away_goals >= home_goals
+
+    # Compatibilité avec les anciens paris déjà enregistrés.
     if market == "Over 0.5":
         return total >= 1
+
     if market == "Over 1.5":
         return total >= 2
+
     if market == "Over 2.5":
         return total >= 3
+
     if market == "Over 3.5":
         return total >= 4
+
     if market == "Under 2.5":
         return total <= 2
+
     if market == "Under 3.5":
         return total <= 3
+
     if market == "BTTS Oui":
         return home_goals > 0 and away_goals > 0
+
     if market == "BTTS Non":
         return home_goals == 0 or away_goals == 0
 
@@ -769,6 +786,7 @@ def settle_bet(state, bet, home_goals, away_goals):
         state["bankroll"] = round_money(
             safe_float(state.get("bankroll")) + profit
         )
+
     else:
         bet["status"] = "LOST"
         bet["profit"] = round_money(-stake)
@@ -802,8 +820,7 @@ def settle_bet(state, bet, home_goals, away_goals):
 
     log(
         f"PARI {bet['status']} : {bet.get('home_team')} - "
-        f"{bet.get('away_team')} | "
-        f"{bet['profit']:+.2f} €"
+        f"{bet.get('away_team')} | {bet['profit']:+.2f} €"
     )
 
     return True
@@ -847,7 +864,7 @@ def settle_finished_matches(state, matches):
 
 
 # ============================================================
-# BACKTESTS D'HIER — SEPARES DE LA BANKROLL
+# BACKTESTS D'HIER - SEPARES DE LA BANKROLL
 # ============================================================
 
 def backtest_id(match_id, market):
@@ -950,11 +967,16 @@ def create_yesterday_backtests(state, all_matches):
                 "stake_simulated": MAX_STAKE,
                 "status": "WON" if won else "LOST",
                 "profit_simulated": (
-                    round_money(MAX_STAKE * prediction["odds"] - MAX_STAKE)
+                    round_money(
+                        MAX_STAKE * prediction["odds"] - MAX_STAKE
+                    )
                     if won else round_money(-MAX_STAKE)
                 ),
                 "created_at": utc_now().isoformat(),
-                "note": "Simulation rétrospective. Ne modifie pas la bankroll.",
+                "note": (
+                    "Simulation rétrospective. "
+                    "Ne modifie pas la bankroll."
+                ),
             })
 
     candidates.sort(
@@ -1108,11 +1130,19 @@ def print_statistics(state):
     )
 
     backtests = state["backtests"]
-    bt_won = sum(1 for item in backtests if item.get("status") == "WON")
-    bt_lost = sum(1 for item in backtests if item.get("status") == "LOST")
+
+    bt_won = sum(
+        1 for item in backtests if item.get("status") == "WON"
+    )
+    bt_lost = sum(
+        1 for item in backtests if item.get("status") == "LOST"
+    )
 
     bt_profit = round_money(
-        sum(safe_float(item.get("profit_simulated")) for item in backtests)
+        sum(
+            safe_float(item.get("profit_simulated"))
+            for item in backtests
+        )
     )
 
     log("=" * 50)
@@ -1137,7 +1167,10 @@ def print_statistics(state):
     log(f"Profit simulé : {bt_profit:+.2f} €")
 
     if bt_won + bt_lost:
-        log(f"Taux de réussite backtest : {bt_won / (bt_won + bt_lost):.1%}")
+        log(
+            "Taux de réussite backtest : "
+            f"{bt_won / (bt_won + bt_lost):.1%}"
+        )
 
     log("=" * 50)
 
@@ -1149,6 +1182,7 @@ def print_statistics(state):
 def main():
     log("Démarrage FOOT AI PRO BOT V10.")
     log("Simulation virtuelle uniquement.")
+    log("Marchés exclus : Over 0.5 et Over 1.5.")
 
     if not get_api_key():
         raise RuntimeError(
