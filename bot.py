@@ -534,7 +534,7 @@ def select_prediction(analysis):
 
     # On écarte le marché Over 0.5 de la sélection automatique :
     # il était choisi presque systématiquement et offre peu de valeur.
-    excluded_markets = {"Over 0.5"}
+        excluded_markets = {"Over 0.5", "Over 1.5"}
 
     for market, probability in analysis["markets"].items():
         if market in excluded_markets:
