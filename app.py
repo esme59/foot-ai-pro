@@ -582,8 +582,12 @@ def analyze_match(match, history):
             "reason": "Identifiant équipe manquant.",
         }
 
+    # Historique limité à la compétition du match.
     league_history = [
-        m for m in history if m["code"] == code
+        m for m in history
+        if m.get("code") == code
+        and m.get("hg") is not None
+        and m.get("ag") is not None
     ]
 
     if len(league_history) < 8:
@@ -592,95 +596,145 @@ def analyze_match(match, history):
             "reason": "Historique insuffisant pour cette compétition.",
         }
 
+    # Moyennes de buts du championnat.
     league_home = average(
         [m["hg"] for m in league_history],
-        1.4,
+        1.45,
     )
-
     league_away = average(
         [m["ag"] for m in league_history],
-        1.1,
+        1.15,
     )
 
-    h_records = team_records(league_history, home_id)
-    a_records = team_records(league_history, away_id)
+    # Derniers matchs des deux équipes.
+    home_records = team_records(league_history, home_id)
+    away_records = team_records(league_history, away_id)
 
-    if len(h_records) < 3 or len(a_records) < 3:
+    if len(home_records) < 3 or len(away_records) < 3:
         return {
             "ready": False,
-            "reason": "Moins de trois matchs historiques pour une équipe.",
+            "reason": (
+                "Historique insuffisant pour l'une des équipes "
+                "(minimum 3 matchs connus par équipe)."
+            ),
         }
 
-    h_home = [r for r in h_records if r["venue"] == "HOME"]
-    a_away = [r for r in a_records if r["venue"] == "AWAY"]
+    # Les 5 derniers matchs, tous terrains confondus.
+    home_recent = home_records[-5:]
+    away_recent = away_records[-5:]
 
-    h_scored = average(
-        [r["scored"] for r in h_home],
-        average(
-            [r["scored"] for r in h_records],
-            league_home,
-        ),
+    # Performances au stade concerné.
+    home_at_home = [
+        r for r in home_records
+        if r["venue"] == "HOME"
+    ]
+    away_away = [
+        r for r in away_records
+        if r["venue"] == "AWAY"
+    ]
+
+    # Moyennes récentes de buts marqués et encaissés.
+    home_recent_scored = average(
+        [r["scored"] for r in home_recent],
+        league_home,
+    )
+    home_recent_conceded = average(
+        [r["conceded"] for r in home_recent],
+        league_away,
     )
 
-    h_conceded = average(
-        [r["conceded"] for r in h_home],
-        average(
-            [r["conceded"] for r in h_records],
-            league_away,
-        ),
+    away_recent_scored = average(
+        [r["scored"] for r in away_recent],
+        league_away,
+    )
+    away_recent_conceded = average(
+        [r["conceded"] for r in away_recent],
+        league_home,
     )
 
-    a_scored = average(
-        [r["scored"] for r in a_away],
-        average(
-            [r["scored"] for r in a_records],
-            league_away,
-        ),
+    # Statistiques spécifiques domicile et extérieur.
+    home_scored = average(
+        [r["scored"] for r in home_at_home],
+        home_recent_scored,
+    )
+    home_conceded = average(
+        [r["conceded"] for r in home_at_home],
+        home_recent_conceded,
     )
 
-    a_conceded = average(
-        [r["conceded"] for r in a_away],
-        average(
-            [r["conceded"] for r in a_records],
-            league_home,
-        ),
+    away_scored = average(
+        [r["scored"] for r in away_away],
+        away_recent_scored,
+    )
+    away_conceded = average(
+        [r["conceded"] for r in away_away],
+        away_recent_conceded,
     )
 
-    # Réduction des valeurs extrêmes.
-    home_attack = h_scored / max(0.25, league_home)
-    home_defence = h_conceded / max(0.25, league_away)
-
-    away_attack = a_scored / max(0.25, league_away)
-    away_defence = a_conceded / max(0.25, league_home)
-
-    lam_home = max(
-        0.15,
-        min(
-            4.0,
-            league_home * (
-                0.60 * home_attack + 0.40 * away_defence
-            ),
-        ),
+    # Mélange entre forme récente et performances selon le terrain.
+    # Les coefficients évitent de dépendre excessivement d'un seul match.
+    home_attack_goals = (
+        0.60 * home_scored
+        + 0.40 * home_recent_scored
+    )
+    home_defence_goals = (
+        0.60 * home_conceded
+        + 0.40 * home_recent_conceded
     )
 
-    lam_away = max(
-        0.15,
-        min(
-            4.0,
-            league_away * (
-                0.60 * away_attack + 0.40 * home_defence
-            ),
-        ),
+    away_attack_goals = (
+        0.60 * away_scored
+        + 0.40 * away_recent_scored
+    )
+    away_defence_goals = (
+        0.60 * away_conceded
+        + 0.40 * away_recent_conceded
     )
 
-    ph = poisson(lam_home)
-    pa = poisson(lam_away)
+    # Ratios offensifs et défensifs.
+    home_attack = (
+        home_attack_goals / max(0.25, league_home)
+    )
+    home_defence = (
+        home_defence_goals / max(0.25, league_away)
+    )
 
-    p1 = px = p2 = over25 = over35 = btts = 0.0
+    away_attack = (
+        away_attack_goals / max(0.25, league_away)
+    )
+    away_defence = (
+        away_defence_goals / max(0.25, league_home)
+    )
+
+    # Buts attendus : attaque d'une équipe contre défense adverse.
+    lambda_home = league_home * (
+        0.60 * home_attack
+        + 0.40 * away_defence
+    )
+
+    lambda_away = league_away * (
+        0.60 * away_attack
+        + 0.40 * home_defence
+    )
+
+    # Limites de sécurité pour éviter des valeurs extrêmes.
+    lambda_home = max(0.15, min(4.0, lambda_home))
+    lambda_away = max(0.15, min(4.0, lambda_away))
+
+    # Distribution de Poisson.
+    prob_home = poisson(lambda_home)
+    prob_away = poisson(lambda_away)
+
+    p1 = 0.0
+    px = 0.0
+    p2 = 0.0
+    over25 = 0.0
+    over35 = 0.0
+    btts = 0.0
     scores = []
 
-    for hg, p_home in enumerate(ph):
-        for ag, p_away in enumerate(pa):
+    for hg, p_home in enumerate(prob_home):
+        for ag, p_away in enumerate(prob_away):
             probability = p_home * p_away
 
             scores.append((hg, ag, probability))
@@ -701,6 +755,7 @@ def analyze_match(match, history):
             if hg > 0 and ag > 0:
                 btts += probability
 
+    # Marchés autorisés pour les analyses.
     markets = [
         ("1", p1),
         ("N", px),
@@ -717,12 +772,22 @@ def analyze_match(match, history):
     ]
 
     scores.sort(
-        key=lambda x: x[2],
+        key=lambda item: item[2],
         reverse=True,
     )
 
-    games_count = min(len(h_records), len(a_records))
-    confidence = "Bonne" if games_count >= 7 else "Moyenne"
+    # Niveau de données disponible.
+    sample_size = min(
+        len(home_records),
+        len(away_records),
+    )
+
+    if sample_size >= 7:
+        confidence = "Bonne"
+    elif sample_size >= 5:
+        confidence = "Moyenne"
+    else:
+        confidence = "Limitée"
 
     return {
         "ready": True,
@@ -732,8 +797,8 @@ def analyze_match(match, history):
         "league": match.get("_league", ""),
         "code": code,
         "date": parse_datetime(match.get("utcDate")),
-        "lambda_home": lam_home,
-        "lambda_away": lam_away,
+        "lambda_home": lambda_home,
+        "lambda_away": lambda_away,
         "p1": p1,
         "px": px,
         "p2": p2,
@@ -749,12 +814,12 @@ def analyze_match(match, history):
         "scores": scores[:3],
         "markets": sorted(
             markets,
-            key=lambda x: x[1],
+            key=lambda item: item[1],
             reverse=True,
         ),
         "confidence": confidence,
-        "home_games": len(h_records),
-        "away_games": len(a_records),
+        "home_games": len(home_records),
+        "away_games": len(away_records),
     }
 
 
