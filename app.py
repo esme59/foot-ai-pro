@@ -1212,7 +1212,7 @@ with st.sidebar:
     st.caption("ULTIMATE · Tableau de bord")
 
     page = st.radio(
-        “Menu”,
+        "Menu",
 [
 “🏠 Accueil”,
 “🔴 Football Live”,
