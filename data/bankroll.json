@@ -1,10 +1,10 @@
 {
   "version": 10,
   "bankroll_initiale": 100.0,
-  "bankroll_actuelle": 100.2,
-  "benefice_total": 0.2,
-  "mises_totales": 7.0,
-  "gains_totaux": 7.2,
+  "bankroll_actuelle": 100.02,
+  "benefice_total": 0.02,
+  "mises_totales": 10.0,
+  "gains_totaux": 10.02,
   "mises_en_cours": 0.0,
   "paris": [
     {
@@ -169,9 +169,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.22,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.22,
+      "status": "WON",
+      "result": "0-2",
+      "returned_amount": 1.22,
+      "settled_at": "2026-10-28T21:28:13.660100+00:00"
     },
     {
       "bet_id": "558549:1X",
@@ -188,9 +190,11 @@
       "exact_score_prediction": "1-1",
       "stake": 1.0,
       "potential_return": 1.29,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": -1.0,
+      "status": "LOST",
+      "result": "2-4",
+      "returned_amount": 0.0,
+      "settled_at": "2026-10-28T21:28:13.660183+00:00"
     },
     {
       "bet_id": "558552:Under 3.5",
@@ -245,9 +249,11 @@
       "exact_score_prediction": "1-1",
       "stake": 1.0,
       "potential_return": 1.6,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.6,
+      "status": "WON",
+      "result": "0-0",
+      "returned_amount": 1.6,
+      "settled_at": "2026-10-28T21:28:13.660221+00:00"
     }
   ],
   "last_updated": "2026-10-26T17:56:44.745862+01:00",
@@ -414,9 +420,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.22,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.22,
+      "status": "WON",
+      "result": "0-2",
+      "returned_amount": 1.22,
+      "settled_at": "2026-10-28T21:28:13.660100+00:00"
     },
     {
       "bet_id": "558549:1X",
@@ -433,9 +441,11 @@
       "exact_score_prediction": "1-1",
       "stake": 1.0,
       "potential_return": 1.29,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": -1.0,
+      "status": "LOST",
+      "result": "2-4",
+      "returned_amount": 0.0,
+      "settled_at": "2026-10-28T21:28:13.660183+00:00"
     },
     {
       "bet_id": "558552:Under 3.5",
@@ -490,9 +500,11 @@
       "exact_score_prediction": "1-1",
       "stake": 1.0,
       "potential_return": 1.6,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.6,
+      "status": "WON",
+      "result": "0-0",
+      "returned_amount": 1.6,
+      "settled_at": "2026-10-28T21:28:13.660221+00:00"
     }
   ],
   "history": [
@@ -565,6 +577,36 @@
       "stake": 1.0,
       "profit": -1.0,
       "settled_at": "2026-10-28T00:29:35.377686+00:00"
+    },
+    {
+      "bet_id": "558550:X2",
+      "match": "Venezia FC - FC Internazionale Milano",
+      "market": "X2",
+      "result": "0-2",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.22,
+      "settled_at": "2026-10-28T21:28:13.660100+00:00"
+    },
+    {
+      "bet_id": "558549:1X",
+      "match": "AC Milan - Bologna FC 1909",
+      "market": "1X",
+      "result": "2-4",
+      "status": "LOST",
+      "stake": 1.0,
+      "profit": -1.0,
+      "settled_at": "2026-10-28T21:28:13.660183+00:00"
+    },
+    {
+      "bet_id": "558553:Under 3.5",
+      "match": "Parma Calcio 1913 - Udinese Calcio",
+      "market": "Under 3.5",
+      "result": "0-0",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.6,
+      "settled_at": "2026-10-28T21:28:13.660221+00:00"
     }
   ],
   "backtests": [
@@ -1045,10 +1087,10 @@
     }
   ],
   "created_at": "2026-10-26T18:11:41.354906+00:00",
-  "bankroll": 100.2,
+  "bankroll": 100.02,
   "initial_bankroll": 100.0,
   "starting_bankroll": 100.0,
-  "profit": 0.2,
+  "profit": 0.02,
   "historique": [
     {
       "bet_id": "559648:Over 1.5",
@@ -1119,15 +1161,45 @@
       "stake": 1.0,
       "profit": -1.0,
       "settled_at": "2026-10-28T00:29:35.377686+00:00"
+    },
+    {
+      "bet_id": "558550:X2",
+      "match": "Venezia FC - FC Internazionale Milano",
+      "market": "X2",
+      "result": "0-2",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.22,
+      "settled_at": "2026-10-28T21:28:13.660100+00:00"
+    },
+    {
+      "bet_id": "558549:1X",
+      "match": "AC Milan - Bologna FC 1909",
+      "market": "1X",
+      "result": "2-4",
+      "status": "LOST",
+      "stake": 1.0,
+      "profit": -1.0,
+      "settled_at": "2026-10-28T21:28:13.660183+00:00"
+    },
+    {
+      "bet_id": "558553:Under 3.5",
+      "match": "Parma Calcio 1913 - Udinese Calcio",
+      "market": "Under 3.5",
+      "result": "0-0",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.6,
+      "settled_at": "2026-10-28T21:28:13.660221+00:00"
     }
   ],
   "statistiques": {
     "total_paris": 12,
-    "paris_gagnes": 6,
-    "paris_perdus": 1,
-    "paris_en_attente": 5,
-    "taux_reussite": 85.71
+    "paris_gagnes": 8,
+    "paris_perdus": 2,
+    "paris_en_attente": 2,
+    "taux_reussite": 80.0
   },
-  "derniere_mise_a_jour": "2026-10-28T18:31:41.465717+00:00",
-  "updated_at": "2026-10-28T18:31:41.465723+00:00"
+  "derniere_mise_a_jour": "2026-10-28T21:28:15.227604+00:00",
+  "updated_at": "2026-10-28T21:28:15.227609+00:00"
 }
