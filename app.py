@@ -1559,15 +1559,22 @@ def tennis_load_data():
         forms_tour = {}
 
         # Les événements de la période sont utilisés pour l'estimation.
-        events_result = get_tennis_scoreboard(tour.lower())
+                events_result = get_tennis_scoreboard(tour.lower())
 
-        
-        )if events_result["ok"]:
+        if events_result["ok"]:
             ratings_tour, forms_tour = tennis_update_elo(
                 events_result["events"],
                 ratings_tour,
                 forms_tour,
             )
+
+        analyses.extend(
+            tennis_prepare_analysis(
+                tour_matches,
+                ratings_tour,
+                forms_tour,
+            )
+        )
 
         analyses.extend(
             tennis_prepare_analysis(
