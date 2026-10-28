@@ -2381,6 +2381,195 @@ elif page == "💶 Mes paris":
 
 
 # ----------------------------------------------------------
+# 🎾 PAGE TENNIS IA
+# ----------------------------------------------------------
+
+elif page == "🎾 Tennis IA":
+    st.subheader("🎾 Tennis IA — ATP & WTA")
+
+    st.caption(
+        "Analyses indicatives fondées sur un modèle Elo et les "
+        "résultats disponibles. Les probabilités ne garantissent "
+        "pas l'issue d'un match."
+    )
+
+    if st.button("🔄 Actualiser le tennis"):
+        get_tennis_scoreboard.clear()
+        st.rerun()
+
+    with st.spinner(
+        "Chargement des matchs ATP et WTA et calcul des estimations..."
+    ):
+        tennis_analyses, tennis_errors = tennis_load_data()
+
+    for error in tennis_errors:
+        st.warning(error)
+
+    if not tennis_analyses:
+        st.info(
+            "Aucun match tennis exploitable n'a été trouvé. "
+            "Le calendrier peut être vide ou la source indisponible."
+        )
+
+    else:
+        tour_filter = st.radio(
+            "Circuit",
+            ["ATP + WTA", "ATP", "WTA"],
+            horizontal=True,
+        )
+
+        filtered_tennis = [
+            match for match in tennis_analyses
+            if tour_filter == "ATP + WTA"
+            or match["tour"] == tour_filter
+        ]
+
+        upcoming_tennis = [
+            match for match in filtered_tennis
+            if match["status"] == "UPCOMING"
+        ]
+
+        live_tennis = [
+            match for match in filtered_tennis
+            if match["status"] == "LIVE"
+        ]
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            card(
+                "Matchs à venir",
+                str(len(upcoming_tennis)),
+                "ATP et WTA",
+            )
+
+        with col2:
+            card(
+                "Matchs en direct",
+                str(len(live_tennis)),
+                "Selon les données disponibles",
+            )
+
+        with col3:
+            card(
+                "Circuits",
+                "ATP + WTA",
+                "Classements Elo séparés",
+            )
+
+        st.markdown("### 🔴 Matchs en direct")
+
+        if not live_tennis:
+            st.info("Aucun match en direct trouvé.")
+
+        for match in live_tennis:
+            with st.container(border=True):
+                st.markdown(
+                    f"**{match['tour']} · {match['tournament']}**"
+                )
+
+                st.markdown(
+                    f"### {match['player1']['name']} — "
+                    f"{match['player2']['name']}"
+                )
+
+                st.write(
+                    f"Probabilité Elo indicative : "
+                    f"{pct(match['probability1'])} / "
+                    f"{pct(match['probability2'])}"
+                )
+
+                st.caption(
+                    "Match en cours : ces pourcentages ne tiennent "
+                    "pas compte du score en direct."
+                )
+
+        st.markdown("### 📅 Prochains matchs")
+
+        if not upcoming_tennis:
+            st.info("Aucun match à venir trouvé dans les données.")
+
+        for match in upcoming_tennis:
+            date_label = (
+                match["date"].strftime("%d/%m/%Y · %H:%M")
+                if match["date"]
+                else "Horaire inconnu"
+            )
+
+            with st.container(border=True):
+                st.markdown(
+                    f"**{match['tour']} · {match['tournament']}**"
+                )
+
+                st.caption(date_label)
+
+                c1, c2 = st.columns(2)
+
+                with c1:
+                    st.markdown(
+                        f"### {match['player1']['name']}"
+                    )
+
+                    st.metric(
+                        "Probabilité Elo",
+                        pct(match["probability1"]),
+                    )
+
+                    st.write(
+                        f"Classement Elo indicatif : "
+                        f"{match['rating1']:.0f}"
+                    )
+
+                    st.caption(
+                        f"Forme récente : {match['form1']}"
+                    )
+
+                with c2:
+                    st.markdown(
+                        f"### {match['player2']['name']}"
+                    )
+
+                    st.metric(
+                        "Probabilité Elo",
+                        pct(match["probability2"]),
+                    )
+
+                    st.write(
+                        f"Classement Elo indicatif : "
+                        f"{match['rating2']:.0f}"
+                    )
+
+                    st.caption(
+                        f"Forme récente : {match['form2']}"
+                    )
+
+                if not match["has_history"]:
+                    st.warning(
+                        "Historique incomplet : les probabilités "
+                        "sont trop fragiles pour être considérées "
+                        "comme une analyse fiable."
+                    )
+
+                else:
+                    favorite = (
+                        match["player1"]["name"]
+                        if match["probability1"] >= match["probability2"]
+                        else match["player2"]["name"]
+                    )
+
+                    st.success(
+                        f"Favori statistique indicatif : {favorite}"
+                    )
+
+        st.warning(
+            "Limites : les données proviennent d'un scoreboard public "
+            "qui peut changer ou manquer des matchs. Le modèle ne tient "
+            "pas compte de la surface, des blessures, de la fatigue, "
+            "du classement officiel ni du score en direct. "
+            "Les probabilités sont des estimations, pas des garanties."
+        )
+        
+# ----------------------------------------------------------
 # PIED DE PAGE
 # ----------------------------------------------------------
 
