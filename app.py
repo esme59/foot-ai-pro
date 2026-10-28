@@ -1194,7 +1194,7 @@ TENNIS_API_BASE = (
 
 @st.cache_data(ttl=1800, show_spinner=False)
 def get_tennis_scoreboard(tour, date_range=None):
-    """Récupère les matchs ATP ou WTA depuis ESPN."""
+    """Récupère et extrait les matchs ATP et WTA depuis ESPN."""
 
     url = (
         "https://site.api.espn.com/apis/site/v2/"
@@ -1202,44 +1202,97 @@ def get_tennis_scoreboard(tour, date_range=None):
     )
 
     try:
-        if date_range:
-            params = {"dates": date_range}
-            response = requests.get(
-                url,
-                params=params,
-                timeout=12,
-            )
-            response.raise_for_status()
-            data = response.json()
-
-            return {
-                "ok": True,
-                "events": data.get("events", []),
-                "error": "",
-            }
-
         today = now_local().date()
         events_by_id = {}
 
-        # Recherche des matchs sur 15 jours
-        for offset in range(-7, 8):
-            date_query = (
-                today + timedelta(days=offset)
-            ).strftime("%Y%m%d")
+        # Recherche sur 15 jours, sauf si une période est fournie
+        if date_range:
+            dates_to_check = [date_range]
+        else:
+            dates_to_check = [
+                (today + timedelta(days=offset)).strftime("%Y%m%d")
+                for offset in range(-7, 8)
+            ]
 
+        for date_query in dates_to_check:
             response = requests.get(
                 url,
                 params={"dates": date_query},
-                timeout=8,
+                timeout=10,
             )
             response.raise_for_status()
             data = response.json()
 
-            for event in data.get("events", []):
-                event_id = str(event.get("id", ""))
+            for tournament in data.get("events", []):
+                tournament_name = (
+                    tournament.get("name")
+                    or tournament.get("shortName")
+                    or "Tournoi de tennis"
+                )
 
-                if event_id:
-                    events_by_id[event_id] = event
+                # Format ESPN : les matchs sont parfois imbriqués
+                # dans tournament -> groupings -> competitions.
+                for grouping in tournament.get("groupings", []):
+                    grouping_name = (
+                        grouping.get("grouping", {}).get("displayName")
+                        or ""
+                    )
+
+                    for competition in grouping.get("competitions", []):
+                        if len(competition.get("competitors", [])) < 2:
+                            continue
+
+                        match_id = str(
+                            competition.get("id")
+                            or competition.get("uid")
+                            or ""
+                        )
+
+                        if not match_id:
+                            continue
+
+                        # On conserve le format attendu par les
+                        # fonctions déjà présentes dans l'application.
+                        match = dict(competition)
+                        match["id"] = match_id
+                        match["name"] = tournament_name
+                        match["shortName"] = (
+                            f"{tournament_name} - {grouping_name}"
+                            if grouping_name
+                            else tournament_name
+                        )
+                        match["competitions"] = [
+                            {
+                                "competitors": competition.get(
+                                    "competitors", []
+                                )
+                            }
+                        ]
+
+                        events_by_id[match_id] = match
+
+                # Compatibilité avec les événements ESPN non imbriqués
+                if tournament.get("competitions"):
+                    for competition in tournament["competitions"]:
+                        if len(competition.get("competitors", [])) < 2:
+                            continue
+
+                        match_id = str(competition.get("id") or "")
+                        if not match_id:
+                            continue
+
+                        match = dict(competition)
+                        match["id"] = match_id
+                        match["name"] = tournament_name
+                        match["competitions"] = [
+                            {
+                                "competitors": competition.get(
+                                    "competitors", []
+                                )
+                            }
+                        ]
+
+                        events_by_id[match_id] = match
 
         return {
             "ok": True,
@@ -1253,7 +1306,6 @@ def get_tennis_scoreboard(tour, date_range=None):
             "events": [],
             "error": f"Erreur ESPN {tour.upper()} : {exc}",
         }
-
 
 def tennis_get_players(event):
     """Récupère les deux joueurs d'un événement ESPN."""
