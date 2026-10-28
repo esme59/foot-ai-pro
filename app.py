@@ -1529,7 +1529,7 @@ def tennis_load_data():
     errors = []
 
     for tour in ("atp", "wta"):
-        response = get_tennis_scoreboard(tour, date_range)
+        response = get_tennis_scoreboard(tour)
 
         if not response["ok"]:
             errors.append(response["error"])
