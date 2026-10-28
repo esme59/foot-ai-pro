@@ -1514,16 +1514,20 @@ def tennis_load_data():
     all_matches = []
     errors = []
 
-    # Récupération des matchs ATP et WTA
+    # Récupération des matchs
     for tour in ("atp", "wta"):
         response = get_tennis_scoreboard(tour)
 
-        if not response["ok"]:
-            errors.append(response["error"])
+        if not response.get("ok"):
+            errors.append(
+                response.get("error", f"Erreur de récupération {tour.upper()}")
+            )
             continue
 
+        events = response.get("events", [])
+
         all_matches.extend(
-            tennis_collect_matches(response["events"], tour)
+            tennis_collect_matches(events, tour)
         )
 
     # Préparation des analyses
@@ -1533,43 +1537,34 @@ def tennis_load_data():
         tour_matches = [
             match
             for match in all_matches
-            if match["tour"] == tour
+            if match.get("tour") == tour
         ]
-
-        events_result = get_tennis_scoreboard(tour.lower())
 
         ratings_tour = {}
         forms_tour = {}
 
-        if events_result["ok"]:
-            ratings_tour, forms_tour = tennis_update_elo(
-                events_result["events"],
-                ratings_tour,
-                forms_tour,
+        # Calcul des analyses uniquement si des matchs existent
+        if tour_matches:
+            analyses.extend(
+                tennis_prepare_analysis(
+                    tour_matches,
+                    ratings_tour,
+                    forms_tour,
+                )
             )
-        else:
-            errors.append(events_result["error"])
-
-        analyses.extend(
-            tennis_prepare_analysis(
-                tour_matches,
-                ratings_tour,
-                forms_tour,
-            )
-        )
 
     if not all_matches:
-    errors.append(
-        "Aucun match reçu depuis ESPN pour ATP et WTA."
-    )
+        errors.append(
+            "Aucun match reçu depuis ESPN pour ATP et WTA. "
+            "Vérifie la source des données."
+        )
+    elif not analyses:
+        errors.append(
+            "Les données ont été reçues, mais aucun match "
+            "n'a pu être analysé."
+        )
 
-if not analyses:
-    errors.append(
-        "Des données ont peut-être été reçues, "
-        "mais aucun match n'a pu être analysé."
-    )
-
-return analyses, errors
+    return analyses, errors
     
     
 # ----------------------------------------------------------
