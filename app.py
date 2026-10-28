@@ -1220,6 +1220,7 @@ with st.sidebar:
 "⚽ Buteurs du jour",
 "🏆 Classement IA",
 "🧾 Combinés IA",
+"📋 Fiches Unibet",
 "💶 Mes paris",
 ],
         label_visibility="collapsed",
