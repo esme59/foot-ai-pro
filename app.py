@@ -1194,68 +1194,65 @@ TENNIS_API_BASE = (
 
 @st.cache_data(ttl=1800, show_spinner=False)
 def get_tennis_scoreboard(tour, date_range=None):
-    """Charge les tournois ATP ou WTA jour par jour."""
+    """Récupère les matchs ATP ou WTA depuis ESPN."""
 
-    if tour not in {"atp", "wta"}:
-        return {
-            "ok": False,
-            "events": [],
-            "error": "Circuit tennis non reconnu.",
-        }
+    url = (
+        "https://site.api.espn.com/apis/site/v2/"
+        f"sports/tennis/{tour.lower()}/scoreboard"
+    )
 
-    today = now_local().date()
-
-    # ESPN semble désormais mieux répondre avec une date par requête.
-    # On interroge les derniers jours et les prochains jours.
-    dates = [
-        today + timedelta(days=offset)
-        for offset in range(-7, 8)
-    ]
-
-    events_by_id = {}
-    errors = []
-
-    for day in dates:
-        date_str = day.strftime("%Y%m%d")
-
-        try:
+    try:
+        if date_range:
+            params = {"dates": date_range}
             response = requests.get(
-                f"{TENNIS_API_BASE}/{tour}/scoreboard",
-                params={"dates": date_str},
+                url,
+                params=params,
                 timeout=12,
             )
+            response.raise_for_status()
+            data = response.json()
 
-            if response.status_code != 200:
-                errors.append(f"{date_str}: HTTP {response.status_code}")
-                continue
+            return {
+                "ok": True,
+                "events": data.get("events", []),
+                "error": "",
+            }
 
-            payload = response.json()
+        today = now_local().date()
+        events_by_id = {}
 
-            for event in payload.get("events", []):
+        # Recherche des matchs sur 15 jours
+        for offset in range(-7, 8):
+            date_query = (
+                today + timedelta(days=offset)
+            ).strftime("%Y%m%d")
+
+            response = requests.get(
+                url,
+                params={"dates": date_query},
+                timeout=8,
+            )
+            response.raise_for_status()
+            data = response.json()
+
+            for event in data.get("events", []):
                 event_id = str(event.get("id", ""))
 
                 if event_id:
                     events_by_id[event_id] = event
 
-        except (requests.RequestException, ValueError, TypeError):
-            errors.append(date_str)
-            continue
-
-    if events_by_id:
         return {
             "ok": True,
             "events": list(events_by_id.values()),
             "error": "",
         }
 
-    return {
-        "ok": False,
-        "events": [],
-        "error": (
-            f"Aucun événement reçu pour {tour.upper()}. "
-            "La source ESPN est peut-être temporairement indisponible."
-        ),
-    }
+    except Exception as exc:
+        return {
+            "ok": False,
+            "events": [],
+            "error": f"Erreur ESPN {tour.upper()} : {exc}",
+        }
 
 
 def tennis_get_players(event):
