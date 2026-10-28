@@ -1512,22 +1512,12 @@ def tennis_prepare_analysis(matches, ratings, forms):
 
 
 def tennis_load_data():
-    """Charge les circuits ATP et WTA, puis calcule les Elo."""
-
-    today = now_local().date()
-
-    date_from = (
-        today - timedelta(days=90)
-    ).strftime("%Y%m%d")
-
-    date_to = (
-        today + timedelta(days=7)
-    ).strftime("%Y%m%d")
-    
+    """Charge les matchs ATP et WTA et prépare les analyses."""
 
     all_matches = []
     errors = []
 
+    # Récupération des matchs ATP et WTA
     for tour in ("atp", "wta"):
         response = get_tennis_scoreboard(tour)
 
@@ -1536,30 +1526,23 @@ def tennis_load_data():
             continue
 
         all_matches.extend(
-            tennis_collect_matches(
-                response["events"],
-                tour,
-            )
+            tennis_collect_matches(response["events"], tour)
         )
 
-    ratings = {}
-    forms = {}
-
-    # Classements distincts pour ATP et WTA.
-    # Un classement Elo ATP n'est jamais comparé à un classement WTA.
+    # Préparation des analyses
     analyses = []
 
     for tour in ("ATP", "WTA"):
         tour_matches = [
-            match for match in all_matches
+            match
+            for match in all_matches
             if match["tour"] == tour
         ]
 
+        events_result = get_tennis_scoreboard(tour.lower())
+
         ratings_tour = {}
         forms_tour = {}
-
-        # Les événements de la période sont utilisés pour l'estimation.
-                events_result = get_tennis_scoreboard(tour.lower())
 
         if events_result["ok"]:
             ratings_tour, forms_tour = tennis_update_elo(
@@ -1567,14 +1550,8 @@ def tennis_load_data():
                 ratings_tour,
                 forms_tour,
             )
-
-        analyses.extend(
-            tennis_prepare_analysis(
-                tour_matches,
-                ratings_tour,
-                forms_tour,
-            )
-        )
+        else:
+            errors.append(events_result["error"])
 
         analyses.extend(
             tennis_prepare_analysis(
