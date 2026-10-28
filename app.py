@@ -1193,8 +1193,8 @@ TENNIS_API_BASE = (
 
 
 @st.cache_data(ttl=1800, show_spinner=False)
-def get_tennis_scoreboard(tour, date_range):
-    """Charge les matchs de tennis depuis le scoreboard ESPN."""
+def get_tennis_scoreboard(tour, date_range=None):
+    """Charge les tournois ATP ou WTA jour par jour."""
 
     if tour not in {"atp", "wta"}:
         return {
@@ -1203,38 +1203,59 @@ def get_tennis_scoreboard(tour, date_range):
             "error": "Circuit tennis non reconnu.",
         }
 
-    try:
-        response = requests.get(
-            f"{TENNIS_API_BASE}/{tour}/scoreboard",
-            params={"dates": date_range},
-            timeout=20,
-        )
+    today = now_local().date()
 
-        response.raise_for_status()
-        payload = response.json()
+    # ESPN semble désormais mieux répondre avec une date par requête.
+    # On interroge les derniers jours et les prochains jours.
+    dates = [
+        today + timedelta(days=offset)
+        for offset in range(-7, 8)
+    ]
 
+    events_by_id = {}
+    errors = []
+
+    for day in dates:
+        date_str = day.strftime("%Y%m%d")
+
+        try:
+            response = requests.get(
+                f"{TENNIS_API_BASE}/{tour}/scoreboard",
+                params={"dates": date_str},
+                timeout=12,
+            )
+
+            if response.status_code != 200:
+                errors.append(f"{date_str}: HTTP {response.status_code}")
+                continue
+
+            payload = response.json()
+
+            for event in payload.get("events", []):
+                event_id = str(event.get("id", ""))
+
+                if event_id:
+                    events_by_id[event_id] = event
+
+        except (requests.RequestException, ValueError, TypeError):
+            errors.append(date_str)
+            continue
+
+    if events_by_id:
         return {
             "ok": True,
-            "events": payload.get("events", []),
+            "events": list(events_by_id.values()),
             "error": "",
         }
 
-    except requests.RequestException:
-        return {
-            "ok": False,
-            "events": [],
-            "error": (
-                f"Impossible de charger les données "
-                f"{tour.upper()} pour le moment."
-            ),
-        }
-
-    except (ValueError, TypeError):
-        return {
-            "ok": False,
-            "events": [],
-            "error": "Réponse des données tennis illisible.",
-        }
+    return {
+        "ok": False,
+        "events": [],
+        "error": (
+            f"Aucun événement reçu pour {tour.upper()}. "
+            "La source ESPN est peut-être temporairement indisponible."
+        ),
+    }
 
 
 def tennis_get_players(event):
