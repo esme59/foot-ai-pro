@@ -1220,7 +1220,7 @@ with st.sidebar:
 "⚽ Buteurs du jour",
 "🏆 Classement IA",
 "🧾 Combinés IA",
-"🧾 Combinés IA",
+"🎾 Tennis IA",
 "💶 Mes paris",
 ],
         label_visibility="collapsed",
