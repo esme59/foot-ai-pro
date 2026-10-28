@@ -1561,18 +1561,18 @@ def tennis_prepare_analysis(matches, ratings, forms):
 
 
 def tennis_load_data():
-    """Charge les matchs ATP et WTA et prépare les analyses."""
+    """Charge les matchs ATP et WTA et calcule les probabilités."""
 
     all_matches = []
     errors = []
 
-    # Récupération des matchs
+    # Récupérer les matchs ATP et WTA
     for tour in ("atp", "wta"):
         response = get_tennis_scoreboard(tour)
 
         if not response.get("ok"):
             errors.append(
-                response.get("error", f"Erreur de récupération {tour.upper()}")
+                response.get("error", f"Erreur {tour.upper()}")
             )
             continue
 
@@ -1582,38 +1582,45 @@ def tennis_load_data():
             tennis_collect_matches(events, tour)
         )
 
-    # Préparation des analyses
     analyses = []
 
+    # Calculer les analyses pour chaque circuit
     for tour in ("ATP", "WTA"):
         tour_matches = [
-            match
-            for match in all_matches
+            match for match in all_matches
             if match.get("tour") == tour
         ]
 
+        # Initialisation des classements
         ratings_tour = {}
         forms_tour = {}
 
-        # Calcul des analyses uniquement si des matchs existent
-        if tour_matches:
-            analyses.extend(
-                tennis_prepare_analysis(
-                    tour_matches,
-                    ratings_tour,
-                    forms_tour,
-                )
+        # Récupérer les résultats terminés pour mettre à jour les Elo
+        response = get_tennis_scoreboard(tour.lower())
+
+        if response.get("ok"):
+            ratings_tour, forms_tour = tennis_update_elo(
+                response.get("events", []),
+                ratings_tour,
+                forms_tour,
             )
 
-    if not all_matches:
-        errors.append(
-            "Aucun match reçu depuis ESPN pour ATP et WTA. "
-            "Vérifie la source des données."
+        # Calculer les probabilités des matchs
+        analyses.extend(
+            tennis_prepare_analysis(
+                tour_matches,
+                ratings_tour,
+                forms_tour,
+            )
         )
-    elif not analyses:
+
+    if not all_matches:
+        errors.append("Aucun match reçu depuis ESPN.")
+
+    if all_matches and not analyses:
         errors.append(
-            "Les données ont été reçues, mais aucun match "
-            "n'a pu être analysé."
+            "Des matchs ont été reçus, mais aucun n'est actuellement "
+            "considéré comme à venir ou en cours."
         )
 
     return analyses, errors
