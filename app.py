@@ -1180,7 +1180,388 @@ def charger_classement_buteurs(matches):
     )
 
     return classement, ""
+    
+# ----------------------------------------------------------
+# 🎾 TENNIS IA — ATP + WTA
+# Source de données publique ESPN
+# Modèle Elo indicatif
+# ----------------------------------------------------------
 
+TENNIS_API_BASE = (
+    "https://site.api.espn.com/apis/site/v2/sports/tennis"
+)
+
+
+@st.cache_data(ttl=1800, show_spinner=False)
+def get_tennis_scoreboard(tour, date_range):
+    """Charge les matchs de tennis depuis le scoreboard ESPN."""
+
+    if tour not in {"atp", "wta"}:
+        return {
+            "ok": False,
+            "events": [],
+            "error": "Circuit tennis non reconnu.",
+        }
+
+    try:
+        response = requests.get(
+            f"{TENNIS_API_BASE}/{tour}/scoreboard",
+            params={"dates": date_range},
+            timeout=20,
+        )
+
+        response.raise_for_status()
+        payload = response.json()
+
+        return {
+            "ok": True,
+            "events": payload.get("events", []),
+            "error": "",
+        }
+
+    except requests.RequestException:
+        return {
+            "ok": False,
+            "events": [],
+            "error": (
+                f"Impossible de charger les données "
+                f"{tour.upper()} pour le moment."
+            ),
+        }
+
+    except (ValueError, TypeError):
+        return {
+            "ok": False,
+            "events": [],
+            "error": "Réponse des données tennis illisible.",
+        }
+
+
+def tennis_get_players(event):
+    """Récupère les deux joueurs d'un événement ESPN."""
+
+    competitions = event.get("competitions", [])
+
+    if not competitions:
+        return []
+
+    competitors = competitions[0].get("competitors", [])
+    players = []
+
+    for competitor in competitors:
+        athlete = competitor.get("athlete", {})
+
+        if not isinstance(athlete, dict):
+            athlete = {}
+
+        name = (
+            athlete.get("displayName")
+            or athlete.get("fullName")
+            or competitor.get("displayName")
+            or competitor.get("name")
+            or "Joueur inconnu"
+        )
+
+        player_id = (
+            athlete.get("id")
+            or competitor.get("id")
+        )
+
+        players.append({
+            "id": str(player_id) if player_id else name,
+            "name": name,
+            "winner": competitor.get("winner", False),
+        })
+
+    return players
+
+
+def tennis_event_status(event):
+    """Renvoie l'état normalisé d'un match."""
+
+    status = event.get("status", {})
+    status_type = status.get("type", {})
+
+    state = str(status_type.get("state", "")).lower()
+    name = str(status_type.get("name", "")).upper()
+    completed = bool(status_type.get("completed", False))
+
+    if completed or state == "post" or "FINAL" in name:
+        return "FINISHED"
+
+    if state == "in" or "PROGRESS" in name:
+        return "LIVE"
+
+    return "UPCOMING"
+
+
+def tennis_event_date(event):
+    """Convertit la date en heure française."""
+
+    return parse_datetime(event.get("date"))
+
+
+def tennis_event_name(event):
+    return (
+        event.get("name")
+        or event.get("shortName")
+        or "Match de tennis"
+    )
+
+
+def tennis_collect_matches(events, tour):
+    """Transforme les événements ESPN en matchs exploitables."""
+
+    matches = []
+
+    for event in events:
+        players = tennis_get_players(event)
+
+        if len(players) < 2:
+            continue
+
+        date = tennis_event_date(event)
+
+        matches.append({
+            "tour": tour.upper(),
+            "event_id": str(event.get("id", "")),
+            "tournament": tennis_event_name(event),
+            "date": date,
+            "status": tennis_event_status(event),
+            "player1": players[0],
+            "player2": players[1],
+        })
+
+    return matches
+
+
+def tennis_update_elo(events, ratings, forms):
+    """
+    Met à jour les classements Elo à partir des matchs terminés.
+    Les matchs sans vainqueur identifiable sont ignorés.
+    """
+
+    completed = []
+
+    for event in events:
+        if tennis_event_status(event) != "FINISHED":
+            continue
+
+        players = tennis_get_players(event)
+
+        if len(players) < 2:
+            continue
+
+        winner_indices = [
+            index
+            for index, player in enumerate(players[:2])
+            if player.get("winner") is True
+        ]
+
+        if len(winner_indices) != 1:
+            continue
+
+        date = tennis_event_date(event)
+
+        completed.append({
+            "date": date,
+            "players": players[:2],
+            "winner_index": winner_indices[0],
+        })
+
+    completed.sort(
+        key=lambda item: (
+            item["date"] or datetime.min.replace(tzinfo=TZ)
+        )
+    )
+
+    for match in completed:
+        player1 = match["players"][0]
+        player2 = match["players"][1]
+
+        id1 = player1["id"]
+        id2 = player2["id"]
+
+        rating1 = ratings.get(id1, 1500.0)
+        rating2 = ratings.get(id2, 1500.0)
+
+        expected1 = 1 / (
+            1 + 10 ** ((rating2 - rating1) / 400)
+        )
+
+        expected2 = 1 - expected1
+
+        if match["winner_index"] == 0:
+            result1 = 1.0
+            result2 = 0.0
+        else:
+            result1 = 0.0
+            result2 = 1.0
+
+        k_factor = 32
+
+        ratings[id1] = (
+            rating1 + k_factor * (result1 - expected1)
+        )
+
+        ratings[id2] = (
+            rating2 + k_factor * (result2 - expected2)
+        )
+
+        forms.setdefault(id1, []).append(result1)
+        forms.setdefault(id2, []).append(result2)
+
+    return ratings, forms
+
+
+def tennis_probability(rating1, rating2):
+    """Probabilité Elo théorique de victoire du premier joueur."""
+
+    difference = max(
+        -1000,
+        min(1000, rating2 - rating1),
+    )
+
+    return 1 / (1 + 10 ** (difference / 400))
+
+
+def tennis_form_text(results):
+    """Affiche les résultats récents disponibles."""
+
+    recent = results[-5:]
+
+    if not recent:
+        return "Historique insuffisant"
+
+    return " ".join(
+        "V" if result == 1 else "D"
+        for result in recent
+    )
+
+
+def tennis_prepare_analysis(matches, ratings, forms):
+    """Prépare les probabilités des matchs à venir."""
+
+    results = []
+
+    for match in matches:
+        if match["status"] not in {"UPCOMING", "LIVE"}:
+            continue
+
+        player1 = match["player1"]
+        player2 = match["player2"]
+
+        id1 = player1["id"]
+        id2 = player2["id"]
+
+        has_history1 = id1 in ratings and bool(forms.get(id1))
+        has_history2 = id2 in ratings and bool(forms.get(id2))
+
+        rating1 = ratings.get(id1, 1500.0)
+        rating2 = ratings.get(id2, 1500.0)
+
+        probability1 = tennis_probability(rating1, rating2)
+        probability2 = 1 - probability1
+
+        if has_history1 and has_history2:
+            quality = "Historique disponible"
+        elif has_history1 or has_history2:
+            quality = "Historique partiel"
+        else:
+            quality = "Données insuffisantes"
+
+        results.append({
+            **match,
+            "rating1": rating1,
+            "rating2": rating2,
+            "probability1": probability1,
+            "probability2": probability2,
+            "form1": tennis_form_text(forms.get(id1, [])),
+            "form2": tennis_form_text(forms.get(id2, [])),
+            "quality": quality,
+            "has_history": has_history1 and has_history2,
+        })
+
+    return sorted(
+        results,
+        key=lambda item: (
+            item["date"] or datetime.max.replace(tzinfo=TZ)
+        ),
+    )
+
+
+def tennis_load_data():
+    """Charge les circuits ATP et WTA, puis calcule les Elo."""
+
+    today = now_local().date()
+
+    date_from = (
+        today - timedelta(days=90)
+    ).strftime("%Y%m%d")
+
+    date_to = (
+        today + timedelta(days=7)
+    ).strftime("%Y%m%d")
+
+    date_range = f"{date_from}-{date_to}"
+
+    all_matches = []
+    errors = []
+
+    for tour in ("atp", "wta"):
+        response = get_tennis_scoreboard(tour, date_range)
+
+        if not response["ok"]:
+            errors.append(response["error"])
+            continue
+
+        all_matches.extend(
+            tennis_collect_matches(
+                response["events"],
+                tour,
+            )
+        )
+
+    ratings = {}
+    forms = {}
+
+    # Classements distincts pour ATP et WTA.
+    # Un classement Elo ATP n'est jamais comparé à un classement WTA.
+    analyses = []
+
+    for tour in ("ATP", "WTA"):
+        tour_matches = [
+            match for match in all_matches
+            if match["tour"] == tour
+        ]
+
+        ratings_tour = {}
+        forms_tour = {}
+
+        # Les événements de la période sont utilisés pour l'estimation.
+        events_result = get_tennis_scoreboard(
+            tour.lower(),
+            date_range,
+        )
+
+        if events_result["ok"]:
+            ratings_tour, forms_tour = tennis_update_elo(
+                events_result["events"],
+                ratings_tour,
+                forms_tour,
+            )
+
+        analyses.extend(
+            tennis_prepare_analysis(
+                tour_matches,
+                ratings_tour,
+                forms_tour,
+            )
+        )
+
+    return analyses, errors
+    
+    
 # ----------------------------------------------------------
 # STATISTIQUES DES PARIS
 # ----------------------------------------------------------
