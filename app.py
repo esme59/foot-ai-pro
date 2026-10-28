@@ -1666,7 +1666,7 @@ upcoming = []
 history = []
 analyses = []
 
-if page != "💶 Mes paris":
+if page not in {"💶 Mes paris", "🎾 Tennis IA"}:
     if not selected_codes:
         st.warning("Sélectionne au moins une compétition.")
 
