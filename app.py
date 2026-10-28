@@ -1558,7 +1558,18 @@ def tennis_load_data():
             )
         )
 
-    return analyses, errors
+    if not all_matches:
+    errors.append(
+        "Aucun match reçu depuis ESPN pour ATP et WTA."
+    )
+
+if not analyses:
+    errors.append(
+        "Des données ont peut-être été reçues, "
+        "mais aucun match n'a pu être analysé."
+    )
+
+return analyses, errors
     
     
 # ----------------------------------------------------------
