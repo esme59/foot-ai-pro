@@ -1523,8 +1523,7 @@ def tennis_load_data():
     date_to = (
         today + timedelta(days=7)
     ).strftime("%Y%m%d")
-
-    date_range = f"{date_from}-{date_to}"
+    
 
     all_matches = []
     errors = []
