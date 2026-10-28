@@ -952,234 +952,6 @@ def predictions_for_matches(matches, history):
 
     return result
 
-# ----------------------------------------------------------
-# BUTEURS DU JOUR — API-FOOTBALL
-# ----------------------------------------------------------
-
-API_FOOTBALL_BASE = "https://v3.football.api-sports.io"
-
-
-def api_football_key():
-    try:
-        key = st.secrets.get("API_FOOTBALL_KEY", "")
-        if key:
-            return str(key).strip()
-    except Exception:
-        pass
-
-    return os.getenv("API_FOOTBALL_KEY", "").strip()
-
-
-@st.cache_data(ttl=1800, show_spinner=False)
-def get_api_football(endpoint, params_json, token):
-    if not token:
-        return {
-            "ok": False,
-            "error": "Clé API_FOOTBALL_KEY manquante.",
-            "data": [],
-        }
-
-    try:
-        params = json.loads(params_json)
-
-        response = requests.get(
-            f"{API_FOOTBALL_BASE}/{endpoint}",
-            headers={"x-apisports-key": token},
-            params=params,
-            timeout=20,
-        )
-
-        if response.status_code in (401, 403):
-            return {
-                "ok": False,
-                "error": "Clé invalide ou accès API non autorisé.",
-                "data": [],
-            }
-
-        if response.status_code == 429:
-            return {
-                "ok": False,
-                "error": "Limite de requêtes API atteinte.",
-                "data": [],
-            }
-
-        response.raise_for_status()
-        payload = response.json()
-
-        return {
-            "ok": True,
-            "error": "",
-            "data": payload.get("response", []),
-        }
-
-    except requests.RequestException:
-        return {
-            "ok": False,
-            "error": "Impossible de contacter l'API-Football.",
-            "data": [],
-        }
-    except (ValueError, TypeError):
-        return {
-            "ok": False,
-            "error": "Réponse API-Football illisible.",
-            "data": [],
-        }
-
-
-def calculer_probabilite_buteur(statistiques):
-    games = statistiques.get("games", {})
-    goals = statistiques.get("goals", {})
-
-    appearances = num(games.get("appearences", 0))
-    minutes = num(games.get("minutes", 0))
-    total_goals = num(goals.get("total", 0))
-
-    if appearances <= 0 or minutes <= 0:
-        return 0.0
-
-    # Estimation du taux de buts par 90 minutes.
-    minutes_per_game = minutes / appearances
-    goals_per_90 = total_goals / (minutes / 90)
-
-    # Estimation prudente du temps de jeu attendu.
-    expected_minutes = min(90.0, max(20.0, minutes_per_game))
-
-    expected_goals = goals_per_90 * expected_minutes / 90
-
-    # Probabilité indicative d'au moins un but.
-    probability = 1 - math.exp(-max(0.0, expected_goals))
-
-    return max(0.0, min(0.95, probability))
-
-
-def charger_classement_buteurs(matches):
-    token = api_football_key()
-
-    if not token:
-        return [], "Ajoute API_FOOTBALL_KEY dans les secrets."
-
-    today = now_local().date().isoformat()
-
-    # Les matchs du jour proviennent de l'API déjà utilisée par l'application.
-    todays_matches = []
-
-    for match in matches:
-        dt = parse_datetime(match.get("utcDate"))
-
-        if dt and dt.date().isoformat() == today:
-            if match.get("status") in {"SCHEDULED", "TIMED"}:
-                todays_matches.append(match)
-
-    if not todays_matches:
-        return [], (
-            "Aucun match programmé aujourd'hui dans les compétitions "
-            "sélectionnées. Vérifie aussi la période choisie."
-        )
-
-    fixtures_result = get_api_football(
-        "fixtures",
-        json.dumps({"date": today}),
-        token,
-    )
-
-    if not fixtures_result["ok"]:
-        return [], fixtures_result["error"]
-
-    fixtures = fixtures_result["data"]
-    classement = []
-    seen_players = set()
-
-    for match in todays_matches:
-        home_name = match.get("homeTeam", {}).get("name", "")
-        away_name = match.get("awayTeam", {}).get("name", "")
-
-        fixture = None
-
-        for item in fixtures:
-            teams = item.get("teams", {})
-            api_home = teams.get("home", {}).get("name", "")
-            api_away = teams.get("away", {}).get("name", "")
-
-            if (
-                home_name.lower() in api_home.lower()
-                or api_home.lower() in home_name.lower()
-            ) and (
-                away_name.lower() in api_away.lower()
-                or api_away.lower() in away_name.lower()
-            ):
-                fixture = item
-                break
-
-        if not fixture:
-            continue
-
-        fixture_info = fixture.get("fixture", {})
-        league_info = fixture.get("league", {})
-        league_id = league_info.get("id")
-        season = league_info.get("season")
-        fixture_id = fixture_info.get("id")
-
-        if not league_id or not season or not fixture_id:
-            continue
-
-        for side in ("home", "away"):
-            team = fixture.get("teams", {}).get(side, {})
-            team_id = team.get("id")
-            team_name = team.get("name", "")
-
-            if not team_id:
-                continue
-
-            players_result = get_api_football(
-                "players",
-                json.dumps({
-                    "team": team_id,
-                    "league": league_id,
-                    "season": season,
-                    "page": 1,
-                }),
-                token,
-            )
-
-            if not players_result["ok"]:
-                continue
-
-            for player_item in players_result["data"]:
-                player = player_item.get("player", {})
-                stats_list = player_item.get("statistics", [])
-
-                if not stats_list:
-                    continue
-
-                stats = stats_list[0]
-                probability = calculer_probabilite_buteur(stats)
-
-                player_id = player.get("id")
-
-                if not player_id or player_id in seen_players:
-                    continue
-
-                seen_players.add(player_id)
-
-                games_info = stats.get("games", {})
-                goals_info = stats.get("goals", {})
-
-                classement.append({
-                    "Joueur": player.get("name", "Inconnu"),
-                    "Équipe": team_name,
-                    "Match": f"{home_name} - {away_name}",
-                    "Buts saison": int(num(goals_info.get("total", 0))),
-                    "Titularisations": int(num(games_info.get("lineups", 0))),
-                    "Minutes": int(num(games_info.get("minutes", 0))),
-                    "Probabilité estimée": probability,
-                })
-
-    classement.sort(
-        key=lambda item: item["Probabilité estimée"],
-        reverse=True,
-    )
-
-    return classement, ""
 
 # ----------------------------------------------------------
 # STATISTIQUES DES PARIS
@@ -1213,16 +985,14 @@ with st.sidebar:
 
     page = st.radio(
         "Menu",
-[
-"🏠 Accueil",
-"🔴 Football Live",
-"🧠 Analyse IA",
-"⚽ Buteurs du jour",
-"🏆 Classement IA",
-"🧾 Combinés IA",
-"🧾 Combinés IA",
-"💶 Mes paris",
-],
+        [
+            "🏠 Accueil",
+            "🔴 Football Live",
+            "🧠 Analyse IA",
+            "🏆 Classement IA",
+            "🧾 Combinés IA",
+            "💶 Mes paris",
+        ],
         label_visibility="collapsed",
     )
 
@@ -1481,10 +1251,38 @@ elif page == "🧠 Analyse IA":
         )
 
     for prediction in analyses:
+        home_crest = prediction.get("home_crest", "")
+        away_crest = prediction.get("away_crest", "")
+
         with st.expander(
             f"{prediction['home']} - {prediction['away']}",
             expanded=False,
         ):
+            logo_home, name_home, versus, logo_away, name_away = st.columns(
+                [1, 3, 1, 1, 3]
+            )
+
+            with logo_home:
+                if home_crest:
+                    st.image(home_crest, width=45)
+                else:
+                    st.write("⚽")
+
+            with name_home:
+                st.markdown(f"**{prediction['home']}**")
+
+            with versus:
+                st.markdown("### VS")
+
+            with logo_away:
+                if away_crest:
+                    st.image(away_crest, width=45)
+                else:
+                    st.write("⚽")
+
+            with name_away:
+                st.markdown(f"**{prediction['away']}**")
+
             st.write(f"**Compétition :** {prediction['league']}")
 
             c1, c2, c3 = st.columns(3)
@@ -1554,63 +1352,81 @@ elif page == "🧠 Analyse IA":
             )
 
 
-# ----------------------------------------------------------
-# BUTEURS DU JOUR
-# ----------------------------------------------------------
 
-elif page == "⚽ Buteurs du jour":
-    st.subheader("⚽ Buteurs du jour")
+            with c1:
+                card(
+                    "Victoire domicile",
+                    pct(prediction["p1"]),
+                )
 
-    st.caption(
-        "Estimations statistiques des chances de marquer. "
-        "Les compositions officielles ne sont pas garanties."
-    )
+            with c2:
+                card(
+                    "Match nul",
+                    pct(prediction["px"]),
+                )
 
-    if st.button("🔄 Actualiser les buteurs"):
-        get_api_football.clear()
-        st.rerun()
+            with c3:
+                card(
+                    "Victoire extérieur",
+                    pct(prediction["p2"]),
+                )
 
-    with st.spinner("Analyse des statistiques des joueurs..."):
-        classement_buteurs, erreur_buteurs = charger_classement_buteurs(
-            matches
-        )
+            st.markdown("#### Marchés statistiques")
 
-    if erreur_buteurs:
-        st.info(erreur_buteurs)
+            market_rows = [
+                {
+                    "Marché": name,
+                    "Probabilité estimée": pct(prob),
+                }
+                for name, prob in prediction["markets"]
+            ]
 
-    elif not classement_buteurs:
-        st.info(
-            "Aucun joueur trouvé pour les matchs du jour. "
-            "Vérifie les matchs disponibles et la clé API."
-        )
+            st.dataframe(
+                pd.DataFrame(market_rows),
+                use_container_width=True,
+                hide_index=True,
+            )
 
-    else:
-        df = pd.DataFrame([
-            {
-                "Joueur": item["Joueur"],
-                "Équipe": item["Équipe"],
-                "Match": item["Match"],
-                "Buts saison": item["Buts saison"],
-                "Titularisations": item["Titularisations"],
-                "Minutes": item["Minutes"],
-                "Probabilité estimée": pct(
-                    item["Probabilité estimée"]
-                ),
-            }
-            for item in classement_buteurs[:30]
-        ])
+            st.markdown(
+                "#### Scores exacts les plus probables"
+            )
 
-        st.dataframe(
-            df,
-            use_container_width=True,
-            hide_index=True,
-        )
+            score_cols = st.columns(3)
 
-        st.warning(
-            "Ces pourcentages sont des estimations, pas des garanties. "
-            "Ils ne prennent pas nécessairement en compte les blessures "
-            "ou les compositions officielles."
-        )
+            for index, (hg, ag, probability) in enumerate(
+                prediction["scores"]
+            ):
+                with score_cols[index]:
+                    card(
+                        f"Score {index + 1}",
+                        f"{hg} - {ag}",
+                        pct(probability),
+                    )
+
+            st.markdown("#### Indicateurs des équipes")
+
+            left, right = st.columns(2)
+
+            with left:
+                card(
+                    f"Buts attendus · {prediction['home']}",
+                    f"{prediction['lambda_home']:.2f}",
+                    f"{prediction['home_games']} matchs historiques",
+                )
+
+            with right:
+                card(
+                    f"Buts attendus · {prediction['away']}",
+                    f"{prediction['lambda_away']:.2f}",
+                    f"{prediction['away_games']} matchs historiques",
+                )
+
+            st.caption(
+                f"Qualité indicative de l'historique : "
+                f"{prediction['confidence']}. "
+                "Les blessures, compositions et cotes ne sont pas intégrées "
+                "si elles ne sont pas disponibles via la source de données."
+            )
 
 
 # ----------------------------------------------------------
