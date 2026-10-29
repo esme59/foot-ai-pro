@@ -983,9 +983,7 @@ return {
 }
 
 # ----------------------------------------------------------
-
 # BUTEURS DU JOUR — API-FOOTBALL
-
 # ----------------------------------------------------------
 
 API_FOOTBALL_BASE = "https://v3.football.api-sports.io"
