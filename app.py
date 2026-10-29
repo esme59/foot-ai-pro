@@ -970,17 +970,17 @@ return result
 # ----------------------------------------------------------
 
 def catboost_status():
-"""Indique si CatBoost est disponible."""
-if not CATBOOST_AVAILABLE:
-return {
-"available": False,
-"message": "CatBoost n’est pas installé. Vérifie requirements.txt."
-}
+    """Indique si CatBoost est disponible."""
+    if not CATBOOST_AVAILABLE:
+        return {
+            "available": False,
+            "message": "CatBoost n'est pas installe."
+        }
 
-return {
-    "available": True,
-    "message": "CatBoost est installé. Le modèle doit encore être entraîné sur des données historiques."
-}
+    return {
+        "available": True,
+        "message": "CatBoost est installe, mais le modele doit encore etre entraine."
+    }
 
 # ----------------------------------------------------------
 # BUTEURS DU JOUR — API-FOOTBALL
