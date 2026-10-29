@@ -990,7 +990,7 @@ def catboost_status():
 # ----------------------------------------------------------
 
 def lightgbm_status():
-“”“Indique si LightGBM est disponible et entraîné.”””
+"""Indique si LightGBM est disponible et entraîné."""
 
 if not LIGHTGBM_AVAILABLE:
     return {
