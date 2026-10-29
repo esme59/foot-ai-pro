@@ -970,11 +970,11 @@ return result
 # ----------------------------------------------------------
 
 def catboost_status():
-“”“Indique si CatBoost est disponible.”””
+"""Indique si CatBoost est disponible."""
 if not CATBOOST_AVAILABLE:
 return {
-“available”: False,
-“message”: “CatBoost n’est pas installé. Vérifie requirements.txt.”
+"available": False,
+"message": "CatBoost n’est pas installé. Vérifie requirements.txt."
 }
 
 return {
