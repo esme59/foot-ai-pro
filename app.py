@@ -22,10 +22,10 @@ except ImportError:
 #==========================================================
 
 try:
-from lightgbm import LGBMClassifier
-LIGHTGBM_AVAILABLE = True
+    from lightgbm import LGBMClassifier
+    LIGHTGBM_AVAILABLE = True
 except ImportError:
-LIGHTGBM_AVAILABLE = False
+    LIGHTGBM_AVAILABLE = False
 
 # ==========================================================
 # FOOT AI PRO ULTIMATE
