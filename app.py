@@ -17,7 +17,16 @@ try:
     CATBOOST_AVAILABLE = True
 except ImportError:
     CATBOOST_AVAILABLE = False
-    
+#==========================================================
+#IA LIGHTGBM — ACTIVATION SÉCURISÉ
+#==========================================================
+
+try:
+from lightgbm import LGBMClassifier
+LIGHTGBM_AVAILABLE = True
+except ImportError:
+LIGHTGBM_AVAILABLE = False
+
 # ==========================================================
 # FOOT AI PRO ULTIMATE
 # Interface + analyses statistiques + combinés virtuels
