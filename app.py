@@ -10,6 +10,15 @@ import pandas as pd
 import streamlit as st
 
 # ==========================================================
+# IA CATBOOST — ACTIVATION SÉCURISÉE
+# ==========================================================
+try:
+    from catboost import CatBoostClassifier
+    CATBOOST_AVAILABLE = True
+except ImportError:
+    CATBOOST_AVAILABLE = False
+    
+# ==========================================================
 # FOOT AI PRO ULTIMATE
 # Interface + analyses statistiques + combinés virtuels
 # API : football-data.org v4
