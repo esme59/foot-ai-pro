@@ -958,7 +958,7 @@ for match in matches:
     if analysis.get("ready"):
         result.append(analysis)
         
-return result
+    return result
 
 # ----------------------------------------------------------
 
