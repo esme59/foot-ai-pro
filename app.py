@@ -960,9 +960,7 @@ for match in matches:
     return result
 
 # ----------------------------------------------------------
-
 # IA CATBOOST — BASE DE PRÉPARATION
-
 # ----------------------------------------------------------
 
 def catboost_status():
