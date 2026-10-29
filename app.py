@@ -948,16 +948,15 @@ def display_match(match, prediction=None):
             f"Fiabilité des données : {prediction['confidence']}."
         )
 
-
 def predictions_for_matches(matches, history):
     result = []
 
-for match in matches:
-    analysis = analyze_match(match, history)
-    analysis["match"] = match
-    if analysis.get("ready"):
-        result.append(analysis)
-        
+    for match in matches:
+        analysis = analyze_match(match, history)
+        analysis["match"] = match
+        if analysis.get("ready"):
+            result.append(analysis)
+
     return result
 
 # ----------------------------------------------------------
