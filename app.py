@@ -998,10 +998,10 @@ if not LIGHTGBM_AVAILABLE:
         "trained": False,
         "message": "LightGBM n'est pas installé.",
     }
-return {
-    "available": True,
-    "trained": False,
-    "message": (
+    return {
+        "available": True,
+        "trained": False,
+        "message": (
         "LightGBM est installé, mais son entraînement "
         "et ses prédictions restent à configurer."
     ),
