@@ -961,8 +961,31 @@ def predictions_for_matches(matches, history):
 
     return result
 
+return result
+
 # ----------------------------------------------------------
-# BUTEURS DU JOUR — API-FOOTBALL
+
+IA CATBOOST — BASE DE PRÉPARATION
+
+# ----------------------------------------------------------
+
+def catboost_status():
+“”“Indique si CatBoost est disponible.”””
+if not CATBOOST_AVAILABLE:
+return {
+“available”: False,
+“message”: “CatBoost n’est pas installé. Vérifie requirements.txt.”
+}
+
+return {
+    "available": True,
+    "message": "CatBoost est installé. Le modèle doit encore être entraîné sur des données historiques."
+}
+
+# ----------------------------------------------------------
+
+BUTEURS DU JOUR — API-FOOTBALL
+
 # ----------------------------------------------------------
 
 API_FOOTBALL_BASE = "https://v3.football.api-sports.io"
