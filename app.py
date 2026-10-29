@@ -989,23 +989,31 @@ def catboost_status():
 #IA LIGHTGBM — STATUT DU MODÈLE
 # ----------------------------------------------------------
 
+try:
+    import lightgbm  # noqa: F401
+    LIGHTGBM_AVAILABLE = True
+except ImportError:
+    LIGHTGBM_AVAILABLE = False
+
+
 def lightgbm_status():
     """Indique si LightGBM est disponible et entraîné."""
+    if not LIGHTGBM_AVAILABLE:
+        return {
+            "available": False,
+            "trained": False,
+            "message": "LightGBM n'est pas installé.",
+        }
 
-if not LIGHTGBM_AVAILABLE:
-    return {
-        "available": False,
-        "trained": False,
-        "message": "LightGBM n'est pas installé.",
-    }
     return {
         "available": True,
         "trained": False,
         "message": (
-        "LightGBM est installé, mais son entraînement "
-        "et ses prédictions restent à configurer."
-    ),
-}
+            "LightGBM est installé, mais son entraînement "
+            "et ses prédictions restent à configurer."
+        ),
+    }
+
 # ----------------------------------------------------------
 # BUTEURS DU JOUR — API-FOOTBALL
 # ----------------------------------------------------------
