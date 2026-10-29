@@ -18,8 +18,9 @@ import requests
 API_BASE = "https://api.football-data.org/v4"
 STATE_FILE = Path("data/bankroll.json")
 
-INITIAL_BANKROLL = 20.0
-MAX_STAKE = 1.0
+INITIAL_BANKROLL = 1000.0
+STAKE_FRACTION = 0.005
+MAX_STAKE = 5.0
 MAX_NEW_BETS_PER_DAY = 6
 MAX_BACKTESTS_PER_DAY = 6
 
@@ -662,10 +663,18 @@ def create_virtual_bet(state, match, competition_code, prediction):
     if match_local_date(match) != local_date():
         return False
 
-    stake = min(
-        MAX_STAKE,
-        max(0.0, safe_float(state.get("bankroll"))),
-    )
+    current_bankroll = max(
+0.0,
+safe_float(state.get("bankroll")),
+)
+
+stake = round_money(
+min(
+MAX_STAKE,
+current_bankroll * STAKE_FRACTION,
+current_bankroll,
+)
+)
 
     if stake <= 0:
         log("Capital virtuel insuffisant.")
