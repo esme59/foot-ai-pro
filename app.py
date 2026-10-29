@@ -957,6 +957,7 @@ for match in matches:
     analysis["match"] = match
     if analysis.get("ready"):
         result.append(analysis)
+        
     return result
 
 # ----------------------------------------------------------
