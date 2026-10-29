@@ -984,7 +984,28 @@ def catboost_status():
         "available": True,
         "message": "CatBoost est installe, mais le modele doit encore etre entraine."
     }
+    
+# ----------------------------------------------------------
+#IA LIGHTGBM — STATUT DU MODÈLE
+# ----------------------------------------------------------
 
+def lightgbm_status():
+“”“Indique si LightGBM est disponible et entraîné.”””
+
+if not LIGHTGBM_AVAILABLE:
+    return {
+        "available": False,
+        "trained": False,
+        "message": "LightGBM n'est pas installé.",
+    }
+return {
+    "available": True,
+    "trained": False,
+    "message": (
+        "LightGBM est installé, mais son entraînement "
+        "et ses prédictions restent à configurer."
+    ),
+}
 # ----------------------------------------------------------
 # BUTEURS DU JOUR — API-FOOTBALL
 # ----------------------------------------------------------
