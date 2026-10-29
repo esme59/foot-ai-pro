@@ -1,7 +1,7 @@
 {
   "version": 10,
-  "bankroll_initiale": 1000.0,
-  "bankroll_actuelle": 1000.76,
+  "bankroll_initiale": 100.0,
+  "bankroll_actuelle": 100.76,
   "benefice_total": 0.76,
   "mises_totales": 12.0,
   "gains_totaux": 12.76,
