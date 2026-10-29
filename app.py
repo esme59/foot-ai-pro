@@ -950,7 +950,7 @@ def display_match(match, prediction=None):
 
 
 def predictions_for_matches(matches, history):
-result = []
+    result = []
 
 for match in matches:
     analysis = analyze_match(match, history)
