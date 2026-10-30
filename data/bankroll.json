@@ -1,10 +1,10 @@
 {
   "version": 10,
   "bankroll_initiale": 100.0,
-  "bankroll_actuelle": 101.45,
-  "benefice_total": 1.45,
-  "mises_totales": 14.0,
-  "gains_totaux": 15.45,
+  "bankroll_actuelle": 102.18,
+  "benefice_total": 2.18,
+  "mises_totales": 16.0,
+  "gains_totaux": 18.18,
   "mises_en_cours": 0.0,
   "paris": [
     {
@@ -335,9 +335,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.25,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.25,
+      "status": "WON",
+      "result": "1-5",
+      "returned_amount": 1.25,
+      "settled_at": "2026-10-30T21:26:55.372569+00:00"
     },
     {
       "bet_id": "564737:1X",
@@ -392,9 +394,11 @@
       "exact_score_prediction": "1-1",
       "stake": 1.0,
       "potential_return": 1.48,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.48,
+      "status": "WON",
+      "result": "5-2",
+      "returned_amount": 1.48,
+      "settled_at": "2026-10-30T21:26:55.372678+00:00"
     }
   ],
   "last_updated": "2026-10-26T17:56:44.745862+01:00",
@@ -727,9 +731,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.25,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.25,
+      "status": "WON",
+      "result": "1-5",
+      "returned_amount": 1.25,
+      "settled_at": "2026-10-30T21:26:55.372569+00:00"
     },
     {
       "bet_id": "564737:1X",
@@ -784,9 +790,11 @@
       "exact_score_prediction": "1-1",
       "stake": 1.0,
       "potential_return": 1.48,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.48,
+      "status": "WON",
+      "result": "5-2",
+      "returned_amount": 1.48,
+      "settled_at": "2026-10-30T21:26:55.372678+00:00"
     }
   ],
   "history": [
@@ -929,6 +937,26 @@
       "stake": 1.0,
       "profit": 0.35,
       "settled_at": "2026-10-30T00:30:19.349860+00:00"
+    },
+    {
+      "bet_id": "559644:X2",
+      "match": "Le Havre AC - Paris Saint-Germain FC",
+      "market": "X2",
+      "result": "1-5",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.25,
+      "settled_at": "2026-10-30T21:26:55.372569+00:00"
+    },
+    {
+      "bet_id": "559646:BTTS Oui",
+      "match": "OGC Nice - Stade Rennais FC 1901",
+      "market": "BTTS Oui",
+      "result": "5-2",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.48,
+      "settled_at": "2026-10-30T21:26:55.372678+00:00"
     }
   ],
   "backtests": [
@@ -1542,10 +1570,10 @@
     }
   ],
   "created_at": "2026-10-26T18:11:41.354906+00:00",
-  "bankroll": 101.45,
+  "bankroll": 102.18,
   "initial_bankroll": 100.0,
   "starting_bankroll": 100.0,
-  "profit": 1.45,
+  "profit": 2.18,
   "historique": [
     {
       "bet_id": "559648:Over 1.5",
@@ -1686,15 +1714,35 @@
       "stake": 1.0,
       "profit": 0.35,
       "settled_at": "2026-10-30T00:30:19.349860+00:00"
+    },
+    {
+      "bet_id": "559644:X2",
+      "match": "Le Havre AC - Paris Saint-Germain FC",
+      "market": "X2",
+      "result": "1-5",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.25,
+      "settled_at": "2026-10-30T21:26:55.372569+00:00"
+    },
+    {
+      "bet_id": "559646:BTTS Oui",
+      "match": "OGC Nice - Stade Rennais FC 1901",
+      "market": "BTTS Oui",
+      "result": "5-2",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.48,
+      "settled_at": "2026-10-30T21:26:55.372678+00:00"
     }
   ],
   "statistiques": {
     "total_paris": 19,
-    "paris_gagnes": 12,
+    "paris_gagnes": 14,
     "paris_perdus": 2,
-    "paris_en_attente": 5,
-    "taux_reussite": 85.71
+    "paris_en_attente": 3,
+    "taux_reussite": 87.5
   },
-  "derniere_mise_a_jour": "2026-10-30T18:30:21.248271+00:00",
-  "updated_at": "2026-10-30T18:30:21.248278+00:00"
+  "derniere_mise_a_jour": "2026-10-30T21:27:04.118843+00:00",
+  "updated_at": "2026-10-30T21:27:04.118849+00:00"
 }
