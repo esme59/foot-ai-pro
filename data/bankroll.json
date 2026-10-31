@@ -1,10 +1,10 @@
 {
   "version": 10,
   "bankroll_initiale": 100.0,
-  "bankroll_actuelle": 100.8,
-  "benefice_total": 0.8,
-  "mises_totales": 20.0,
-  "gains_totaux": 20.8,
+  "bankroll_actuelle": 101.78,
+  "benefice_total": 1.78,
+  "mises_totales": 24.0,
+  "gains_totaux": 25.78,
   "mises_en_cours": 0.0,
   "paris": [
     {
@@ -440,9 +440,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.21,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.21,
+      "status": "WON",
+      "result": "2-5",
+      "returned_amount": 1.21,
+      "settled_at": "2026-10-31T21:24:50.603526+00:00"
     },
     {
       "bet_id": "565845:1X",
@@ -459,9 +461,11 @@
       "exact_score_prediction": "2-1",
       "stake": 1.0,
       "potential_return": 1.24,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.24,
+      "status": "WON",
+      "result": "2-2",
+      "returned_amount": 1.24,
+      "settled_at": "2026-10-31T21:24:48.959566+00:00"
     },
     {
       "bet_id": "560627:1X",
@@ -478,9 +482,11 @@
       "exact_score_prediction": "1-1",
       "stake": 1.0,
       "potential_return": 1.24,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.24,
+      "status": "WON",
+      "result": "2-0",
+      "returned_amount": 1.24,
+      "settled_at": "2026-10-31T21:24:45.197798+00:00"
     },
     {
       "bet_id": "565843:Over 2.5",
@@ -518,9 +524,11 @@
       "exact_score_prediction": "1-1",
       "stake": 1.0,
       "potential_return": 1.29,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.29,
+      "status": "WON",
+      "result": "2-1",
+      "returned_amount": 1.29,
+      "settled_at": "2026-10-31T21:24:47.079813+00:00"
     }
   ],
   "last_updated": "2026-10-26T17:56:44.745862+01:00",
@@ -958,9 +966,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.21,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.21,
+      "status": "WON",
+      "result": "2-5",
+      "returned_amount": 1.21,
+      "settled_at": "2026-10-31T21:24:50.603526+00:00"
     },
     {
       "bet_id": "565845:1X",
@@ -977,9 +987,11 @@
       "exact_score_prediction": "2-1",
       "stake": 1.0,
       "potential_return": 1.24,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.24,
+      "status": "WON",
+      "result": "2-2",
+      "returned_amount": 1.24,
+      "settled_at": "2026-10-31T21:24:48.959566+00:00"
     },
     {
       "bet_id": "560627:1X",
@@ -996,9 +1008,11 @@
       "exact_score_prediction": "1-1",
       "stake": 1.0,
       "potential_return": 1.24,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.24,
+      "status": "WON",
+      "result": "2-0",
+      "returned_amount": 1.24,
+      "settled_at": "2026-10-31T21:24:45.197798+00:00"
     },
     {
       "bet_id": "565843:Over 2.5",
@@ -1036,9 +1050,11 @@
       "exact_score_prediction": "1-1",
       "stake": 1.0,
       "potential_return": 1.29,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.29,
+      "status": "WON",
+      "result": "2-1",
+      "returned_amount": 1.29,
+      "settled_at": "2026-10-31T21:24:47.079813+00:00"
     }
   ],
   "history": [
@@ -1241,6 +1257,46 @@
       "stake": 1.0,
       "profit": -1.0,
       "settled_at": "2026-10-31T18:27:33.583779+00:00"
+    },
+    {
+      "bet_id": "560627:1X",
+      "match": "Tottenham Hotspur FC - Crystal Palace FC",
+      "market": "1X",
+      "result": "2-0",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.24,
+      "settled_at": "2026-10-31T21:24:45.197798+00:00"
+    },
+    {
+      "bet_id": "564736:1X",
+      "match": "Real Betis Balompié - Málaga CF",
+      "market": "1X",
+      "result": "2-1",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.29,
+      "settled_at": "2026-10-31T21:24:47.079813+00:00"
+    },
+    {
+      "bet_id": "565845:1X",
+      "match": "FC Bayern München - Borussia Dortmund",
+      "market": "1X",
+      "result": "2-2",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.24,
+      "settled_at": "2026-10-31T21:24:48.959566+00:00"
+    },
+    {
+      "bet_id": "558542:X2",
+      "match": "Udinese Calcio - AS Roma",
+      "market": "X2",
+      "result": "2-5",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.21,
+      "settled_at": "2026-10-31T21:24:50.603526+00:00"
     }
   ],
   "backtests": [
@@ -1949,10 +2005,10 @@
     }
   ],
   "created_at": "2026-10-26T18:11:41.354906+00:00",
-  "bankroll": 100.8,
+  "bankroll": 101.78,
   "initial_bankroll": 100.0,
   "starting_bankroll": 100.0,
-  "profit": 0.8,
+  "profit": 1.78,
   "historique": [
     {
       "bet_id": "559648:Over 1.5",
@@ -2153,15 +2209,55 @@
       "stake": 1.0,
       "profit": -1.0,
       "settled_at": "2026-10-31T18:27:33.583779+00:00"
+    },
+    {
+      "bet_id": "560627:1X",
+      "match": "Tottenham Hotspur FC - Crystal Palace FC",
+      "market": "1X",
+      "result": "2-0",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.24,
+      "settled_at": "2026-10-31T21:24:45.197798+00:00"
+    },
+    {
+      "bet_id": "564736:1X",
+      "match": "Real Betis Balompié - Málaga CF",
+      "market": "1X",
+      "result": "2-1",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.29,
+      "settled_at": "2026-10-31T21:24:47.079813+00:00"
+    },
+    {
+      "bet_id": "565845:1X",
+      "match": "FC Bayern München - Borussia Dortmund",
+      "market": "1X",
+      "result": "2-2",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.24,
+      "settled_at": "2026-10-31T21:24:48.959566+00:00"
+    },
+    {
+      "bet_id": "558542:X2",
+      "match": "Udinese Calcio - AS Roma",
+      "market": "X2",
+      "result": "2-5",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.21,
+      "settled_at": "2026-10-31T21:24:50.603526+00:00"
     }
   ],
   "statistiques": {
     "total_paris": 25,
-    "paris_gagnes": 16,
+    "paris_gagnes": 20,
     "paris_perdus": 4,
-    "paris_en_attente": 5,
-    "taux_reussite": 80.0
+    "paris_en_attente": 1,
+    "taux_reussite": 83.33
   },
-  "derniere_mise_a_jour": "2026-10-31T18:27:36.861832+00:00",
-  "updated_at": "2026-10-31T18:27:36.861836+00:00"
+  "derniere_mise_a_jour": "2026-10-31T21:24:52.422461+00:00",
+  "updated_at": "2026-10-31T21:24:52.422465+00:00"
 }
