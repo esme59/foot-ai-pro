@@ -2231,7 +2231,7 @@ elif page == "🧾 Combinés IA":
         candidates = []
 
         allowed_markets = {
-            "1", "N", "2", "1X", "X2", "12",
+            "1", "N", "2",
             "Plus de 2,5 buts",
             "Moins de 2,5 buts",
             "Plus de 3,5 buts",
