@@ -774,13 +774,11 @@ def analyze_match(match, history):
                 btts += probability
 
     # Marchés autorisés pour les analyses.
+    # Doubles chances supprimées des sélections de paris.
     markets = [
         ("1", p1),
         ("N", px),
         ("2", p2),
-        ("1X", p1 + px),
-        ("X2", px + p2),
-        ("12", p1 + p2),
         ("Plus de 2,5 buts", over25),
         ("Moins de 2,5 buts", 1 - over25),
         ("Plus de 3,5 buts", over35),
