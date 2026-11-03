@@ -1,10 +1,10 @@
 {
   "version": 10,
   "bankroll_initiale": 100.0,
-  "bankroll_actuelle": 100.63,
-  "benefice_total": 0.63,
-  "mises_totales": 35.0,
-  "gains_totaux": 35.63,
+  "bankroll_actuelle": 101.06,
+  "benefice_total": 1.06,
+  "mises_totales": 36.0,
+  "gains_totaux": 37.06,
   "mises_en_cours": 0.0,
   "paris": [
     {
@@ -757,9 +757,11 @@
       "exact_score_prediction": "1-1",
       "stake": 1.0,
       "potential_return": 1.43,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.43,
+      "status": "WON",
+      "result": "0-1",
+      "returned_amount": 1.43,
+      "settled_at": "2026-11-03T03:39:51.404648+00:00"
     },
     {
       "bet_id": "575382:Over 2.5",
@@ -1628,9 +1630,11 @@
       "exact_score_prediction": "1-1",
       "stake": 1.0,
       "potential_return": 1.43,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.43,
+      "status": "WON",
+      "result": "0-1",
+      "returned_amount": 1.43,
+      "settled_at": "2026-11-03T03:39:51.404648+00:00"
     },
     {
       "bet_id": "575382:Over 2.5",
@@ -2097,6 +2101,16 @@
       "stake": 1.0,
       "profit": -1.0,
       "settled_at": "2026-11-03T00:36:44.385213+00:00"
+    },
+    {
+      "bet_id": "560622:Under 3.5",
+      "match": "Newcastle United FC - Everton FC",
+      "market": "Under 3.5",
+      "result": "0-1",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.43,
+      "settled_at": "2026-11-03T03:39:51.404648+00:00"
     }
   ],
   "backtests": [
@@ -3600,13 +3614,32 @@
       "profit_simulated": -1.0,
       "created_at": "2026-11-03T00:36:45.818581+00:00",
       "note": "Simulation rétrospective. Ne modifie pas la bankroll."
+    },
+    {
+      "backtest_id": "BACKTEST:560622:Under 3.5",
+      "match_id": 560622,
+      "date": "2026-11-02",
+      "competition": "PL",
+      "competition_name": "Premier League",
+      "home_team": "Newcastle United FC",
+      "away_team": "Everton FC",
+      "market": "Under 3.5",
+      "probability": 0.7015,
+      "estimated_odds": 1.43,
+      "predicted_score": "1-1",
+      "actual_score": "0-1",
+      "stake_simulated": 1.0,
+      "status": "WON",
+      "profit_simulated": 0.43,
+      "created_at": "2026-11-03T03:39:57.695504+00:00",
+      "note": "Simulation rétrospective. Ne modifie pas la bankroll."
     }
   ],
   "created_at": "2026-10-26T18:11:41.354906+00:00",
-  "bankroll": 100.63,
+  "bankroll": 101.06,
   "initial_bankroll": 100.0,
   "starting_bankroll": 100.0,
-  "profit": 0.63,
+  "profit": 1.06,
   "historique": [
     {
       "bet_id": "559648:Over 1.5",
@@ -3957,15 +3990,25 @@
       "stake": 1.0,
       "profit": -1.0,
       "settled_at": "2026-11-03T00:36:44.385213+00:00"
+    },
+    {
+      "bet_id": "560622:Under 3.5",
+      "match": "Newcastle United FC - Everton FC",
+      "market": "Under 3.5",
+      "result": "0-1",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.43,
+      "settled_at": "2026-11-03T03:39:51.404648+00:00"
     }
   ],
   "statistiques": {
     "total_paris": 42,
-    "paris_gagnes": 28,
+    "paris_gagnes": 29,
     "paris_perdus": 7,
-    "paris_en_attente": 7,
-    "taux_reussite": 80.0
+    "paris_en_attente": 6,
+    "taux_reussite": 80.56
   },
-  "derniere_mise_a_jour": "2026-11-03T00:36:45.846852+00:00",
-  "updated_at": "2026-11-03T00:36:45.846857+00:00"
+  "derniere_mise_a_jour": "2026-11-03T03:39:57.700924+00:00",
+  "updated_at": "2026-11-03T03:39:57.700928+00:00"
 }
