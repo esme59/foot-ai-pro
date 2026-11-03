@@ -1,9 +1,9 @@
 {
   "version": 10,
   "bankroll_initiale": 100.0,
-  "bankroll_actuelle": 101.06,
-  "benefice_total": 1.06,
-  "mises_totales": 36.0,
+  "bankroll_actuelle": 100.06,
+  "benefice_total": 0.06,
+  "mises_totales": 37.0,
   "gains_totaux": 37.06,
   "mises_en_cours": 0.0,
   "paris": [
@@ -873,9 +873,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.27,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": -1.0,
+      "status": "LOST",
+      "result": "2-0",
+      "returned_amount": 0.0,
+      "settled_at": "2026-11-03T21:32:11.727582+00:00"
     }
   ],
   "last_updated": "2026-10-26T17:56:44.745862+01:00",
@@ -1746,9 +1748,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.27,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": -1.0,
+      "status": "LOST",
+      "result": "2-0",
+      "returned_amount": 0.0,
+      "settled_at": "2026-11-03T21:32:11.727582+00:00"
     }
   ],
   "history": [
@@ -2111,6 +2115,16 @@
       "stake": 1.0,
       "profit": 0.43,
       "settled_at": "2026-11-03T03:39:51.404648+00:00"
+    },
+    {
+      "bet_id": "575378:Over 2.5",
+      "match": "Galatasaray SK - VfB Stuttgart",
+      "market": "Over 2.5",
+      "result": "2-0",
+      "status": "LOST",
+      "stake": 1.0,
+      "profit": -1.0,
+      "settled_at": "2026-11-03T21:32:11.727582+00:00"
     }
   ],
   "backtests": [
@@ -3636,10 +3650,10 @@
     }
   ],
   "created_at": "2026-10-26T18:11:41.354906+00:00",
-  "bankroll": 101.06,
+  "bankroll": 100.06,
   "initial_bankroll": 100.0,
   "starting_bankroll": 100.0,
-  "profit": 1.06,
+  "profit": 0.06,
   "historique": [
     {
       "bet_id": "559648:Over 1.5",
@@ -4000,15 +4014,25 @@
       "stake": 1.0,
       "profit": 0.43,
       "settled_at": "2026-11-03T03:39:51.404648+00:00"
+    },
+    {
+      "bet_id": "575378:Over 2.5",
+      "match": "Galatasaray SK - VfB Stuttgart",
+      "market": "Over 2.5",
+      "result": "2-0",
+      "status": "LOST",
+      "stake": 1.0,
+      "profit": -1.0,
+      "settled_at": "2026-11-03T21:32:11.727582+00:00"
     }
   ],
   "statistiques": {
     "total_paris": 42,
     "paris_gagnes": 29,
-    "paris_perdus": 7,
-    "paris_en_attente": 6,
-    "taux_reussite": 80.56
+    "paris_perdus": 8,
+    "paris_en_attente": 5,
+    "taux_reussite": 78.38
   },
-  "derniere_mise_a_jour": "2026-11-03T18:37:30.832091+00:00",
-  "updated_at": "2026-11-03T18:37:30.832096+00:00"
+  "derniere_mise_a_jour": "2026-11-03T21:32:11.734165+00:00",
+  "updated_at": "2026-11-03T21:32:11.734168+00:00"
 }
