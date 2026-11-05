@@ -4314,6 +4314,63 @@
       "profit_simulated": 0.35,
       "created_at": "2026-11-05T00:41:33.263628+00:00",
       "note": "Simulation rétrospective. Ne modifie pas la bankroll."
+    },
+    {
+      "backtest_id": "BACKTEST:575390:X2",
+      "match_id": 575390,
+      "date": "2026-11-04",
+      "competition": "CL",
+      "competition_name": "Ligue des champions",
+      "home_team": "PSV",
+      "away_team": "Club Brugge KV",
+      "market": "X2",
+      "probability": 0.7309,
+      "estimated_odds": 1.37,
+      "predicted_score": "1-1",
+      "actual_score": "1-2",
+      "stake_simulated": 1.0,
+      "status": "WON",
+      "profit_simulated": 0.37,
+      "created_at": "2026-11-05T03:43:29.411233+00:00",
+      "note": "Simulation rétrospective. Ne modifie pas la bankroll."
+    },
+    {
+      "backtest_id": "BACKTEST:575392:BTTS Oui",
+      "match_id": 575392,
+      "date": "2026-11-04",
+      "competition": "CL",
+      "competition_name": "Ligue des champions",
+      "home_team": "FC Porto",
+      "away_team": "SSC Napoli",
+      "market": "BTTS Oui",
+      "probability": 0.6753,
+      "estimated_odds": 1.48,
+      "predicted_score": "1-1",
+      "actual_score": "4-1",
+      "stake_simulated": 1.0,
+      "status": "WON",
+      "profit_simulated": 0.48,
+      "created_at": "2026-11-05T03:43:29.411668+00:00",
+      "note": "Simulation rétrospective. Ne modifie pas la bankroll."
+    },
+    {
+      "backtest_id": "BACKTEST:575391:BTTS Oui",
+      "match_id": 575391,
+      "date": "2026-11-04",
+      "competition": "CL",
+      "competition_name": "Ligue des champions",
+      "home_team": "Borussia Dortmund",
+      "away_team": "Real Betis Balompié",
+      "market": "BTTS Oui",
+      "probability": 0.6725,
+      "estimated_odds": 1.49,
+      "predicted_score": "1-1",
+      "actual_score": "2-1",
+      "stake_simulated": 1.0,
+      "status": "WON",
+      "profit_simulated": 0.49,
+      "created_at": "2026-11-05T03:43:29.411457+00:00",
+      "note": "Simulation rétrospective. Ne modifie pas la bankroll."
     }
   ],
   "created_at": "2026-10-26T18:11:41.354906+00:00",
@@ -4810,6 +4867,6 @@
     "paris_en_attente": 0,
     "taux_reussite": 81.25
   },
-  "derniere_mise_a_jour": "2026-11-05T00:41:33.268504+00:00",
-  "updated_at": "2026-11-05T00:41:33.268508+00:00"
+  "derniere_mise_a_jour": "2026-11-05T03:43:29.417161+00:00",
+  "updated_at": "2026-11-05T03:43:29.417193+00:00"
 }
