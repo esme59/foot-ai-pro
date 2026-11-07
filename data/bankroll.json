@@ -1,10 +1,10 @@
 {
   "version": 10,
   "bankroll_initiale": 100.0,
-  "bankroll_actuelle": 101.69,
-  "benefice_total": 1.69,
-  "mises_totales": 53.0,
-  "gains_totaux": 54.69,
+  "bankroll_actuelle": 101.28,
+  "benefice_total": 1.28,
+  "mises_totales": 57.0,
+  "gains_totaux": 58.28,
   "mises_en_cours": 0.0,
   "paris": [
     {
@@ -1154,9 +1154,11 @@
       "exact_score_prediction": "1-3",
       "stake": 1.0,
       "potential_return": 1.14,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.14,
+      "status": "WON",
+      "result": "1-2",
+      "returned_amount": 1.14,
+      "settled_at": "2026-11-07T18:27:57.890777+00:00"
     },
     {
       "bet_id": "558531:Over 2.5",
@@ -1192,9 +1194,11 @@
       "exact_score_prediction": "1-0",
       "stake": 1.0,
       "potential_return": 1.22,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.22,
+      "status": "WON",
+      "result": "1-1",
+      "returned_amount": 1.22,
+      "settled_at": "2026-11-07T18:27:54.533149+00:00"
     },
     {
       "bet_id": "565848:Over 2.5",
@@ -1211,9 +1215,11 @@
       "exact_score_prediction": "2-1",
       "stake": 1.0,
       "potential_return": 1.23,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.23,
+      "status": "WON",
+      "result": "5-2",
+      "returned_amount": 1.23,
+      "settled_at": "2026-11-07T18:27:57.890851+00:00"
     },
     {
       "bet_id": "558534:X2",
@@ -1230,9 +1236,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.26,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": -1.0,
+      "status": "LOST",
+      "result": "1-0",
+      "returned_amount": 0.0,
+      "settled_at": "2026-11-07T18:27:59.689662+00:00"
     }
   ],
   "last_updated": "2026-10-26T17:56:44.745862+01:00",
@@ -2384,9 +2392,11 @@
       "exact_score_prediction": "1-3",
       "stake": 1.0,
       "potential_return": 1.14,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.14,
+      "status": "WON",
+      "result": "1-2",
+      "returned_amount": 1.14,
+      "settled_at": "2026-11-07T18:27:57.890777+00:00"
     },
     {
       "bet_id": "558531:Over 2.5",
@@ -2422,9 +2432,11 @@
       "exact_score_prediction": "1-0",
       "stake": 1.0,
       "potential_return": 1.22,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.22,
+      "status": "WON",
+      "result": "1-1",
+      "returned_amount": 1.22,
+      "settled_at": "2026-11-07T18:27:54.533149+00:00"
     },
     {
       "bet_id": "565848:Over 2.5",
@@ -2441,9 +2453,11 @@
       "exact_score_prediction": "2-1",
       "stake": 1.0,
       "potential_return": 1.23,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.23,
+      "status": "WON",
+      "result": "5-2",
+      "returned_amount": 1.23,
+      "settled_at": "2026-11-07T18:27:57.890851+00:00"
     },
     {
       "bet_id": "558534:X2",
@@ -2460,9 +2474,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.26,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": -1.0,
+      "status": "LOST",
+      "result": "1-0",
+      "returned_amount": 0.0,
+      "settled_at": "2026-11-07T18:27:59.689662+00:00"
     }
   ],
   "history": [
@@ -2995,6 +3011,46 @@
       "stake": 1.0,
       "profit": 0.44,
       "settled_at": "2026-11-07T00:36:20.998301+00:00"
+    },
+    {
+      "bet_id": "560633:Under 3.5",
+      "match": "Fulham FC - Newcastle United FC",
+      "market": "Under 3.5",
+      "result": "1-1",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.22,
+      "settled_at": "2026-11-07T18:27:54.533149+00:00"
+    },
+    {
+      "bet_id": "565851:Over 2.5",
+      "match": "1. FSV Mainz 05 - FC Bayern München",
+      "market": "Over 2.5",
+      "result": "1-2",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.14,
+      "settled_at": "2026-11-07T18:27:57.890777+00:00"
+    },
+    {
+      "bet_id": "565848:Over 2.5",
+      "match": "RB Leipzig - FC Augsburg",
+      "market": "Over 2.5",
+      "result": "5-2",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.23,
+      "settled_at": "2026-11-07T18:27:57.890851+00:00"
+    },
+    {
+      "bet_id": "558534:X2",
+      "match": "Cagliari Calcio - Frosinone Calcio",
+      "market": "X2",
+      "result": "1-0",
+      "status": "LOST",
+      "stake": 1.0,
+      "profit": -1.0,
+      "settled_at": "2026-11-07T18:27:59.689662+00:00"
     }
   ],
   "backtests": [
@@ -4957,10 +5013,10 @@
     }
   ],
   "created_at": "2026-10-26T18:11:41.354906+00:00",
-  "bankroll": 101.69,
+  "bankroll": 101.28,
   "initial_bankroll": 100.0,
   "starting_bankroll": 100.0,
-  "profit": 1.69,
+  "profit": 1.28,
   "historique": [
     {
       "bet_id": "559648:Over 1.5",
@@ -5491,15 +5547,55 @@
       "stake": 1.0,
       "profit": 0.44,
       "settled_at": "2026-11-07T00:36:20.998301+00:00"
+    },
+    {
+      "bet_id": "560633:Under 3.5",
+      "match": "Fulham FC - Newcastle United FC",
+      "market": "Under 3.5",
+      "result": "1-1",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.22,
+      "settled_at": "2026-11-07T18:27:54.533149+00:00"
+    },
+    {
+      "bet_id": "565851:Over 2.5",
+      "match": "1. FSV Mainz 05 - FC Bayern München",
+      "market": "Over 2.5",
+      "result": "1-2",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.14,
+      "settled_at": "2026-11-07T18:27:57.890777+00:00"
+    },
+    {
+      "bet_id": "565848:Over 2.5",
+      "match": "RB Leipzig - FC Augsburg",
+      "market": "Over 2.5",
+      "result": "5-2",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.23,
+      "settled_at": "2026-11-07T18:27:57.890851+00:00"
+    },
+    {
+      "bet_id": "558534:X2",
+      "match": "Cagliari Calcio - Frosinone Calcio",
+      "market": "X2",
+      "result": "1-0",
+      "status": "LOST",
+      "stake": 1.0,
+      "profit": -1.0,
+      "settled_at": "2026-11-07T18:27:59.689662+00:00"
     }
   ],
   "statistiques": {
     "total_paris": 59,
-    "paris_gagnes": 43,
-    "paris_perdus": 10,
-    "paris_en_attente": 6,
-    "taux_reussite": 81.13
+    "paris_gagnes": 46,
+    "paris_perdus": 11,
+    "paris_en_attente": 2,
+    "taux_reussite": 80.7
   },
-  "derniere_mise_a_jour": "2026-11-07T15:26:59.605232+00:00",
-  "updated_at": "2026-11-07T15:26:59.605239+00:00"
+  "derniere_mise_a_jour": "2026-11-07T18:28:01.657306+00:00",
+  "updated_at": "2026-11-07T18:28:01.657311+00:00"
 }
