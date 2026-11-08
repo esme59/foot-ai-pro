@@ -1,10 +1,10 @@
 {
   "version": 10,
   "bankroll_initiale": 100.0,
-  "bankroll_actuelle": 101.56,
-  "benefice_total": 1.56,
-  "mises_totales": 59.0,
-  "gains_totaux": 60.56,
+  "bankroll_actuelle": 99.83,
+  "benefice_total": -0.17,
+  "mises_totales": 62.0,
+  "gains_totaux": 61.83,
   "mises_en_cours": 0.0,
   "paris": [
     {
@@ -1280,9 +1280,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.24,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": -1.0,
+      "status": "LOST",
+      "result": "1-0",
+      "returned_amount": 0.0,
+      "settled_at": "2026-11-08T18:28:27.602378+00:00"
     },
     {
       "bet_id": "564746:Over 2.5",
@@ -1318,9 +1320,11 @@
       "exact_score_prediction": "2-1",
       "stake": 1.0,
       "potential_return": 1.26,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": -1.0,
+      "status": "LOST",
+      "result": "0-1",
+      "returned_amount": 0.0,
+      "settled_at": "2026-11-08T18:28:32.449937+00:00"
     },
     {
       "bet_id": "559634:X2",
@@ -1356,9 +1360,11 @@
       "exact_score_prediction": "2-1",
       "stake": 1.0,
       "potential_return": 1.27,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.27,
+      "status": "WON",
+      "result": "2-0",
+      "returned_amount": 1.27,
+      "settled_at": "2026-11-08T18:28:27.602483+00:00"
     }
   ],
   "last_updated": "2026-10-26T17:56:44.745862+01:00",
@@ -2636,9 +2642,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.24,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": -1.0,
+      "status": "LOST",
+      "result": "1-0",
+      "returned_amount": 0.0,
+      "settled_at": "2026-11-08T18:28:27.602378+00:00"
     },
     {
       "bet_id": "564746:Over 2.5",
@@ -2674,9 +2682,11 @@
       "exact_score_prediction": "2-1",
       "stake": 1.0,
       "potential_return": 1.26,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": -1.0,
+      "status": "LOST",
+      "result": "0-1",
+      "returned_amount": 0.0,
+      "settled_at": "2026-11-08T18:28:32.449937+00:00"
     },
     {
       "bet_id": "559634:X2",
@@ -2712,9 +2722,11 @@
       "exact_score_prediction": "2-1",
       "stake": 1.0,
       "potential_return": 1.27,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.27,
+      "status": "WON",
+      "result": "2-0",
+      "returned_amount": 1.27,
+      "settled_at": "2026-11-08T18:28:27.602483+00:00"
     }
   ],
   "history": [
@@ -3307,6 +3319,36 @@
       "stake": 1.0,
       "profit": 0.19,
       "settled_at": "2026-11-08T00:35:27.623229+00:00"
+    },
+    {
+      "bet_id": "560636:X2",
+      "match": "Sunderland AFC - Chelsea FC",
+      "market": "X2",
+      "result": "1-0",
+      "status": "LOST",
+      "stake": 1.0,
+      "profit": -1.0,
+      "settled_at": "2026-11-08T18:28:27.602378+00:00"
+    },
+    {
+      "bet_id": "560638:1X",
+      "match": "Brighton & Hove Albion FC - Brentford FC",
+      "market": "1X",
+      "result": "2-0",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.27,
+      "settled_at": "2026-11-08T18:28:27.602483+00:00"
+    },
+    {
+      "bet_id": "558538:Over 2.5",
+      "match": "AC Monza - Atalanta BC",
+      "market": "Over 2.5",
+      "result": "0-1",
+      "status": "LOST",
+      "stake": 1.0,
+      "profit": -1.0,
+      "settled_at": "2026-11-08T18:28:32.449937+00:00"
     }
   ],
   "backtests": [
@@ -5630,10 +5672,10 @@
     }
   ],
   "created_at": "2026-10-26T18:11:41.354906+00:00",
-  "bankroll": 101.56,
+  "bankroll": 99.83,
   "initial_bankroll": 100.0,
   "starting_bankroll": 100.0,
-  "profit": 1.56,
+  "profit": -0.17,
   "historique": [
     {
       "bet_id": "559648:Over 1.5",
@@ -6224,15 +6266,45 @@
       "stake": 1.0,
       "profit": 0.19,
       "settled_at": "2026-11-08T00:35:27.623229+00:00"
+    },
+    {
+      "bet_id": "560636:X2",
+      "match": "Sunderland AFC - Chelsea FC",
+      "market": "X2",
+      "result": "1-0",
+      "status": "LOST",
+      "stake": 1.0,
+      "profit": -1.0,
+      "settled_at": "2026-11-08T18:28:27.602378+00:00"
+    },
+    {
+      "bet_id": "560638:1X",
+      "match": "Brighton & Hove Albion FC - Brentford FC",
+      "market": "1X",
+      "result": "2-0",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.27,
+      "settled_at": "2026-11-08T18:28:27.602483+00:00"
+    },
+    {
+      "bet_id": "558538:Over 2.5",
+      "match": "AC Monza - Atalanta BC",
+      "market": "Over 2.5",
+      "result": "0-1",
+      "status": "LOST",
+      "stake": 1.0,
+      "profit": -1.0,
+      "settled_at": "2026-11-08T18:28:32.449937+00:00"
     }
   ],
   "statistiques": {
     "total_paris": 65,
-    "paris_gagnes": 48,
-    "paris_perdus": 11,
-    "paris_en_attente": 6,
-    "taux_reussite": 81.36
+    "paris_gagnes": 49,
+    "paris_perdus": 13,
+    "paris_en_attente": 3,
+    "taux_reussite": 79.03
   },
-  "derniere_mise_a_jour": "2026-11-08T15:25:11.289558+00:00",
-  "updated_at": "2026-11-08T15:25:11.289566+00:00"
+  "derniere_mise_a_jour": "2026-11-08T18:28:34.324648+00:00",
+  "updated_at": "2026-11-08T18:28:34.324653+00:00"
 }
