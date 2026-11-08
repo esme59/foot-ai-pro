@@ -1,10 +1,10 @@
 {
   "version": 10,
   "bankroll_initiale": 100.0,
-  "bankroll_actuelle": 99.83,
-  "benefice_total": -0.17,
-  "mises_totales": 62.0,
-  "gains_totaux": 61.83,
+  "bankroll_actuelle": 100.32,
+  "benefice_total": 0.32,
+  "mises_totales": 64.0,
+  "gains_totaux": 64.32,
   "mises_en_cours": 0.0,
   "paris": [
     {
@@ -1261,9 +1261,11 @@
       "exact_score_prediction": "2-1",
       "stake": 1.0,
       "potential_return": 1.23,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.23,
+      "status": "WON",
+      "result": "2-0",
+      "returned_amount": 1.23,
+      "settled_at": "2026-11-08T21:25:26.237485+00:00"
     },
     {
       "bet_id": "560636:X2",
@@ -1341,9 +1343,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.26,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.26,
+      "status": "WON",
+      "result": "0-2",
+      "returned_amount": 1.26,
+      "settled_at": "2026-11-08T21:25:21.279462+00:00"
     },
     {
       "bet_id": "560638:1X",
@@ -2623,9 +2627,11 @@
       "exact_score_prediction": "2-1",
       "stake": 1.0,
       "potential_return": 1.23,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.23,
+      "status": "WON",
+      "result": "2-0",
+      "returned_amount": 1.23,
+      "settled_at": "2026-11-08T21:25:26.237485+00:00"
     },
     {
       "bet_id": "560636:X2",
@@ -2703,9 +2709,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.26,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.26,
+      "status": "WON",
+      "result": "0-2",
+      "returned_amount": 1.26,
+      "settled_at": "2026-11-08T21:25:21.279462+00:00"
     },
     {
       "bet_id": "560638:1X",
@@ -3349,6 +3357,26 @@
       "stake": 1.0,
       "profit": -1.0,
       "settled_at": "2026-11-08T18:28:32.449937+00:00"
+    },
+    {
+      "bet_id": "559634:X2",
+      "match": "Angers SCO - OGC Nice",
+      "market": "X2",
+      "result": "0-2",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.26,
+      "settled_at": "2026-11-08T21:25:21.279462+00:00"
+    },
+    {
+      "bet_id": "565854:1X",
+      "match": "SC Freiburg - 1. FC Union Berlin",
+      "market": "1X",
+      "result": "2-0",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.23,
+      "settled_at": "2026-11-08T21:25:26.237485+00:00"
     }
   ],
   "backtests": [
@@ -5672,10 +5700,10 @@
     }
   ],
   "created_at": "2026-10-26T18:11:41.354906+00:00",
-  "bankroll": 99.83,
+  "bankroll": 100.32,
   "initial_bankroll": 100.0,
   "starting_bankroll": 100.0,
-  "profit": -0.17,
+  "profit": 0.32,
   "historique": [
     {
       "bet_id": "559648:Over 1.5",
@@ -6296,15 +6324,35 @@
       "stake": 1.0,
       "profit": -1.0,
       "settled_at": "2026-11-08T18:28:32.449937+00:00"
+    },
+    {
+      "bet_id": "559634:X2",
+      "match": "Angers SCO - OGC Nice",
+      "market": "X2",
+      "result": "0-2",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.26,
+      "settled_at": "2026-11-08T21:25:21.279462+00:00"
+    },
+    {
+      "bet_id": "565854:1X",
+      "match": "SC Freiburg - 1. FC Union Berlin",
+      "market": "1X",
+      "result": "2-0",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.23,
+      "settled_at": "2026-11-08T21:25:26.237485+00:00"
     }
   ],
   "statistiques": {
     "total_paris": 65,
-    "paris_gagnes": 49,
+    "paris_gagnes": 51,
     "paris_perdus": 13,
-    "paris_en_attente": 3,
-    "taux_reussite": 79.03
+    "paris_en_attente": 1,
+    "taux_reussite": 79.69
   },
-  "derniere_mise_a_jour": "2026-11-08T18:28:34.324648+00:00",
-  "updated_at": "2026-11-08T18:28:34.324653+00:00"
+  "derniere_mise_a_jour": "2026-11-08T21:25:29.487926+00:00",
+  "updated_at": "2026-11-08T21:25:29.487932+00:00"
 }
