@@ -1,10 +1,10 @@
 {
   "version": 10,
   "bankroll_initiale": 100.0,
-  "bankroll_actuelle": 100.32,
-  "benefice_total": 0.32,
-  "mises_totales": 64.0,
-  "gains_totaux": 64.32,
+  "bankroll_actuelle": 100.57,
+  "benefice_total": 0.57,
+  "mises_totales": 65.0,
+  "gains_totaux": 65.57,
   "mises_en_cours": 0.0,
   "paris": [
     {
@@ -1303,9 +1303,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.25,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.25,
+      "status": "WON",
+      "result": "1-2",
+      "returned_amount": 1.25,
+      "settled_at": "2026-11-09T00:38:10.216034+00:00"
     },
     {
       "bet_id": "558538:Over 2.5",
@@ -2669,9 +2671,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.25,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.25,
+      "status": "WON",
+      "result": "1-2",
+      "returned_amount": 1.25,
+      "settled_at": "2026-11-09T00:38:10.216034+00:00"
     },
     {
       "bet_id": "558538:Over 2.5",
@@ -3377,6 +3381,16 @@
       "stake": 1.0,
       "profit": 0.23,
       "settled_at": "2026-11-08T21:25:26.237485+00:00"
+    },
+    {
+      "bet_id": "564746:Over 2.5",
+      "match": "Club Atlético de Madrid - FC Barcelona",
+      "market": "Over 2.5",
+      "result": "1-2",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.25,
+      "settled_at": "2026-11-09T00:38:10.216034+00:00"
     }
   ],
   "backtests": [
@@ -5697,13 +5711,127 @@
       "profit_simulated": -1.0,
       "created_at": "2026-11-08T09:35:58.459761+00:00",
       "note": "Simulation rétrospective. Ne modifie pas la bankroll."
+    },
+    {
+      "backtest_id": "BACKTEST:565854:1X",
+      "match_id": 565854,
+      "date": "2026-11-08",
+      "competition": "BL1",
+      "competition_name": "Bundesliga",
+      "home_team": "SC Freiburg",
+      "away_team": "1. FC Union Berlin",
+      "market": "1X",
+      "probability": 0.8102,
+      "estimated_odds": 1.23,
+      "predicted_score": "2-1",
+      "actual_score": "2-0",
+      "stake_simulated": 1.0,
+      "status": "WON",
+      "profit_simulated": 0.23,
+      "created_at": "2026-11-09T00:38:14.986978+00:00",
+      "note": "Simulation rétrospective. Ne modifie pas la bankroll."
+    },
+    {
+      "backtest_id": "BACKTEST:560636:X2",
+      "match_id": 560636,
+      "date": "2026-11-08",
+      "competition": "PL",
+      "competition_name": "Premier League",
+      "home_team": "Sunderland AFC",
+      "away_team": "Chelsea FC",
+      "market": "X2",
+      "probability": 0.8075,
+      "estimated_odds": 1.24,
+      "predicted_score": "1-2",
+      "actual_score": "1-0",
+      "stake_simulated": 1.0,
+      "status": "LOST",
+      "profit_simulated": -1.0,
+      "created_at": "2026-11-09T00:38:14.985561+00:00",
+      "note": "Simulation rétrospective. Ne modifie pas la bankroll."
+    },
+    {
+      "backtest_id": "BACKTEST:564746:Over 2.5",
+      "match_id": 564746,
+      "date": "2026-11-08",
+      "competition": "PD",
+      "competition_name": "Liga",
+      "home_team": "Club Atlético de Madrid",
+      "away_team": "FC Barcelona",
+      "market": "Over 2.5",
+      "probability": 0.7998,
+      "estimated_odds": 1.25,
+      "predicted_score": "1-2",
+      "actual_score": "1-2",
+      "stake_simulated": 1.0,
+      "status": "WON",
+      "profit_simulated": 0.25,
+      "created_at": "2026-11-09T00:38:14.986656+00:00",
+      "note": "Simulation rétrospective. Ne modifie pas la bankroll."
+    },
+    {
+      "backtest_id": "BACKTEST:558538:Over 2.5",
+      "match_id": 558538,
+      "date": "2026-11-08",
+      "competition": "SA",
+      "competition_name": "Serie A",
+      "home_team": "AC Monza",
+      "away_team": "Atalanta BC",
+      "market": "Over 2.5",
+      "probability": 0.7964,
+      "estimated_odds": 1.26,
+      "predicted_score": "2-1",
+      "actual_score": "0-1",
+      "stake_simulated": 1.0,
+      "status": "LOST",
+      "profit_simulated": -1.0,
+      "created_at": "2026-11-09T00:38:14.987593+00:00",
+      "note": "Simulation rétrospective. Ne modifie pas la bankroll."
+    },
+    {
+      "backtest_id": "BACKTEST:559634:X2",
+      "match_id": 559634,
+      "date": "2026-11-08",
+      "competition": "FL1",
+      "competition_name": "Ligue 1",
+      "home_team": "Angers SCO",
+      "away_team": "OGC Nice",
+      "market": "X2",
+      "probability": 0.7917,
+      "estimated_odds": 1.26,
+      "predicted_score": "1-2",
+      "actual_score": "0-2",
+      "stake_simulated": 1.0,
+      "status": "WON",
+      "profit_simulated": 0.26,
+      "created_at": "2026-11-09T00:38:14.985068+00:00",
+      "note": "Simulation rétrospective. Ne modifie pas la bankroll."
+    },
+    {
+      "backtest_id": "BACKTEST:560638:1X",
+      "match_id": 560638,
+      "date": "2026-11-08",
+      "competition": "PL",
+      "competition_name": "Premier League",
+      "home_team": "Brighton & Hove Albion FC",
+      "away_team": "Brentford FC",
+      "market": "1X",
+      "probability": 0.7853,
+      "estimated_odds": 1.27,
+      "predicted_score": "2-1",
+      "actual_score": "2-0",
+      "stake_simulated": 1.0,
+      "status": "WON",
+      "profit_simulated": 0.27,
+      "created_at": "2026-11-09T00:38:14.985787+00:00",
+      "note": "Simulation rétrospective. Ne modifie pas la bankroll."
     }
   ],
   "created_at": "2026-10-26T18:11:41.354906+00:00",
-  "bankroll": 100.32,
+  "bankroll": 100.57,
   "initial_bankroll": 100.0,
   "starting_bankroll": 100.0,
-  "profit": 0.32,
+  "profit": 0.57,
   "historique": [
     {
       "bet_id": "559648:Over 1.5",
@@ -6344,15 +6472,25 @@
       "stake": 1.0,
       "profit": 0.23,
       "settled_at": "2026-11-08T21:25:26.237485+00:00"
+    },
+    {
+      "bet_id": "564746:Over 2.5",
+      "match": "Club Atlético de Madrid - FC Barcelona",
+      "market": "Over 2.5",
+      "result": "1-2",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.25,
+      "settled_at": "2026-11-09T00:38:10.216034+00:00"
     }
   ],
   "statistiques": {
     "total_paris": 65,
-    "paris_gagnes": 51,
+    "paris_gagnes": 52,
     "paris_perdus": 13,
-    "paris_en_attente": 1,
-    "taux_reussite": 79.69
+    "paris_en_attente": 0,
+    "taux_reussite": 80.0
   },
-  "derniere_mise_a_jour": "2026-11-08T21:25:29.487926+00:00",
-  "updated_at": "2026-11-08T21:25:29.487932+00:00"
+  "derniere_mise_a_jour": "2026-11-09T00:38:14.991826+00:00",
+  "updated_at": "2026-11-09T00:38:14.991830+00:00"
 }
