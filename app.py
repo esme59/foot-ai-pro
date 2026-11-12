@@ -41,6 +41,9 @@ COMPETITIONS = {
     "BL1": "Bundesliga",
     "SA": "Serie A",
     "CL": "Ligue des Champions",
+    # Code standard utilisé pour la Ligue des Nations UEFA.
+    # La disponibilité réelle dépend du catalogue et de l'abonnement API.
+    "UNL": "Ligue des Nations",
 }
 
 # Niveau 2 : plus de sélections, sans gonfler artificiellement les probabilités.
