@@ -1,10 +1,10 @@
 {
   "version": 10,
   "bankroll_initiale": 100.0,
-  "bankroll_actuelle": 101.24,
-  "benefice_total": 1.24,
-  "mises_totales": 68.0,
-  "gains_totaux": 69.24,
+  "bankroll_actuelle": 101.8,
+  "benefice_total": 1.8,
+  "mises_totales": 71.0,
+  "gains_totaux": 72.8,
   "mises_en_cours": 0.0,
   "paris": [
     {
@@ -1469,9 +1469,11 @@
       "exact_score_prediction": "2-1",
       "stake": 1.0,
       "potential_return": 1.16,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.16,
+      "status": "WON",
+      "result": "3-0",
+      "returned_amount": 1.16,
+      "settled_at": "2026-11-21T18:36:31.096253+00:00"
     },
     {
       "bet_id": "560651:Under 3.5",
@@ -1507,9 +1509,11 @@
       "exact_score_prediction": "1-0",
       "stake": 1.0,
       "potential_return": 1.19,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.19,
+      "status": "WON",
+      "result": "2-0",
+      "returned_amount": 1.19,
+      "settled_at": "2026-11-21T18:36:31.096326+00:00"
     },
     {
       "bet_id": "560642:Under 3.5",
@@ -1545,9 +1549,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.21,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.21,
+      "status": "WON",
+      "result": "1-5",
+      "returned_amount": 1.21,
+      "settled_at": "2026-11-21T18:36:29.619364+00:00"
     }
   ],
   "last_updated": "2026-10-26T17:56:44.745862+01:00",
@@ -3014,9 +3020,11 @@
       "exact_score_prediction": "2-1",
       "stake": 1.0,
       "potential_return": 1.16,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.16,
+      "status": "WON",
+      "result": "3-0",
+      "returned_amount": 1.16,
+      "settled_at": "2026-11-21T18:36:31.096253+00:00"
     },
     {
       "bet_id": "560651:Under 3.5",
@@ -3052,9 +3060,11 @@
       "exact_score_prediction": "1-0",
       "stake": 1.0,
       "potential_return": 1.19,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.19,
+      "status": "WON",
+      "result": "2-0",
+      "returned_amount": 1.19,
+      "settled_at": "2026-11-21T18:36:31.096326+00:00"
     },
     {
       "bet_id": "560642:Under 3.5",
@@ -3090,9 +3100,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.21,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.21,
+      "status": "WON",
+      "result": "1-5",
+      "returned_amount": 1.21,
+      "settled_at": "2026-11-21T18:36:29.619364+00:00"
     }
   ],
   "history": [
@@ -3775,6 +3787,36 @@
       "stake": 1.0,
       "profit": 0.2,
       "settled_at": "2026-11-21T01:56:13.921639+00:00"
+    },
+    {
+      "bet_id": "565858:X2",
+      "match": "1. FC Union Berlin - RB Leipzig",
+      "market": "X2",
+      "result": "1-5",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.21,
+      "settled_at": "2026-11-21T18:36:29.619364+00:00"
+    },
+    {
+      "bet_id": "558528:1X",
+      "match": "SS Lazio - US Lecce",
+      "market": "1X",
+      "result": "3-0",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.16,
+      "settled_at": "2026-11-21T18:36:31.096253+00:00"
+    },
+    {
+      "bet_id": "558525:1X",
+      "match": "Como 1907 - Cagliari Calcio",
+      "market": "1X",
+      "result": "2-0",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.19,
+      "settled_at": "2026-11-21T18:36:31.096326+00:00"
     }
   ],
   "backtests": [
@@ -6611,10 +6653,10 @@
     }
   ],
   "created_at": "2026-10-26T18:11:41.354906+00:00",
-  "bankroll": 101.24,
+  "bankroll": 101.8,
   "initial_bankroll": 100.0,
   "starting_bankroll": 100.0,
-  "profit": 1.24,
+  "profit": 1.8,
   "historique": [
     {
       "bet_id": "559648:Over 1.5",
@@ -7295,15 +7337,45 @@
       "stake": 1.0,
       "profit": 0.2,
       "settled_at": "2026-11-21T01:56:13.921639+00:00"
+    },
+    {
+      "bet_id": "565858:X2",
+      "match": "1. FC Union Berlin - RB Leipzig",
+      "market": "X2",
+      "result": "1-5",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.21,
+      "settled_at": "2026-11-21T18:36:29.619364+00:00"
+    },
+    {
+      "bet_id": "558528:1X",
+      "match": "SS Lazio - US Lecce",
+      "market": "1X",
+      "result": "3-0",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.16,
+      "settled_at": "2026-11-21T18:36:31.096253+00:00"
+    },
+    {
+      "bet_id": "558525:1X",
+      "match": "Como 1907 - Cagliari Calcio",
+      "market": "1X",
+      "result": "2-0",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.19,
+      "settled_at": "2026-11-21T18:36:31.096326+00:00"
     }
   ],
   "statistiques": {
     "total_paris": 74,
-    "paris_gagnes": 55,
+    "paris_gagnes": 58,
     "paris_perdus": 13,
-    "paris_en_attente": 6,
-    "taux_reussite": 80.88
+    "paris_en_attente": 3,
+    "taux_reussite": 81.69
   },
-  "derniere_mise_a_jour": "2026-11-21T10:34:46.622302+00:00",
-  "updated_at": "2026-11-21T10:34:46.622307+00:00"
+  "derniere_mise_a_jour": "2026-11-21T18:36:32.706342+00:00",
+  "updated_at": "2026-11-21T18:36:32.706349+00:00"
 }
