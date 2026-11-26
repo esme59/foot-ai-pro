@@ -1,10 +1,10 @@
 {
   "version": 10,
   "bankroll_initiale": 100.0,
-  "bankroll_actuelle": 96.62,
-  "benefice_total": -3.38,
-  "mises_totales": 89.0,
-  "gains_totaux": 85.62,
+  "bankroll_actuelle": 95.29,
+  "benefice_total": -4.71,
+  "mises_totales": 95.0,
+  "gains_totaux": 90.29,
   "mises_en_cours": 0.0,
   "paris": [
     {
@@ -1891,9 +1891,11 @@
       "exact_score_prediction": "3-2",
       "stake": 1.0,
       "potential_return": 1.07,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.07,
+      "status": "WON",
+      "result": "2-2",
+      "returned_amount": 1.07,
+      "settled_at": "2026-11-26T01:28:05.131821+00:00"
     },
     {
       "bet_id": "575409:Over 2.5",
@@ -1910,9 +1912,11 @@
       "exact_score_prediction": "3-2",
       "stake": 1.0,
       "potential_return": 1.08,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.08,
+      "status": "WON",
+      "result": "0-3",
+      "returned_amount": 1.08,
+      "settled_at": "2026-11-26T01:28:05.131904+00:00"
     },
     {
       "bet_id": "575405:Over 2.5",
@@ -1929,9 +1933,11 @@
       "exact_score_prediction": "2-1",
       "stake": 1.0,
       "potential_return": 1.23,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": -1.0,
+      "status": "LOST",
+      "result": "0-1",
+      "returned_amount": 0.0,
+      "settled_at": "2026-11-26T01:28:05.131923+00:00"
     },
     {
       "bet_id": "575410:X2",
@@ -1948,9 +1954,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.24,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": -1.0,
+      "status": "LOST",
+      "result": "2-1",
+      "returned_amount": 0.0,
+      "settled_at": "2026-11-26T01:28:05.131937+00:00"
     },
     {
       "bet_id": "575411:1X",
@@ -1967,9 +1975,11 @@
       "exact_score_prediction": "2-1",
       "stake": 1.0,
       "potential_return": 1.25,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.25,
+      "status": "WON",
+      "result": "2-2",
+      "returned_amount": 1.25,
+      "settled_at": "2026-11-26T01:28:05.131951+00:00"
     },
     {
       "bet_id": "575404:Over 2.5",
@@ -1986,9 +1996,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.27,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.27,
+      "status": "WON",
+      "result": "1-4",
+      "returned_amount": 1.27,
+      "settled_at": "2026-11-26T01:28:05.131963+00:00"
     }
   ],
   "last_updated": "2026-10-26T17:56:44.745862+01:00",
@@ -3877,9 +3889,11 @@
       "exact_score_prediction": "3-2",
       "stake": 1.0,
       "potential_return": 1.07,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.07,
+      "status": "WON",
+      "result": "2-2",
+      "returned_amount": 1.07,
+      "settled_at": "2026-11-26T01:28:05.131821+00:00"
     },
     {
       "bet_id": "575409:Over 2.5",
@@ -3896,9 +3910,11 @@
       "exact_score_prediction": "3-2",
       "stake": 1.0,
       "potential_return": 1.08,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.08,
+      "status": "WON",
+      "result": "0-3",
+      "returned_amount": 1.08,
+      "settled_at": "2026-11-26T01:28:05.131904+00:00"
     },
     {
       "bet_id": "575405:Over 2.5",
@@ -3915,9 +3931,11 @@
       "exact_score_prediction": "2-1",
       "stake": 1.0,
       "potential_return": 1.23,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": -1.0,
+      "status": "LOST",
+      "result": "0-1",
+      "returned_amount": 0.0,
+      "settled_at": "2026-11-26T01:28:05.131923+00:00"
     },
     {
       "bet_id": "575410:X2",
@@ -3934,9 +3952,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.24,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": -1.0,
+      "status": "LOST",
+      "result": "2-1",
+      "returned_amount": 0.0,
+      "settled_at": "2026-11-26T01:28:05.131937+00:00"
     },
     {
       "bet_id": "575411:1X",
@@ -3953,9 +3973,11 @@
       "exact_score_prediction": "2-1",
       "stake": 1.0,
       "potential_return": 1.25,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.25,
+      "status": "WON",
+      "result": "2-2",
+      "returned_amount": 1.25,
+      "settled_at": "2026-11-26T01:28:05.131951+00:00"
     },
     {
       "bet_id": "575404:Over 2.5",
@@ -3972,9 +3994,11 @@
       "exact_score_prediction": "1-2",
       "stake": 1.0,
       "potential_return": 1.27,
-      "profit": 0.0,
-      "status": "PENDING",
-      "result": null
+      "profit": 0.27,
+      "status": "WON",
+      "result": "1-4",
+      "returned_amount": 1.27,
+      "settled_at": "2026-11-26T01:28:05.131963+00:00"
     }
   ],
   "history": [
@@ -4867,6 +4891,66 @@
       "stake": 1.0,
       "profit": 0.2,
       "settled_at": "2026-11-25T03:55:12.189098+00:00"
+    },
+    {
+      "bet_id": "575408:Over 2.5",
+      "match": "Paris Saint-Germain FC - AS Roma",
+      "market": "Over 2.5",
+      "result": "2-2",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.07,
+      "settled_at": "2026-11-26T01:28:05.131821+00:00"
+    },
+    {
+      "bet_id": "575409:Over 2.5",
+      "match": "Club Brugge KV - Liverpool FC",
+      "market": "Over 2.5",
+      "result": "0-3",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.08,
+      "settled_at": "2026-11-26T01:28:05.131904+00:00"
+    },
+    {
+      "bet_id": "575405:Over 2.5",
+      "match": "SK Slavia Praha - Villarreal CF",
+      "market": "Over 2.5",
+      "result": "0-1",
+      "status": "LOST",
+      "stake": 1.0,
+      "profit": -1.0,
+      "settled_at": "2026-11-26T01:28:05.131923+00:00"
+    },
+    {
+      "bet_id": "575410:X2",
+      "match": "Lille OSC - FC Bayern München",
+      "market": "X2",
+      "result": "2-1",
+      "status": "LOST",
+      "stake": 1.0,
+      "profit": -1.0,
+      "settled_at": "2026-11-26T01:28:05.131937+00:00"
+    },
+    {
+      "bet_id": "575411:1X",
+      "match": "Sporting Clube de Portugal - Manchester United FC",
+      "market": "1X",
+      "result": "2-2",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.25,
+      "settled_at": "2026-11-26T01:28:05.131951+00:00"
+    },
+    {
+      "bet_id": "575404:Over 2.5",
+      "match": "Sabah FK - FC Barcelona",
+      "market": "Over 2.5",
+      "result": "1-4",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.27,
+      "settled_at": "2026-11-26T01:28:05.131963+00:00"
     }
   ],
   "backtests": [
@@ -8498,13 +8582,127 @@
       "profit_simulated": 0.34,
       "created_at": "2026-11-25T16:41:14.097441+00:00",
       "note": "Simulation rétrospective. Ne modifie pas la bankroll."
+    },
+    {
+      "backtest_id": "BACKTEST:575408:Over 2.5",
+      "match_id": 575408,
+      "date": "2026-11-25",
+      "competition": "CL",
+      "competition_name": "Ligue des champions",
+      "home_team": "Paris Saint-Germain FC",
+      "away_team": "AS Roma",
+      "market": "Over 2.5",
+      "probability": 0.9357,
+      "estimated_odds": 1.07,
+      "predicted_score": "3-2",
+      "actual_score": "2-2",
+      "stake_simulated": 1.0,
+      "status": "WON",
+      "profit_simulated": 0.07,
+      "created_at": "2026-11-26T01:28:05.139790+00:00",
+      "note": "Simulation rétrospective. Ne modifie pas la bankroll."
+    },
+    {
+      "backtest_id": "BACKTEST:575409:Over 2.5",
+      "match_id": 575409,
+      "date": "2026-11-25",
+      "competition": "CL",
+      "competition_name": "Ligue des champions",
+      "home_team": "Club Brugge KV",
+      "away_team": "Liverpool FC",
+      "market": "Over 2.5",
+      "probability": 0.9281,
+      "estimated_odds": 1.08,
+      "predicted_score": "3-2",
+      "actual_score": "0-3",
+      "stake_simulated": 1.0,
+      "status": "WON",
+      "profit_simulated": 0.08,
+      "created_at": "2026-11-26T01:28:05.139918+00:00",
+      "note": "Simulation rétrospective. Ne modifie pas la bankroll."
+    },
+    {
+      "backtest_id": "BACKTEST:575405:Over 2.5",
+      "match_id": 575405,
+      "date": "2026-11-25",
+      "competition": "CL",
+      "competition_name": "Ligue des champions",
+      "home_team": "SK Slavia Praha",
+      "away_team": "Villarreal CF",
+      "market": "Over 2.5",
+      "probability": 0.8132,
+      "estimated_odds": 1.23,
+      "predicted_score": "2-1",
+      "actual_score": "0-1",
+      "stake_simulated": 1.0,
+      "status": "LOST",
+      "profit_simulated": -1.0,
+      "created_at": "2026-11-26T01:28:05.139395+00:00",
+      "note": "Simulation rétrospective. Ne modifie pas la bankroll."
+    },
+    {
+      "backtest_id": "BACKTEST:575410:X2",
+      "match_id": 575410,
+      "date": "2026-11-25",
+      "competition": "CL",
+      "competition_name": "Ligue des champions",
+      "home_team": "Lille OSC",
+      "away_team": "FC Bayern München",
+      "market": "X2",
+      "probability": 0.8051,
+      "estimated_odds": 1.24,
+      "predicted_score": "1-2",
+      "actual_score": "2-1",
+      "stake_simulated": 1.0,
+      "status": "LOST",
+      "profit_simulated": -1.0,
+      "created_at": "2026-11-26T01:28:05.140046+00:00",
+      "note": "Simulation rétrospective. Ne modifie pas la bankroll."
+    },
+    {
+      "backtest_id": "BACKTEST:575411:1X",
+      "match_id": 575411,
+      "date": "2026-11-25",
+      "competition": "CL",
+      "competition_name": "Ligue des champions",
+      "home_team": "Sporting Clube de Portugal",
+      "away_team": "Manchester United FC",
+      "market": "1X",
+      "probability": 0.7979,
+      "estimated_odds": 1.25,
+      "predicted_score": "2-1",
+      "actual_score": "2-2",
+      "stake_simulated": 1.0,
+      "status": "WON",
+      "profit_simulated": 0.25,
+      "created_at": "2026-11-26T01:28:05.140176+00:00",
+      "note": "Simulation rétrospective. Ne modifie pas la bankroll."
+    },
+    {
+      "backtest_id": "BACKTEST:575404:Over 2.5",
+      "match_id": 575404,
+      "date": "2026-11-25",
+      "competition": "CL",
+      "competition_name": "Ligue des champions",
+      "home_team": "Sabah FK",
+      "away_team": "FC Barcelona",
+      "market": "Over 2.5",
+      "probability": 0.7885,
+      "estimated_odds": 1.27,
+      "predicted_score": "1-2",
+      "actual_score": "1-4",
+      "stake_simulated": 1.0,
+      "status": "WON",
+      "profit_simulated": 0.27,
+      "created_at": "2026-11-26T01:28:05.139236+00:00",
+      "note": "Simulation rétrospective. Ne modifie pas la bankroll."
     }
   ],
   "created_at": "2026-10-26T18:11:41.354906+00:00",
-  "bankroll": 96.62,
+  "bankroll": 95.29,
   "initial_bankroll": 100.0,
   "starting_bankroll": 100.0,
-  "profit": -3.38,
+  "profit": -4.71,
   "historique": [
     {
       "bet_id": "559648:Over 1.5",
@@ -9395,15 +9593,75 @@
       "stake": 1.0,
       "profit": 0.2,
       "settled_at": "2026-11-25T03:55:12.189098+00:00"
+    },
+    {
+      "bet_id": "575408:Over 2.5",
+      "match": "Paris Saint-Germain FC - AS Roma",
+      "market": "Over 2.5",
+      "result": "2-2",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.07,
+      "settled_at": "2026-11-26T01:28:05.131821+00:00"
+    },
+    {
+      "bet_id": "575409:Over 2.5",
+      "match": "Club Brugge KV - Liverpool FC",
+      "market": "Over 2.5",
+      "result": "0-3",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.08,
+      "settled_at": "2026-11-26T01:28:05.131904+00:00"
+    },
+    {
+      "bet_id": "575405:Over 2.5",
+      "match": "SK Slavia Praha - Villarreal CF",
+      "market": "Over 2.5",
+      "result": "0-1",
+      "status": "LOST",
+      "stake": 1.0,
+      "profit": -1.0,
+      "settled_at": "2026-11-26T01:28:05.131923+00:00"
+    },
+    {
+      "bet_id": "575410:X2",
+      "match": "Lille OSC - FC Bayern München",
+      "market": "X2",
+      "result": "2-1",
+      "status": "LOST",
+      "stake": 1.0,
+      "profit": -1.0,
+      "settled_at": "2026-11-26T01:28:05.131937+00:00"
+    },
+    {
+      "bet_id": "575411:1X",
+      "match": "Sporting Clube de Portugal - Manchester United FC",
+      "market": "1X",
+      "result": "2-2",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.25,
+      "settled_at": "2026-11-26T01:28:05.131951+00:00"
+    },
+    {
+      "bet_id": "575404:Over 2.5",
+      "match": "Sabah FK - FC Barcelona",
+      "market": "Over 2.5",
+      "result": "1-4",
+      "status": "WON",
+      "stake": 1.0,
+      "profit": 0.27,
+      "settled_at": "2026-11-26T01:28:05.131963+00:00"
     }
   ],
   "statistiques": {
     "total_paris": 95,
-    "paris_gagnes": 69,
-    "paris_perdus": 20,
-    "paris_en_attente": 6,
-    "taux_reussite": 77.53
+    "paris_gagnes": 73,
+    "paris_perdus": 22,
+    "paris_en_attente": 0,
+    "taux_reussite": 76.84
   },
-  "derniere_mise_a_jour": "2026-11-25T16:41:14.106210+00:00",
-  "updated_at": "2026-11-25T16:41:14.106215+00:00"
+  "derniere_mise_a_jour": "2026-11-26T01:28:05.146969+00:00",
+  "updated_at": "2026-11-26T01:28:05.146973+00:00"
 }
